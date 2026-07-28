@@ -1,0 +1,8 @@
+{
+  "name": "@per-parte/nucleo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Núcleo da Per Parte: regras do produto como código e geração de geometria paramétrica. Mesmo código no navegador (preview) e no servidor (STL).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts"
+}
