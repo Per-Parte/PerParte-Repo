@@ -164,7 +164,7 @@ export default function Configurador() {
   return (
     <div className="flex h-dvh flex-col bg-[#F2EFE9] text-[#26241F]">
       <header className="flex items-baseline justify-between border-b border-[#DDD8CC] px-7 pb-3.5 pt-4">
-        <div>
+        <a href="/" className="block">
           <div className="text-[22px] font-extrabold tracking-[0.14em]">
             PER P
             <span
@@ -177,7 +177,7 @@ export default function Configurador() {
           <div className="text-[12.5px] text-[#6E695E]">
             monte por partes. crie cada parte.
           </div>
-        </div>
+        </a>
         <div className="flex items-center gap-2">
           <button
             onClick={copiarLink}

@@ -23,7 +23,8 @@
 - [x] **Link compartilhável da criação** — o estado inteiro do configurador vive na URL, botão "copiar link" ✓ 28/07/2026
 - [x] **Site publicado**: [per-parte-web.vercel.app](https://per-parte-web.vercel.app) — cada `git push` atualiza sozinho ✓ 28/07/2026
 - [ ] Contas + salvar criações (Supabase) — links curtos, galeria; embrião do marketplace
-- [ ] Landing e vitrine do marketplace (esboço rápido via Lovable)
+- [x] **Landing page** em / com herói 3D girando; configurador movido para /configurador ✓ 28/07/2026
+- [ ] Vitrine do marketplace (galeria de criações e criadores) — depende de banco
 - [ ] Mais adiante: preço por slicer real, pagamentos com split de royalty
 
 Relacionadas: [[INICIO]] · [[Decisões]] · [[Regras (resumo)]]
