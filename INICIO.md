@@ -18,7 +18,8 @@ Luminárias **de mesa** impressas em 3D, fabricadas sob demanda. O cliente monta
 ### Software
 - [Protótipo original](prototipo/configurador.html) — HTML único, abre direto no navegador
 - **Configurador v0.2** — `apps/web` (Next.js + React Three Fiber) + `packages/nucleo` (regras e geometria como código)
-  - Rodar: `npm run dev` na pasta do projeto → abrir http://localhost:3000
+  - **No ar**: https://per-parte-web.vercel.app (atualiza sozinho a cada push)
+  - Rodar local: `npm run dev` na pasta do projeto → abrir http://localhost:3000
   - Princípio: o mesmo núcleo gera o preview no navegador e (futuramente) o STL de produção
 
 ## Decisões tomadas
