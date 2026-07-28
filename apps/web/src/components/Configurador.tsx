@@ -224,185 +224,185 @@ export default function Configurador() {
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-[#F2EFE9] text-[#26241F]">
-      <header className="flex items-baseline justify-between border-b border-[#DDD8CC] px-7 pb-3.5 pt-4">
-        <a href="/" className="block">
-          <div className="text-[22px] font-extrabold tracking-[0.14em]">
+    <div className="relative h-dvh overflow-hidden bg-[#121110] text-[#F2EDE4]">
+      {/* Cena em tela cheia — o palco */}
+      <div className="absolute inset-0">
+        <Cena3D
+          perfis={perfis}
+          alturasMm={{
+            base: base.alturaMm,
+            corpo: corpo.alturaMm,
+            difusor: difusor.alturaMm,
+          }}
+          coresHex={{
+            base: PALETA[cores.base].hex,
+            corpo: PALETA[cores.corpo].hex,
+            difusor: PALETA[cores.difusor].hex,
+          }}
+          segmentos={segmentos}
+          luzAcesa={luzAcesa}
+          texturas={texturas}
+          espinhaCorpo={espinhaCorpo}
+          pontosDeLuz={pontosDeLuz}
+          separacaoMm={separacaoEfetivaMm}
+        />
+      </div>
+
+      {/* Cabeçalho flutuante */}
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-5">
+        <a href="/" className="pointer-events-auto block">
+          <div className="text-[19px] font-extrabold tracking-[0.16em]">
             PER P
             <span
-              style={{ color: "transparent", WebkitTextStroke: "1.2px #26241F" }}
+              style={{
+                color: "transparent",
+                WebkitTextStroke: "1.1px #F2EDE4",
+              }}
             >
               A
             </span>
             RTE
           </div>
-          <div className="text-[12.5px] text-[#6E695E]">
+          <div className="text-[11px] text-[#A69D8D]">
             monte por partes. crie cada parte.
           </div>
         </a>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={copiarLink}
-            className={`rounded-full border px-3 py-1 text-[11px] transition-colors ${
-              copiado
-                ? "border-[#5F7A52] text-[#5F7A52]"
-                : "border-[#DDD8CC] text-[#6E695E] hover:border-[#6E695E]"
-            }`}
-          >
-            {copiado ? "link copiado ✓" : "copiar link da criação"}
-          </button>
-          <div className="rounded-full border border-[#DDD8CC] px-2.5 py-1 text-[11px] text-[#6E695E]">
-            configurador v0.2
-          </div>
-        </div>
+        <button
+          onClick={copiarLink}
+          className={`vidro pointer-events-auto rounded-full px-4 py-2 text-[11.5px] transition-colors ${
+            copiado ? "text-[#8FB07E]" : "text-[#CFC7B8] hover:text-[#F2EDE4]"
+          }`}
+        >
+          {copiado ? "link copiado ✓" : "copiar link da criação"}
+        </button>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <div className="relative h-[44vh] min-w-0 md:h-auto md:flex-[1.25]">
-          <Cena3D
-            perfis={perfis}
-            alturasMm={{
-              base: base.alturaMm,
-              corpo: corpo.alturaMm,
-              difusor: difusor.alturaMm,
-            }}
-            coresHex={{
-              base: PALETA[cores.base].hex,
-              corpo: PALETA[cores.corpo].hex,
-              difusor: PALETA[cores.difusor].hex,
-            }}
-            segmentos={segmentos}
-            luzAcesa={luzAcesa}
-            texturas={texturas}
-            espinhaCorpo={espinhaCorpo}
-            pontosDeLuz={pontosDeLuz}
-            separacaoMm={separacaoEfetivaMm}
-          />
-          <div className="absolute left-6 top-4 rounded-lg border border-[#DDD8CC] bg-[#FBFAF7]/80 px-2.5 py-1.5 text-[11.5px] text-[#6E695E]">
-            encaixes fixos{" "}
-            <b className="font-semibold text-[#26241F]">
-              Ø{oDiametroCm(ENCAIXES.baseCorpo.raioMm)}
-            </b>{" "}
-            e{" "}
-            <b className="font-semibold text-[#26241F]">
-              Ø{oDiametroCm(ENCAIXES.corpoDifusor.raioMm)} cm
-            </b>{" "}
-            · partes livres
-          </div>
-          <div className="absolute bottom-4 left-6 text-[11.5px] text-[#6E695E]">
-            arraste para girar
-          </div>
+      {/* Rodapé informativo da cena */}
+      <div className="absolute bottom-5 left-5 z-10 hidden flex-col items-start gap-2 md:flex">
+        <div className="vidro rounded-full px-3.5 py-1.5 text-[11px] text-[#A69D8D]">
+          encaixes fixos{" "}
+          <b className="font-semibold text-[#F2EDE4]">
+            Ø{oDiametroCm(ENCAIXES.baseCorpo.raioMm)}
+          </b>{" "}
+          e{" "}
+          <b className="font-semibold text-[#F2EDE4]">
+            Ø{oDiametroCm(ENCAIXES.corpoDifusor.raioMm)} cm
+          </b>{" "}
+          · partes livres
         </div>
+        <div className="pl-1 text-[10.5px] text-[#7d766a]">
+          arraste para girar · role para aproximar
+        </div>
+      </div>
 
-        <aside className="flex min-h-0 w-full flex-1 flex-col border-t border-[#DDD8CC] bg-[#FBFAF7] md:w-[390px] md:max-w-[44vw] md:flex-none md:border-l md:border-t-0">
-          <div className="flex border-b border-[#DDD8CC]">
+      {/* Painel flutuante */}
+      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/40 md:inset-x-auto md:bottom-5 md:right-5 md:top-[76px] md:w-[420px]">
+        <div className="px-4 pb-1 pt-4">
+          <div className="flex rounded-full bg-white/[0.06] p-1">
             {(
               [
-                ["montar", "Montar", "combine partes prontas"],
-                ["criar", "Criar", "esculpa a sua parte"],
+                ["montar", "Montar"],
+                ["criar", "Criar"],
               ] as const
-            ).map(([id, titulo, sub]) => (
+            ).map(([id, titulo]) => (
               <button
                 key={id}
                 onClick={() => trocarModo(id)}
-                className={`flex-1 border-b-2 pb-3 pt-3.5 text-center text-[13.5px] ${
+                className={`flex-1 rounded-full py-2 text-[13px] transition-all ${
                   modo === id
-                    ? "border-[#26241F] font-semibold text-[#26241F]"
-                    : "border-transparent text-[#6E695E]"
+                    ? "bg-[#F2EDE4] font-semibold text-[#161412]"
+                    : "text-[#A69D8D] hover:text-[#E7E0D2]"
                 }`}
               >
                 {titulo}
-                <small className="block text-[10.5px] font-normal tracking-[0.03em]">
-                  {sub}
-                </small>
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-            {modo === "montar" ? (
-              <PainelMontar
-                iBase={iBase}
-                iCorpo={iCorpo}
-                iDifusor={iDifusor}
-                escolherBase={setIBase}
-                escolherCorpo={setICorpo}
-                escolherDifusor={setIDifusor}
-                cores={cores}
-                alvoCor={alvoCor}
-                setAlvoCor={setAlvoCor}
-                escolherCor={escolherCor}
-                pontosDeLuz={pontosDeLuz}
-                separacaoMm={separacaoMm}
-                setPontosDeLuz={setPontosDeLuz}
-                setSeparacaoMm={setSeparacaoMm}
-              />
-            ) : (
-              <PainelCriar
-                criar={criar}
-                aoMudar={setCriar}
-                remixDe={remixDe}
-                iFaceta={iFaceta}
-                setIFaceta={setIFaceta}
-                estab={estab}
-                pontosDeLuz={pontosDeLuz}
-                separacaoMm={separacaoMm}
-                setPontosDeLuz={setPontosDeLuz}
-                setSeparacaoMm={setSeparacaoMm}
-              />
-            )}
+        <div className="rolagem min-h-0 flex-1 overflow-y-auto">
+          {modo === "montar" ? (
+            <PainelMontar
+              iBase={iBase}
+              iCorpo={iCorpo}
+              iDifusor={iDifusor}
+              escolherBase={setIBase}
+              escolherCorpo={setICorpo}
+              escolherDifusor={setIDifusor}
+              cores={cores}
+              alvoCor={alvoCor}
+              setAlvoCor={setAlvoCor}
+              escolherCor={escolherCor}
+              pontosDeLuz={pontosDeLuz}
+              separacaoMm={separacaoMm}
+              setPontosDeLuz={setPontosDeLuz}
+              setSeparacaoMm={setSeparacaoMm}
+            />
+          ) : (
+            <PainelCriar
+              criar={criar}
+              aoMudar={setCriar}
+              remixDe={remixDe}
+              iFaceta={iFaceta}
+              setIFaceta={setIFaceta}
+              estab={estab}
+              pontosDeLuz={pontosDeLuz}
+              separacaoMm={separacaoMm}
+              setPontosDeLuz={setPontosDeLuz}
+              setSeparacaoMm={setSeparacaoMm}
+            />
+          )}
+        </div>
+
+        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex-1">
+              <div className="text-[22px] font-bold leading-none tabular-nums">
+                R$ {precoBRL.toLocaleString("pt-BR")}
+              </div>
+              <div className="mt-1 text-[10px] text-[#7d766a]">
+                ~{Math.round(gramas)} g de PLA · módulo elétrico certificado
+              </div>
+            </div>
+            <button
+              onClick={() => setLuzAcesa(!luzAcesa)}
+              className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] transition-all ${
+                luzAcesa
+                  ? "bg-[#F3B65B] font-semibold text-[#1b1206]"
+                  : "border border-white/15 bg-white/[0.05] text-[#CFC7B8]"
+              }`}
+            >
+              {luzAcesa ? "luz acesa" : "luz apagada"}
+            </button>
+            <button className="rounded-full bg-[#D9772F] px-5 py-2.5 text-[13px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]">
+              Encomendar
+            </button>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 border-t border-[#DDD8CC] px-5 py-2 text-[11px] text-[#6E695E]">
-            <span>STL de produção (teste):</span>
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] text-[#7d766a]">
+            <span>STL:</span>
             {(["base", "corpo", "difusor"] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => baixarSTL(p)}
                 disabled={gerandoSTL !== null}
-                className="rounded-md border border-[#DDD8CC] bg-white px-2 py-1 hover:border-[#6E695E] disabled:opacity-50"
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
               >
                 {gerandoSTL === p ? "gerando…" : p}
               </button>
             ))}
-            <span className="ml-1">· kit de encaixe F5:</span>
+            <span className="ml-1.5">kit F5:</span>
             {[0.2, 0.3, 0.4].map((f) => (
               <a
                 key={f}
                 href={`/api/calibracao?folgaMm=${f}`}
-                className="rounded-md border border-[#DDD8CC] bg-white px-2 py-1 hover:border-[#6E695E]"
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
               >
                 {String(f).replace(".", ",")}
               </a>
             ))}
           </div>
-
-          <div className="flex items-center gap-3.5 border-t border-[#DDD8CC] bg-[#FBFAF7] px-5 py-3.5">
-            <div className="flex-1">
-              <div className="text-xl font-bold tabular-nums">
-                R$ {precoBRL.toLocaleString("pt-BR")}
-              </div>
-              <div className="text-[10.5px] text-[#6E695E]">
-                ~{Math.round(gramas)} g de PLA · inclui módulo elétrico
-                certificado
-              </div>
-            </div>
-            <button
-              onClick={() => setLuzAcesa(!luzAcesa)}
-              className={`whitespace-nowrap rounded-[10px] border px-3.5 py-2.5 text-[12.5px] ${
-                luzAcesa
-                  ? "border-[#F3B65B] bg-[#F3B65B]"
-                  : "border-[#DDD8CC] bg-white"
-              }`}
-            >
-              {luzAcesa ? "luz acesa" : "luz apagada"}
-            </button>
-            <button className="rounded-[10px] bg-[#26241F] px-5 py-3 text-[13.5px] font-semibold text-white hover:bg-black">
-              Encomendar
-            </button>
-          </div>
-        </aside>
-      </main>
+        </div>
+      </aside>
     </div>
   );
 }

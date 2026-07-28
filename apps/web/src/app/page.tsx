@@ -15,12 +15,12 @@ export default async function Home({
   if (c) redirect(`/configurador?c=${encodeURIComponent(c)}`);
 
   return (
-    <div className="min-h-dvh bg-[#F2EFE9] text-[#26241F]">
+    <div className="min-h-dvh bg-[#121110] text-[#F2EDE4]">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-        <div className="text-[20px] font-extrabold tracking-[0.14em]">
+        <div className="text-[19px] font-extrabold tracking-[0.16em]">
           PER P
           <span
-            style={{ color: "transparent", WebkitTextStroke: "1.2px #26241F" }}
+            style={{ color: "transparent", WebkitTextStroke: "1.1px #F2EDE4" }}
           >
             A
           </span>
@@ -28,7 +28,7 @@ export default async function Home({
         </div>
         <Link
           href="/configurador"
-          className="rounded-full bg-[#26241F] px-5 py-2 text-[13px] font-semibold text-white hover:bg-black"
+          className="rounded-full border border-white/15 bg-white/[0.05] px-5 py-2 text-[13px] font-semibold text-[#F2EDE4] transition-colors hover:border-white/30 hover:bg-white/[0.1]"
         >
           Abrir o configurador
         </Link>
@@ -43,7 +43,7 @@ export default async function Home({
               <br />
               Crie cada parte.
             </h1>
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#6E695E]">
+            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#A69D8D]">
               Luminárias de mesa impressas em 3D, fabricadas sob demanda no
               Brasil. Você combina base, corpo e difusor — ou esculpe os seus —
               e a gente imprime exatamente o que você viu na tela.
@@ -51,18 +51,18 @@ export default async function Home({
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
                 href="/configurador"
-                className="rounded-xl bg-[#D9772F] px-6 py-3 text-[14px] font-semibold text-white hover:bg-[#c4661f]"
+                className="rounded-full bg-[#D9772F] px-6 py-3 text-[14px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]"
               >
                 Criar minha luminária
               </Link>
               <a
                 href="#como-funciona"
-                className="rounded-xl border border-[#DDD8CC] bg-white px-6 py-3 text-[14px] font-semibold hover:border-[#6E695E]"
+                className="rounded-full border border-white/15 bg-white/[0.04] px-6 py-3 text-[14px] font-semibold text-[#E7E0D2] transition-colors hover:border-white/30"
               >
                 Como funciona
               </a>
             </div>
-            <p className="mt-4 text-[11.5px] text-[#6E695E]">
+            <p className="mt-4 text-[11.5px] text-[#7d766a]">
               A peça girando ao lado é 3D de verdade — arraste para ver.
             </p>
           </div>
@@ -70,11 +70,11 @@ export default async function Home({
         </section>
 
         {/* Como funciona */}
-        <section id="como-funciona" className="border-t border-[#DDD8CC] py-14">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6E695E]">
+        <section id="como-funciona" className="border-t border-white/[0.08] py-14">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A69D8D]">
             Como funciona
           </h2>
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
             {[
               [
                 "1 · Monte ou crie",
@@ -91,10 +91,10 @@ export default async function Home({
             ].map(([titulo, texto]) => (
               <div
                 key={titulo}
-                className="rounded-2xl border border-[#DDD8CC] bg-[#FBFAF7] p-6"
+                className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-6"
               >
                 <h3 className="text-[15px] font-semibold">{titulo}</h3>
-                <p className="mt-2.5 text-[13.5px] leading-relaxed text-[#6E695E]">
+                <p className="mt-2.5 text-[13.5px] leading-relaxed text-[#A69D8D]">
                   {texto}
                 </p>
               </div>
@@ -103,13 +103,13 @@ export default async function Home({
         </section>
 
         {/* O princípio */}
-        <section className="border-t border-[#DDD8CC] py-14">
+        <section className="border-t border-white/[0.08] py-14">
           <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
             <div>
               <h2 className="text-2xl font-semibold">
                 Interfaces fixas, partes livres.
               </h2>
-              <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#6E695E]">
+              <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#A69D8D]">
                 Todo o sistema se apoia em dois encaixes padronizados que nunca
                 mudam. A forma de cada parte é livre dentro das regras de
                 fabricação — as bordas são sempre iguais. Consequência:
@@ -117,11 +117,11 @@ export default async function Home({
                 daqui a dez anos.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#DDD8CC] bg-white px-6 py-4 text-center">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[#6E695E]">
+            <div className="rounded-3xl border border-[#F3B65B]/25 bg-[#F3B65B]/[0.06] px-7 py-5 text-center">
+              <div className="text-[10.5px] uppercase tracking-[0.16em] text-[#A69D8D]">
                 encaixes fixos
               </div>
-              <div className="mt-1 text-2xl font-bold tabular-nums">
+              <div className="mt-1 text-2xl font-bold tabular-nums text-[#F3B65B]">
                 Ø {oCm(ENCAIXES.baseCorpo.raioMm)} · Ø{" "}
                 {oCm(ENCAIXES.corpoDifusor.raioMm)} cm
               </div>
@@ -130,17 +130,17 @@ export default async function Home({
         </section>
 
         {/* Criadores */}
-        <section className="border-t border-[#DDD8CC] py-14">
-          <div className="rounded-3xl bg-[#26241F] px-8 py-10 text-[#F2EFE9] md:px-12">
+        <section className="border-t border-white/[0.08] py-14">
+          <div className="rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#D9772F]/[0.14] to-transparent px-8 py-10 md:px-12">
             <h2 className="text-2xl font-semibold">
               Para quem cria: royalty por parte.
             </h2>
-            <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#BDB7A8]">
+            <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#A69D8D]">
               Publique uma base, um corpo ou um difusor no catálogo. Cada vez
               que uma luminária vendida usar a sua parte — em qualquer
               combinação — você recebe. Suas peças, seu nome, sua vitrine.
             </p>
-            <div className="mt-5 inline-block rounded-full border border-[#6E695E] px-4 py-1.5 text-[12px] text-[#BDB7A8]">
+            <div className="mt-5 inline-block rounded-full border border-white/15 px-4 py-1.5 text-[12px] text-[#A69D8D]">
               marketplace em construção — em breve
             </div>
           </div>
@@ -153,15 +153,15 @@ export default async function Home({
           </h2>
           <Link
             href="/configurador"
-            className="mt-6 inline-block rounded-xl bg-[#D9772F] px-8 py-3.5 text-[15px] font-semibold text-white hover:bg-[#c4661f]"
+            className="mt-6 inline-block rounded-full bg-[#D9772F] px-8 py-3.5 text-[15px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]"
           >
             Abrir o configurador
           </Link>
         </section>
       </main>
 
-      <footer className="border-t border-[#DDD8CC]">
-        <div className="mx-auto flex w-full max-w-6xl items-baseline justify-between px-6 py-6 text-[11.5px] text-[#6E695E]">
+      <footer className="border-t border-white/[0.08]">
+        <div className="mx-auto flex w-full max-w-6xl items-baseline justify-between px-6 py-6 text-[11.5px] text-[#7d766a]">
           <span>Per Parte © 2026</span>
           <span>protótipo — em desenvolvimento aberto</span>
         </div>

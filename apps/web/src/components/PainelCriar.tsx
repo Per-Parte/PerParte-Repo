@@ -76,9 +76,9 @@ export default function PainelCriar({
 
   return (
     <div>
-      <div className="mb-3.5 rounded-[10px] border border-dashed border-[#DDD8CC] bg-white px-3 py-2 text-xs text-[#6E695E]">
+      <div className="mx-5 mt-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-3.5 py-2.5 text-[11.5px] text-[#A69D8D]">
         Você está remixando{" "}
-        <b className="text-[#26241F]">{remixDe}</b>. Os encaixes ficam travados
+        <b className="text-[#F2EDE4]">{remixDe}</b>. Os encaixes ficam travados
         — o miolo é todo seu.
       </div>
 
@@ -183,7 +183,7 @@ export default function PainelCriar({
                 },
               })
             }
-            className="w-full rounded-[10px] border border-[#26241F] bg-white py-2 text-[12.5px] font-semibold hover:bg-[#F6EFE3]"
+            className="w-full rounded-full border border-[#F3B65B]/50 bg-[#F3B65B]/10 py-2.5 text-[12.5px] font-semibold text-[#F3B65B] transition-colors hover:bg-[#F3B65B]/20"
           >
             Esculpir a silhueta — arrastar as arestas
           </button>
@@ -205,7 +205,7 @@ export default function PainelCriar({
                   corpo: { ...criar.corpo, perfilLivre: undefined },
                 })
               }
-              className="mt-2 w-full rounded-[10px] border border-[#DDD8CC] bg-white py-2 text-[12px] text-[#6E695E] hover:border-[#6E695E]"
+              className="mt-2 w-full rounded-full border border-white/10 bg-white/[0.03] py-2 text-[12px] text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
             >
               voltar aos controles simples
             </button>
@@ -265,14 +265,14 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("torcaoGraus", v)}
           nota="gira os gomos em espiral da base ao topo"
         />
-        <div className="mb-1 mt-1 text-[13px]">Acabamento</div>
+        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Acabamento</div>
         <Chips
           nomes={FACETAS.map((f) => f.nome)}
           selecionado={iFaceta}
           aoEscolher={setIFaceta}
         />
         {facetadoComGomos && (
-          <div className="mt-2 text-[10px] text-[#D9772F]">
+          <div className="mt-2 text-[10px] text-[#E08A4A]">
             acabamento facetado desliga os gomos — escolha Liso para vê-los
           </div>
         )}
@@ -338,31 +338,37 @@ export default function PainelCriar({
       </Secao>
 
       <Secao titulo="Regras embutidas">
-        <div className="rounded-xl border border-[#DDD8CC] bg-white px-3.5 py-3">
-          <div className="flex justify-between py-1 text-xs text-[#6E695E]">
+        <div
+          className={`rounded-2xl border px-4 py-3 ${
+            estab.tombando
+              ? "border-[#E06A55]/40 bg-[#E06A55]/[0.08]"
+              : "border-white/[0.08] bg-white/[0.03]"
+          }`}
+        >
+          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
             <span>
               Parede mínima ({String(REGRAS.F.paredeDifusorMm.min).replace(".", ",")}–
               {String(REGRAS.F.paredeEstruturalMm.max).replace(".", ",")} mm)
             </span>
-            <span className="font-semibold text-[#5F7A52]">✓</span>
+            <span className="font-semibold text-[#8FB07E]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#6E695E]">
+          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
             <span>Balanço ≤ {REGRAS.F.balancoMaximoGraus}°</span>
-            <span className="font-semibold text-[#5F7A52]">✓</span>
+            <span className="font-semibold text-[#8FB07E]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#6E695E]">
+          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
             <span>Distância do miolo elétrico</span>
-            <span className="font-semibold text-[#5F7A52]">✓</span>
+            <span className="font-semibold text-[#8FB07E]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#6E695E]">
+          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
             <span>Estabilidade</span>
             <span
               className={`font-semibold ${
                 estab.tombando
-                  ? "text-[#B5432F]"
+                  ? "text-[#E06A55]"
                   : estab.pertoDoLimite
-                    ? "text-[#D9772F]"
-                    : "text-[#5F7A52]"
+                    ? "text-[#E08A4A]"
+                    : "text-[#8FB07E]"
               }`}
             >
               {estab.tombando
@@ -374,7 +380,7 @@ export default function PainelCriar({
           </div>
           <div
             className={`mt-2 text-[10.5px] ${
-              estab.tombando ? "text-[#B5432F]" : "text-[#6E695E] opacity-80"
+              estab.tombando ? "text-[#E06A55]" : "text-[#7d766a]"
             }`}
           >
             {estab.tombando
@@ -387,27 +393,27 @@ export default function PainelCriar({
       </Secao>
 
       <Secao titulo="Publicar no catálogo">
-        <div className="rounded-xl border border-[#DDD8CC] bg-white p-3.5">
+        <div>
           <input
             type="text"
             value={nomePeca}
             onChange={(e) => setNomePeca(e.target.value)}
             placeholder="dê um nome à sua peça (ex.: Duna)"
-            className="mb-2 w-full rounded-lg border border-[#DDD8CC] bg-[#FBFAF7] px-3 py-2 text-[13px] outline-none focus:border-[#6E695E]"
+            className="mb-2 w-full rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-[13px] text-[#F2EDE4] placeholder-[#7d766a] outline-none transition-colors focus:border-[#F3B65B]/60"
           />
           <button
             onClick={() => setPublicada(nomePeca.trim() || "Sem nome")}
-            className="w-full rounded-[10px] bg-[#26241F] py-2.5 text-[13.5px] font-semibold text-white hover:bg-black"
+            className="w-full rounded-full bg-[#F2EDE4] py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white"
           >
             Publicar minha parte
           </button>
           {publicada && (
-            <div className="mt-2.5 rounded-[10px] border border-[#E8D9BC] bg-[#F6EFE3] px-3 py-2.5 text-xs leading-relaxed">
-              <b className="text-[#D9772F]">“{publicada}”</b> entrou na fila de
+            <div className="mt-2.5 rounded-2xl border border-[#F3B65B]/30 bg-[#F3B65B]/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-[#CFC7B8]">
+              <b className="text-[#F3B65B]">“{publicada}”</b> entrou na fila de
               curadoria. Quando aprovada, sua parte fica disponível para
               qualquer pessoa usar nas montagens dela — e você recebe{" "}
-              <b>royalty por parte</b> a cada luminária vendida que usar uma
-              criação sua.
+              <b className="text-[#F2EDE4]">royalty por parte</b> a cada
+              luminária vendida que usar uma criação sua.
             </div>
           )}
         </div>

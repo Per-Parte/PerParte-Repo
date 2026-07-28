@@ -43,7 +43,7 @@ export default function LuminariaHero() {
   }, []);
 
   return (
-    <div className="h-[380px] w-full overflow-hidden rounded-3xl border border-[#DDD8CC] md:h-[460px]">
+    <div className="h-[380px] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40 md:h-[460px]">
       <Cena3D
         perfis={dados.perfis}
         alturasMm={dados.alturasMm}

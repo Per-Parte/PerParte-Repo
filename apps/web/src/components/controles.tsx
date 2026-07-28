@@ -8,8 +8,8 @@ export function Secao({
   children: React.ReactNode;
 }) {
   return (
-    <section>
-      <h3 className="mb-2.5 mt-5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6E695E] first:mt-0">
+    <section className="border-b border-white/[0.06] px-5 py-4 last:border-b-0">
+      <h3 className="mb-3 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#A69D8D]">
         {titulo}
       </h3>
       {children}
@@ -27,20 +27,67 @@ export function Chips({
   aoEscolher: (i: number) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {nomes.map((n, i) => (
         <button
           key={n}
           onClick={() => aoEscolher(i)}
-          className={`rounded-[10px] border px-3 py-2 text-[12.5px] transition-colors ${
+          className={`rounded-full px-3.5 py-1.5 text-[12.5px] transition-all ${
             i === selecionado
-              ? "border-[#26241F] bg-[#26241F] text-white"
-              : "border-[#DDD8CC] bg-white text-[#26241F] hover:border-[#6E695E]"
+              ? "bg-[#F2EDE4] font-semibold text-[#161412]"
+              : "border border-white/10 bg-white/[0.04] text-[#CFC7B8] hover:border-white/25 hover:bg-white/[0.08]"
           }`}
         >
           {n}
         </button>
       ))}
+    </div>
+  );
+}
+
+export function SliderCtl({
+  rotulo,
+  valorFmt,
+  valor,
+  min,
+  max,
+  passo,
+  aoMudar,
+  nota,
+}: {
+  rotulo: string;
+  valorFmt: string;
+  valor: number;
+  min: number;
+  max: number;
+  passo: number;
+  aoMudar: (v: number) => void;
+  nota?: string;
+}) {
+  const pct = max > min ? ((valor - min) / (max - min)) * 100 : 0;
+  return (
+    <div className="mb-4 last:mb-0">
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <label className="text-[13px] text-[#E7E0D2]">{rotulo}</label>
+        <span className="text-[12.5px] font-medium tabular-nums text-[#F3B65B]">
+          {valorFmt}
+        </span>
+      </div>
+      <input
+        type="range"
+        className="ctl"
+        style={{ ["--pct" as string]: `${pct}%` }}
+        min={min}
+        max={max}
+        step={passo}
+        value={valor}
+        onChange={(e) => aoMudar(Number(e.target.value))}
+      />
+      {nota && (
+        <div className="mt-1.5 text-[10px] leading-relaxed text-[#7d766a]">
+          {nota}
+        </div>
+      )}
     </div>
   );
 }
@@ -70,7 +117,7 @@ export function PontosDeLuzCtl({
         aoEscolher={(i) => aoMudarPontos(i === 1 ? 2 : 1)}
       />
       {pontosDeLuz === 2 && (
-        <div className="mt-3">
+        <div className="mt-4">
           <SliderCtl
             rotulo="Separação das colunas"
             valorFmt={`${(separacaoMm / 10).toFixed(1).replace(".", ",")} cm`}
@@ -82,47 +129,6 @@ export function PontosDeLuzCtl({
             nota="o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
           />
         </div>
-      )}
-    </div>
-  );
-}
-
-export function SliderCtl({
-  rotulo,
-  valorFmt,
-  valor,
-  min,
-  max,
-  passo,
-  aoMudar,
-  nota,
-}: {
-  rotulo: string;
-  valorFmt: string;
-  valor: number;
-  min: number;
-  max: number;
-  passo: number;
-  aoMudar: (v: number) => void;
-  nota?: string;
-}) {
-  return (
-    <div className="mb-3.5">
-      <div className="mb-1 flex items-baseline justify-between">
-        <label className="text-[13px]">{rotulo}</label>
-        <span className="text-xs tabular-nums text-[#6E695E]">{valorFmt}</span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={passo}
-        value={valor}
-        onChange={(e) => aoMudar(Number(e.target.value))}
-        className="w-full accent-[#26241F]"
-      />
-      {nota && (
-        <div className="mt-1 text-[10px] text-[#6E695E] opacity-80">{nota}</div>
       )}
     </div>
   );

@@ -72,10 +72,10 @@ function Parte({
             color={cor}
             roughness={0.5}
             transparent
-            opacity={luzAcesa ? 0.92 : 0.68}
+            opacity={luzAcesa ? 0.95 : 0.68}
             side={THREE.DoubleSide}
             emissive="#F3B65B"
-            emissiveIntensity={luzAcesa ? 0.55 : 0}
+            emissiveIntensity={luzAcesa ? 0.85 : 0}
             flatShading={facetado}
             depthWrite={false}
           />
@@ -141,18 +141,23 @@ export default function Cena3D({
 
   return (
     <Canvas camera={{ position: [3.4, 2.6, 4.4], fov: 38 }}>
-      <color attach="background" args={[luzAcesa ? "#EAE4D6" : "#ECE8DE"]} />
-      <ambientLight intensity={0.85} />
-      <directionalLight position={[4.5, 7.2, 5.3]} intensity={1.6} />
-      <directionalLight position={[-5.5, 1.5, -3.5]} intensity={0.45} />
+      <color attach="background" args={[luzAcesa ? "#161311" : "#1b1916"]} />
+      <fog attach="fog" args={[luzAcesa ? "#161311" : "#1b1916", 9, 16]} />
+      <ambientLight intensity={luzAcesa ? 0.35 : 0.5} />
+      <directionalLight position={[4.5, 7.2, 5.3]} intensity={1.1} />
+      <directionalLight
+        position={[-5.5, 1.5, -3.5]}
+        intensity={0.35}
+        color="#9BB5D0"
+      />
       {luzAcesa &&
         colunas.map((c, i) => (
           <pointLight
             key={`luz-${i}`}
             position={[c.xTopo / MM, lampadaY, 0]}
             color="#FFC478"
-            intensity={6}
-            distance={7}
+            intensity={9}
+            distance={9}
           />
         ))}
 
@@ -201,7 +206,7 @@ export default function Cena3D({
         />
       ))}
 
-      <ContactShadows opacity={0.32} scale={5} blur={2.6} far={2.5} />
+      <ContactShadows opacity={0.5} scale={6} blur={2.8} far={2.5} color="#000000" />
       <OrbitControls
         target={[0, alvoY, 0]}
         enablePan={false}
