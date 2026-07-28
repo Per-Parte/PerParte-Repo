@@ -92,6 +92,28 @@ export default function Configurador() {
 
   const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
 
+  const [gerandoSTL, setGerandoSTL] = useState<ParteAlvo | null>(null);
+  async function baixarSTL(parte: ParteAlvo) {
+    setGerandoSTL(parte);
+    try {
+      const resp = await fetch("/api/stl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parte, iBase, corpo, difusor, segmentos }),
+      });
+      if (!resp.ok) return;
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `per-parte-${parte}.stl`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setGerandoSTL(null);
+    }
+  }
+
   return (
     <div className="flex h-dvh flex-col bg-[#F2EFE9] text-[#26241F]">
       <header className="flex items-baseline justify-between border-b border-[#DDD8CC] px-7 pb-3.5 pt-4">
@@ -196,6 +218,20 @@ export default function Configurador() {
                 estab={estab}
               />
             )}
+          </div>
+
+          <div className="flex items-center gap-2 border-t border-[#DDD8CC] px-5 py-2 text-[11px] text-[#6E695E]">
+            <span className="mr-1">STL de produção (teste):</span>
+            {(["base", "corpo", "difusor"] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => baixarSTL(p)}
+                disabled={gerandoSTL !== null}
+                className="rounded-md border border-[#DDD8CC] bg-white px-2 py-1 hover:border-[#6E695E] disabled:opacity-50"
+              >
+                {gerandoSTL === p ? "gerando…" : p}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-3.5 border-t border-[#DDD8CC] bg-[#FBFAF7] px-5 py-3.5">
