@@ -16,17 +16,72 @@ export interface Malha {
   indices: Uint32Array;
 }
 
-export function malhaRevolucao(perfil: Ponto2D[], segmentos: number): Malha {
+/**
+ * Textura de revolução: gomos (sulcos verticais esculpidos para dentro) com
+ * torção opcional. Sulcos verticais imprimem limpos (F4/F8); a torção fica
+ * segura porque a profundidade é pequena e a inclinação resultante
+ * (raio·torção/altura) não passa do balanço permitido nos limites do Criar.
+ */
+export interface TexturaRevolucao {
+  /** Número de gomos ao redor (0 = liso). */
+  gomos: number;
+  /** Profundidade do sulco, em mm — só esculpe para dentro da silhueta. */
+  profundidadeMm: number;
+  /** Giro total dos gomos da base ao topo, em graus. */
+  torcaoGraus: number;
+  /** Altura útil da parte, em mm (para a janela e a torção). */
+  alturaMm: number;
+}
+
+/**
+ * Janela vertical da textura: some suavemente perto das extremidades para
+ * nunca tocar encaixes (F5), canaletas ou tampas.
+ */
+function janelaTextura(t: number): number {
+  if (t <= 0.05 || t >= 0.95) return 0;
+  return Math.min(1, (t - 0.05) / 0.08, (0.95 - t) / 0.08);
+}
+
+export function malhaRevolucao(
+  perfil: Ponto2D[],
+  segmentos: number,
+  textura?: TexturaRevolucao
+): Malha {
   const nAneis = perfil.length;
   const nVertices = nAneis * segmentos + 2;
   const posicoes = new Float32Array(nVertices * 3);
 
+  // Gomos pedem malha fina; acabamentos facetados (poucos segmentos) são um
+  // estilo próprio e desligam a textura — regra como ferramenta, sem erro.
+  const comTextura =
+    !!textura &&
+    textura.gomos > 0 &&
+    textura.profundidadeMm > 0 &&
+    textura.alturaMm > 0 &&
+    segmentos >= 32;
+  const torcaoRad = comTextura
+    ? (textura.torcaoGraus * Math.PI) / 180
+    : 0;
+
   for (let j = 0; j < nAneis; j++) {
     for (let i = 0; i < segmentos; i++) {
       const th = (i / segmentos) * Math.PI * 2;
+      let r = perfil[j].x;
+      if (comTextura) {
+        const t = perfil[j].y / textura.alturaMm;
+        const w = janelaTextura(t);
+        if (w > 0) {
+          const fase = torcaoRad * t;
+          r +=
+            textura.profundidadeMm *
+            w *
+            0.5 *
+            (Math.cos(textura.gomos * (th + fase)) - 1);
+        }
+      }
       const o = (j * segmentos + i) * 3;
-      posicoes[o] = perfil[j].x * Math.cos(th);
-      posicoes[o + 1] = perfil[j].x * Math.sin(th);
+      posicoes[o] = r * Math.cos(th);
+      posicoes[o + 1] = r * Math.sin(th);
       posicoes[o + 2] = perfil[j].y;
     }
   }

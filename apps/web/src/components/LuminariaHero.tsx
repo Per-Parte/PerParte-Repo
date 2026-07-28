@@ -13,11 +13,11 @@ import {
 } from "@per-parte/nucleo";
 import Cena3D from "./Cena3D";
 
-/** Luminária de vitrine da landing: Prato + Ondas + Globo, terracota. */
+/** Luminária de vitrine da landing: Prato + Espiral + Globo, terracota. */
 export default function LuminariaHero() {
   const dados = useMemo(() => {
     const base = BASES[1];
-    const corpo = CORPOS[3];
+    const corpo = CORPOS.find((c) => c.nome === "Espiral") ?? CORPOS[0];
     const difusor = DIFUSORES[0];
     const est = estabilidade(base, corpo, difusor);
     return {
@@ -30,6 +30,14 @@ export default function LuminariaHero() {
         base: base.alturaMm,
         corpo: corpo.alturaMm,
         difusor: difusor.alturaMm,
+      },
+      texturas: {
+        corpo: {
+          gomos: corpo.gomos,
+          profundidadeMm: corpo.profundidadeGomosMm,
+          torcaoGraus: corpo.torcaoGraus,
+          alturaMm: corpo.alturaMm,
+        },
       },
     };
   }, []);
@@ -46,6 +54,7 @@ export default function LuminariaHero() {
         }}
         segmentos={40}
         luzAcesa
+        texturas={dados.texturas}
       />
     </div>
   );

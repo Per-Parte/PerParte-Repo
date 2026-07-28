@@ -13,6 +13,7 @@ import {
   perfilBase,
   perfilCorpo,
   perfilDifusor,
+  type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
 } from "@per-parte/nucleo";
@@ -26,6 +27,7 @@ export type AlvoCor = "all" | ParteAlvo;
 export type CoresPartes = Record<ParteAlvo, number>;
 
 export interface EstadoCriar {
+  base: ParametrosBase;
   corpo: ParametrosCorpo;
   difusor: ParametrosDifusor;
 }
@@ -50,6 +52,7 @@ export default function Configurador() {
   const [luzAcesa, setLuzAcesa] = useState(true);
   const [remixDe, setRemixDe] = useState("");
   const [criar, setCriar] = useState<EstadoCriar>({
+    base: { ...BASES[0] },
     corpo: { ...CORPOS[0] },
     difusor: { ...DIFUSORES[0] },
   });
@@ -103,6 +106,7 @@ export default function Configurador() {
   function trocarModo(m: Modo) {
     if (m === "criar" && modo !== "criar") {
       setCriar({
+        base: { ...BASES[iBase] },
         corpo: { ...CORPOS[iCorpo] },
         difusor: { ...DIFUSORES[iDifusor] },
       });
@@ -116,9 +120,27 @@ export default function Configurador() {
     else setCores({ ...cores, [alvoCor]: i });
   }
 
-  const base = BASES[iBase];
+  const base = modo === "montar" ? BASES[iBase] : criar.base;
   const corpo = modo === "montar" ? CORPOS[iCorpo] : criar.corpo;
   const difusor = modo === "montar" ? DIFUSORES[iDifusor] : criar.difusor;
+
+  const texturas = useMemo(
+    () => ({
+      corpo: {
+        gomos: corpo.gomos,
+        profundidadeMm: corpo.profundidadeGomosMm,
+        torcaoGraus: corpo.torcaoGraus,
+        alturaMm: corpo.alturaMm,
+      },
+      difusor: {
+        gomos: difusor.gomos,
+        profundidadeMm: difusor.profundidadeGomosMm,
+        torcaoGraus: 0,
+        alturaMm: difusor.alturaMm,
+      },
+    }),
+    [corpo, difusor]
+  );
 
   const estab = useMemo(
     () => estabilidade(base, corpo, difusor),
@@ -146,7 +168,7 @@ export default function Configurador() {
       const resp = await fetch("/api/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parte, iBase, corpo, difusor, segmentos }),
+        body: JSON.stringify({ parte, base, corpo, difusor, segmentos }),
       });
       if (!resp.ok) return;
       const blob = await resp.blob();
@@ -211,6 +233,7 @@ export default function Configurador() {
             }}
             segmentos={segmentos}
             luzAcesa={luzAcesa}
+            texturas={texturas}
           />
           <div className="absolute left-6 top-4 rounded-lg border border-[#DDD8CC] bg-[#FBFAF7]/80 px-2.5 py-1.5 text-[11.5px] text-[#6E695E]">
             encaixes fixos{" "}

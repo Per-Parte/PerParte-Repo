@@ -39,12 +39,22 @@ export interface ParametrosCorpo {
   ondulacao: number;
   /** Profundidade da onda, em mm — limitada por F4 (balanço). */
   amplitudeOndaMm: number;
+  /** Gomos verticais esculpidos ao redor (0 = liso). */
+  gomos: number;
+  /** Profundidade dos gomos, em mm — só esculpem para dentro. */
+  profundidadeGomosMm: number;
+  /** Giro dos gomos da base ao topo, em graus (espiral). */
+  torcaoGraus: number;
 }
 
 export interface ParametrosDifusor {
   forma: FormaDifusor;
   alturaMm: number;
   raioMm: number;
+  /** Gomos verticais (plissê) ao redor (0 = liso). */
+  gomos: number;
+  /** Profundidade dos gomos, em mm. */
+  profundidadeGomosMm: number;
 }
 
 export interface AnelEncaixe {

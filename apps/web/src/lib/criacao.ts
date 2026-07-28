@@ -12,8 +12,10 @@ import {
   DIFUSORES,
   FACETAS,
   PALETA,
+  grampearBase,
   grampearCorpo,
   grampearDifusor,
+  type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
 } from "@per-parte/nucleo";
@@ -27,7 +29,11 @@ export interface CriacaoV1 {
   cores: { base: number; corpo: number; difusor: number };
   iFaceta: number;
   luzAcesa: boolean;
-  criar: { corpo: ParametrosCorpo; difusor: ParametrosDifusor };
+  criar: {
+    base: ParametrosBase;
+    corpo: ParametrosCorpo;
+    difusor: ParametrosDifusor;
+  };
   remixDe: string;
 }
 
@@ -61,6 +67,7 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
       iFaceta: indice(bruto.iFaceta, FACETAS.length),
       luzAcesa: bruto.luzAcesa !== false,
       criar: {
+        base: grampearBase(bruto.criar?.base ?? {}),
         corpo: grampearCorpo(bruto.criar?.corpo ?? {}),
         difusor: grampearDifusor(bruto.criar?.difusor ?? {}),
       },

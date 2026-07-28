@@ -24,6 +24,7 @@
 - [x] **Site publicado**: [per-parte-web.vercel.app](https://per-parte-web.vercel.app) — cada `git push` atualiza sozinho ✓ 28/07/2026
 - [ ] Contas + salvar criações (Supabase) — links curtos, galeria; embrião do marketplace
 - [x] **Landing page** em / com herói 3D girando; configurador movido para /configurador ✓ 28/07/2026
+- [x] **Personalização 2.0**: base esculpível no Criar, gomos + torção no corpo, plissê no difusor, 12 cores, partes novas (Plissado, Espiral, Plissê); preview passa a usar a malha do STL ✓ 28/07/2026
 - [ ] Vitrine do marketplace (galeria de criações e criadores) — depende de banco
 - [ ] Mais adiante: preço por slicer real, pagamentos com split de royalty
 

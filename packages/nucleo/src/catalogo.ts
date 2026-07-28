@@ -26,6 +26,10 @@ export const PALETA: Cor[] = [
   { nome: "Azul", hex: "#5D7B93" },
   { nome: "Rosa", hex: "#D4A29C" },
   { nome: "Grafite", hex: "#4A4842" },
+  { nome: "Cacau", hex: "#6E4B33" },
+  { nome: "Céu", hex: "#A9BCC9" },
+  { nome: "Vinho", hex: "#7E3B45" },
+  { nome: "Oliva", hex: "#8A8A5C" },
 ];
 
 export interface BaseOficial extends ParametrosBase {
@@ -43,23 +47,30 @@ export interface CorpoOficial extends ParametrosCorpo {
   nome: string;
 }
 
+const CORPO_LISO = { gomos: 0, profundidadeGomosMm: 0, torcaoGraus: 0 };
+
 export const CORPOS: CorpoOficial[] = [
-  { nome: "Coluna", alturaMm: 160, volumeBojoMm: 3, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0 },
-  { nome: "Bojo", alturaMm: 150, volumeBojoMm: 28, posicaoBojo: 0.15, ondulacao: 0, amplitudeOndaMm: 0 },
-  { nome: "Cintura", alturaMm: 170, volumeBojoMm: -10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0 },
-  { nome: "Ondas", alturaMm: 160, volumeBojoMm: 9, posicaoBojo: 0, ondulacao: 8, amplitudeOndaMm: 2.5 },
-  { nome: "Torre", alturaMm: 210, volumeBojoMm: 6, posicaoBojo: -0.5, ondulacao: 0, amplitudeOndaMm: 0 },
+  { nome: "Coluna", alturaMm: 160, volumeBojoMm: 3, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
+  { nome: "Bojo", alturaMm: 150, volumeBojoMm: 28, posicaoBojo: 0.15, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
+  { nome: "Cintura", alturaMm: 170, volumeBojoMm: -10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
+  { nome: "Ondas", alturaMm: 160, volumeBojoMm: 9, posicaoBojo: 0, ondulacao: 8, amplitudeOndaMm: 2.5, ...CORPO_LISO },
+  { nome: "Torre", alturaMm: 210, volumeBojoMm: 6, posicaoBojo: -0.5, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
+  { nome: "Plissado", alturaMm: 170, volumeBojoMm: 14, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 18, profundidadeGomosMm: 2.5, torcaoGraus: 0 },
+  { nome: "Espiral", alturaMm: 180, volumeBojoMm: 10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 12, profundidadeGomosMm: 3, torcaoGraus: 60 },
 ];
 
 export interface DifusorOficial extends ParametrosDifusor {
   nome: string;
 }
 
+const DIFUSOR_LISO = { gomos: 0, profundidadeGomosMm: 0 };
+
 export const DIFUSORES: DifusorOficial[] = [
-  { nome: "Globo", forma: "globo", alturaMm: 100, raioMm: 65 },
-  { nome: "Sino", forma: "sino", alturaMm: 90, raioMm: 75 },
-  { nome: "Cone", forma: "cone", alturaMm: 85, raioMm: 70 },
-  { nome: "Lanterna", forma: "lanterna", alturaMm: 110, raioMm: 55 },
+  { nome: "Globo", forma: "globo", alturaMm: 100, raioMm: 65, ...DIFUSOR_LISO },
+  { nome: "Sino", forma: "sino", alturaMm: 90, raioMm: 75, ...DIFUSOR_LISO },
+  { nome: "Cone", forma: "cone", alturaMm: 85, raioMm: 70, ...DIFUSOR_LISO },
+  { nome: "Lanterna", forma: "lanterna", alturaMm: 110, raioMm: 55, ...DIFUSOR_LISO },
+  { nome: "Plissê", forma: "sino", alturaMm: 95, raioMm: 72, gomos: 20, profundidadeGomosMm: 2 },
 ];
 
 export interface Faceta {
@@ -77,20 +88,31 @@ export const FACETAS: Faceta[] = [
 
 /**
  * Limites dos controles do modo Criar (mm).
- * Altura do corpo: teto de 240 mm do protótipo (F1 permitiria 300 — decidir
- * ao validar as impressoras). Amplitude da onda: teto de 6 mm para o balanço
- * não passar de F4. Raio do difusor: exibido como Ø na UI.
+ * - Altura do corpo: teto de 240 mm do protótipo (F1 permitiria 300).
+ * - Amplitude da onda: teto de 6 mm para o balanço não passar de F4.
+ * - Gomos: profundidade só esculpe para dentro (nunca aumenta a silhueta) e
+ *   a torção fica em ±90° — com sulcos ≤ 4 mm a inclinação resultante fica
+ *   folgada dentro de F4 nas alturas permitidas. ⚑ validar impresso.
  */
 export const LIMITES_CRIAR = {
+  base: {
+    alturaMm: { min: 20, max: 60, passo: 2 },
+    raioMm: { min: 60, max: 110, passo: 2.5 },
+  },
   corpo: {
     alturaMm: { min: 100, max: 240, passo: 5 },
     volumeBojoMm: { min: -12, max: 35, passo: 1 },
     posicaoBojo: { min: -1, max: 1, passo: 0.05 },
     ondulacao: { min: 0, max: 12, passo: 1 },
     amplitudeOndaMm: { min: 0, max: 6, passo: 0.5 },
+    gomos: { min: 0, max: 24, passo: 2 },
+    profundidadeGomosMm: { min: 0, max: 4, passo: 0.5 },
+    torcaoGraus: { min: -90, max: 90, passo: 5 },
   },
   difusor: {
     alturaMm: { min: 60, max: 130, passo: 5 },
     raioMm: { min: 40, max: 90, passo: 2.5 },
+    gomos: { min: 0, max: 24, passo: 2 },
+    profundidadeGomosMm: { min: 0, max: 3, passo: 0.5 },
   },
 } as const;

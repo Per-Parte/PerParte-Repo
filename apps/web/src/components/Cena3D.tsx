@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import type { Ponto2D } from "@per-parte/nucleo";
+import {
+  malhaRevolucao,
+  type Ponto2D,
+  type TexturaRevolucao,
+} from "@per-parte/nucleo";
 
 /** Escala da cena: 100 mm = 1 unidade 3D. */
 const MM = 100;
@@ -14,27 +18,47 @@ interface ParteProps {
   yMm: number;
   cor: string;
   segmentos: number;
+  textura?: TexturaRevolucao;
   difusor?: boolean;
   luzAcesa?: boolean;
 }
 
+/**
+ * Uma parte da luminária. A geometria vem da MESMA malha que gera o STL de
+ * produção (núcleo) — textura que você vê é a textura que imprime.
+ */
 function Parte({
   perfil,
   yMm,
   cor,
   segmentos,
+  textura,
   difusor = false,
   luzAcesa = false,
 }: ParteProps) {
-  const pontos = useMemo(
-    () => perfil.map((p) => new THREE.Vector2(p.x / MM, p.y / MM)),
-    [perfil]
-  );
+  const geometria = useMemo(() => {
+    const comGomos = !!textura && textura.gomos > 0 && segmentos >= 32;
+    const seg = comGomos ? 96 : segmentos;
+    const m = malhaRevolucao(perfil, seg, textura);
+    const pos = new Float32Array(m.posicoes.length);
+    for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+    g.computeVertexNormals();
+    return g;
+  }, [perfil, segmentos, textura]);
+
+  useEffect(() => () => geometria.dispose(), [geometria]);
+
   const facetado = segmentos <= 16;
 
   return (
-    <mesh position={[0, yMm / MM, 0]}>
-      <latheGeometry args={[pontos, segmentos]} />
+    <mesh
+      geometry={geometria}
+      position={[0, yMm / MM, 0]}
+      rotation={[-Math.PI / 2, 0, 0]}
+    >
       {difusor ? (
         <meshStandardMaterial
           key={`dif-${facetado}-${luzAcesa}`}
@@ -66,6 +90,7 @@ export interface Cena3DProps {
   coresHex: { base: string; corpo: string; difusor: string };
   segmentos: number;
   luzAcesa: boolean;
+  texturas?: { corpo?: TexturaRevolucao; difusor?: TexturaRevolucao };
 }
 
 export default function Cena3D({
@@ -74,6 +99,7 @@ export default function Cena3D({
   coresHex,
   segmentos,
   luzAcesa,
+  texturas,
 }: Cena3DProps) {
   const totalMm = alturasMm.base + alturasMm.corpo + alturasMm.difusor;
   const alvoY = (totalMm * 0.52) / MM;
@@ -106,12 +132,14 @@ export default function Cena3D({
         yMm={alturasMm.base}
         cor={coresHex.corpo}
         segmentos={segmentos}
+        textura={texturas?.corpo}
       />
       <Parte
         perfil={perfis.difusor}
         yMm={alturasMm.base + alturasMm.corpo}
         cor={coresHex.difusor}
         segmentos={segmentos}
+        textura={texturas?.difusor}
         difusor
         luzAcesa={luzAcesa}
       />

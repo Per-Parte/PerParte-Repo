@@ -8,7 +8,9 @@
 
 import { LIMITES_CRIAR } from "./catalogo";
 import type {
+  CurvaBase,
   FormaDifusor,
+  ParametrosBase,
   ParametrosCorpo,
   ParametrosDifusor,
 } from "./geometria";
@@ -27,6 +29,19 @@ function grampear(v: unknown, faixa: Faixa, padrao: number): number {
   return Math.min(faixa.max, Math.max(faixa.min, numero(v, padrao)));
 }
 
+const CURVAS: CurvaBase[] = ["reta", "cone", "concava", "degrau"];
+
+export function grampearBase(p: Partial<ParametrosBase>): ParametrosBase {
+  const L = LIMITES_CRIAR.base;
+  return {
+    alturaMm: grampear(p.alturaMm, L.alturaMm, 26),
+    raioMm: grampear(p.raioMm, L.raioMm, 82),
+    curva: CURVAS.includes(p.curva as CurvaBase)
+      ? (p.curva as CurvaBase)
+      : "reta",
+  };
+}
+
 export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
   const L = LIMITES_CRIAR.corpo;
   return {
@@ -35,6 +50,13 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
     posicaoBojo: grampear(p.posicaoBojo, L.posicaoBojo, 0),
     ondulacao: Math.round(grampear(p.ondulacao, L.ondulacao, 0)),
     amplitudeOndaMm: grampear(p.amplitudeOndaMm, L.amplitudeOndaMm, 0),
+    gomos: Math.round(grampear(p.gomos, L.gomos, 0)),
+    profundidadeGomosMm: grampear(
+      p.profundidadeGomosMm,
+      L.profundidadeGomosMm,
+      0
+    ),
+    torcaoGraus: grampear(p.torcaoGraus, L.torcaoGraus, 0),
   };
 }
 
@@ -50,6 +72,12 @@ export function grampearDifusor(
       : "globo",
     alturaMm: grampear(p.alturaMm, L.alturaMm, 100),
     raioMm: grampear(p.raioMm, L.raioMm, 65),
+    gomos: Math.round(grampear(p.gomos, L.gomos, 0)),
+    profundidadeGomosMm: grampear(
+      p.profundidadeGomosMm,
+      L.profundidadeGomosMm,
+      0
+    ),
   };
 }
 
