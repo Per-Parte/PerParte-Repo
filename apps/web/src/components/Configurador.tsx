@@ -357,7 +357,7 @@ export default function Configurador() {
         <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex-1">
-              <div className="text-[22px] font-bold leading-none tabular-nums">
+              <div className="font-serif text-[25px] font-medium leading-none tabular-nums">
                 R$ {precoBRL.toLocaleString("pt-BR")}
               </div>
               <div className="mt-1 text-[10px] text-[#7d766a]">
@@ -368,13 +368,13 @@ export default function Configurador() {
               onClick={() => setLuzAcesa(!luzAcesa)}
               className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] transition-all ${
                 luzAcesa
-                  ? "bg-[#F3B65B] font-semibold text-[#1b1206]"
+                  ? "bg-[#D3AC6C] font-semibold text-[#1b1206]"
                   : "border border-white/15 bg-white/[0.05] text-[#CFC7B8]"
               }`}
             >
               {luzAcesa ? "luz acesa" : "luz apagada"}
             </button>
-            <button className="rounded-full bg-[#D9772F] px-5 py-2.5 text-[13px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]">
+            <button className="rounded-full bg-[#F2EDE4] px-5 py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white">
               Encomendar
             </button>
           </div>

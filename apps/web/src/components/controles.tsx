@@ -69,7 +69,7 @@ export function SliderCtl({
     <div className="mb-4 last:mb-0">
       <div className="mb-1.5 flex items-baseline justify-between">
         <label className="text-[13px] text-[#E7E0D2]">{rotulo}</label>
-        <span className="text-[12.5px] font-medium tabular-nums text-[#F3B65B]">
+        <span className="text-[12.5px] font-medium tabular-nums text-[#D3AC6C]">
           {valorFmt}
         </span>
       </div>

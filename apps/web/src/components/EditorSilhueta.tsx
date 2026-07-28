@@ -86,7 +86,7 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
             cy={yPx(t)}
             r={6}
             fill={arrastando === i ? "#D9772F" : "#1E1B18"}
-            stroke="#F3B65B"
+            stroke="#D3AC6C"
             strokeWidth={1.5}
             style={{ cursor: "ew-resize" }}
             onPointerDown={(e) => {

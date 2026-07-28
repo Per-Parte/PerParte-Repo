@@ -38,10 +38,10 @@ export default async function Home({
         {/* Herói */}
         <section className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
           <div>
-            <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
+            <h1 className="font-serif text-5xl font-medium leading-[1.08] tracking-tight md:text-6xl">
               Monte por partes.
               <br />
-              Crie cada parte.
+              <em className="text-[#D3AC6C]">Crie</em> cada parte.
             </h1>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#A69D8D]">
               Luminárias de mesa impressas em 3D, fabricadas sob demanda no
@@ -51,13 +51,13 @@ export default async function Home({
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
                 href="/configurador"
-                className="rounded-full bg-[#D9772F] px-6 py-3 text-[14px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]"
+                className="rounded-full bg-[#F2EDE4] px-7 py-3 text-[14px] font-semibold text-[#161412] transition-colors hover:bg-white"
               >
                 Criar minha luminária
               </Link>
               <a
                 href="#como-funciona"
-                className="rounded-full border border-white/15 bg-white/[0.04] px-6 py-3 text-[14px] font-semibold text-[#E7E0D2] transition-colors hover:border-white/30"
+                className="rounded-full border border-white/20 px-7 py-3 text-[14px] text-[#E7E0D2] transition-colors hover:border-white/40"
               >
                 Como funciona
               </a>
@@ -106,7 +106,7 @@ export default async function Home({
         <section className="border-t border-white/[0.08] py-14">
           <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
             <div>
-              <h2 className="text-2xl font-semibold">
+              <h2 className="font-serif text-3xl font-medium">
                 Interfaces fixas, partes livres.
               </h2>
               <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#A69D8D]">
@@ -117,11 +117,11 @@ export default async function Home({
                 daqui a dez anos.
               </p>
             </div>
-            <div className="rounded-3xl border border-[#F3B65B]/25 bg-[#F3B65B]/[0.06] px-7 py-5 text-center">
+            <div className="rounded-3xl border border-[#D3AC6C]/25 bg-[#D3AC6C]/[0.05] px-7 py-5 text-center">
               <div className="text-[10.5px] uppercase tracking-[0.16em] text-[#A69D8D]">
                 encaixes fixos
               </div>
-              <div className="mt-1 text-2xl font-bold tabular-nums text-[#F3B65B]">
+              <div className="mt-1 font-serif text-3xl font-medium tabular-nums text-[#D3AC6C]">
                 Ø {oCm(ENCAIXES.baseCorpo.raioMm)} · Ø{" "}
                 {oCm(ENCAIXES.corpoDifusor.raioMm)} cm
               </div>
@@ -131,8 +131,8 @@ export default async function Home({
 
         {/* Criadores */}
         <section className="border-t border-white/[0.08] py-14">
-          <div className="rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#D9772F]/[0.14] to-transparent px-8 py-10 md:px-12">
-            <h2 className="text-2xl font-semibold">
+          <div className="rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#C08552]/[0.12] to-transparent px-8 py-10 md:px-12">
+            <h2 className="font-serif text-3xl font-medium">
               Para quem cria: royalty por parte.
             </h2>
             <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[#A69D8D]">
@@ -148,12 +148,12 @@ export default async function Home({
 
         {/* CTA final */}
         <section className="py-16 text-center">
-          <h2 className="text-3xl font-semibold">
+          <h2 className="font-serif text-4xl font-medium">
             Sua luminária começa agora.
           </h2>
           <Link
             href="/configurador"
-            className="mt-6 inline-block rounded-full bg-[#D9772F] px-8 py-3.5 text-[15px] font-semibold text-[#1b0f05] transition-colors hover:bg-[#E8873E]"
+            className="mt-7 inline-block rounded-full bg-[#F2EDE4] px-9 py-3.5 text-[15px] font-semibold text-[#161412] transition-colors hover:bg-white"
           >
             Abrir o configurador
           </Link>

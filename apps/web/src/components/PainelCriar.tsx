@@ -183,7 +183,7 @@ export default function PainelCriar({
                 },
               })
             }
-            className="w-full rounded-full border border-[#F3B65B]/50 bg-[#F3B65B]/10 py-2.5 text-[12.5px] font-semibold text-[#F3B65B] transition-colors hover:bg-[#F3B65B]/20"
+            className="w-full rounded-full border border-[#D3AC6C]/50 bg-[#D3AC6C]/10 py-2.5 text-[12.5px] font-semibold text-[#D3AC6C] transition-colors hover:bg-[#D3AC6C]/20"
           >
             Esculpir a silhueta — arrastar as arestas
           </button>
@@ -399,7 +399,7 @@ export default function PainelCriar({
             value={nomePeca}
             onChange={(e) => setNomePeca(e.target.value)}
             placeholder="dê um nome à sua peça (ex.: Duna)"
-            className="mb-2 w-full rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-[13px] text-[#F2EDE4] placeholder-[#7d766a] outline-none transition-colors focus:border-[#F3B65B]/60"
+            className="mb-2 w-full rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-[13px] text-[#F2EDE4] placeholder-[#7d766a] outline-none transition-colors focus:border-[#D3AC6C]/60"
           />
           <button
             onClick={() => setPublicada(nomePeca.trim() || "Sem nome")}
@@ -408,8 +408,8 @@ export default function PainelCriar({
             Publicar minha parte
           </button>
           {publicada && (
-            <div className="mt-2.5 rounded-2xl border border-[#F3B65B]/30 bg-[#F3B65B]/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-[#CFC7B8]">
-              <b className="text-[#F3B65B]">“{publicada}”</b> entrou na fila de
+            <div className="mt-2.5 rounded-2xl border border-[#D3AC6C]/30 bg-[#D3AC6C]/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-[#CFC7B8]">
+              <b className="text-[#D3AC6C]">“{publicada}”</b> entrou na fila de
               curadoria. Quando aprovada, sua parte fica disponível para
               qualquer pessoa usar nas montagens dela — e você recebe{" "}
               <b className="text-[#F2EDE4]">royalty por parte</b> a cada
