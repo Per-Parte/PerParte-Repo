@@ -36,6 +36,8 @@ interface Props {
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
   setSeparacaoMm: (v: number) => void;
+  /** Quando presente, renderiza só a seção pedida (modo órbita). */
+  apenasSecao?: string;
 }
 
 export default function PainelCriar({
@@ -49,7 +51,9 @@ export default function PainelCriar({
   separacaoMm,
   setPontosDeLuz,
   setSeparacaoMm,
+  apenasSecao,
 }: Props) {
+  const vis = (id: string) => !apenasSecao || apenasSecao === id;
   const [nomePeca, setNomePeca] = useState("");
   const [publicada, setPublicada] = useState<string | null>(null);
 
@@ -76,12 +80,15 @@ export default function PainelCriar({
 
   return (
     <div>
+      {!apenasSecao && (
       <div className="mx-5 mt-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-3.5 py-2.5 text-[11.5px] text-[#A69D8D]">
         Você está remixando{" "}
         <b className="text-[#F2EDE4]">{remixDe}</b>. Os encaixes ficam travados
         — o miolo é todo seu.
       </div>
+      )}
 
+      {vis("base") && (
       <Secao titulo="Base">
         <Chips
           nomes={CURVAS.map((c) => c.nome)}
@@ -115,7 +122,9 @@ export default function PainelCriar({
           />
         </div>
       </Secao>
+      )}
 
+      {vis("corpo") && (
       <Secao titulo="Corpo">
         <SliderCtl
           rotulo="Altura"
@@ -170,7 +179,9 @@ export default function PainelCriar({
         </>
         )}
       </Secao>
+      )}
 
+      {vis("silhueta") && (
       <Secao titulo="Silhueta livre (modo hard)">
         {!modoLivre ? (
           <button
@@ -212,7 +223,9 @@ export default function PainelCriar({
           </div>
         )}
       </Secao>
+      )}
 
+      {vis("curva") && (
       <Secao titulo="Curvar o corpo (S)">
         <SliderCtl
           rotulo="Deslocamento do topo"
@@ -234,7 +247,9 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("posicaoDobra", v)}
         />
       </Secao>
+      )}
 
+      {vis("textura") && (
       <Secao titulo="Textura do corpo">
         <SliderCtl
           rotulo="Gomos"
@@ -277,7 +292,9 @@ export default function PainelCriar({
           </div>
         )}
       </Secao>
+      )}
 
+      {vis("difusor") && (
       <Secao titulo="Difusor">
         <Chips
           nomes={DIFUSORES.map((d) => d.nome)}
@@ -324,7 +341,9 @@ export default function PainelCriar({
           />
         </div>
       </Secao>
+      )}
 
+      {vis("luzes") && (
       <Secao titulo="Pontos de luz">
         <PontosDeLuzCtl
           pontosDeLuz={pontosDeLuz}
@@ -336,7 +355,9 @@ export default function PainelCriar({
           aoMudarSep={setSeparacaoMm}
         />
       </Secao>
+      )}
 
+      {vis("regras") && (
       <Secao titulo="Regras embutidas">
         <div
           className={`rounded-2xl border px-4 py-3 ${
@@ -391,7 +412,9 @@ export default function PainelCriar({
           </div>
         </div>
       </Secao>
+      )}
 
+      {vis("publicar") && (
       <Secao titulo="Publicar no catálogo">
         <div>
           <input
@@ -418,6 +441,7 @@ export default function PainelCriar({
           )}
         </div>
       </Secao>
+      )}
     </div>
   );
 }

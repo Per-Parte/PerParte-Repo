@@ -26,6 +26,8 @@ interface Props {
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
   setSeparacaoMm: (v: number) => void;
+  /** Quando presente, renderiza só a seção pedida (modo órbita). */
+  apenasSecao?: string;
 }
 
 export default function PainelMontar({
@@ -43,11 +45,14 @@ export default function PainelMontar({
   separacaoMm,
   setPontosDeLuz,
   setSeparacaoMm,
+  apenasSecao,
 }: Props) {
   const corSelecionada = alvoCor === "all" ? cores.corpo : cores[alvoCor];
+  const vis = (id: string) => !apenasSecao || apenasSecao === id;
 
   return (
     <div>
+      {vis("base") && (
       <Secao titulo="Base">
         <Chips
           nomes={BASES.map((b) => b.nome)}
@@ -55,6 +60,8 @@ export default function PainelMontar({
           aoEscolher={escolherBase}
         />
       </Secao>
+      )}
+      {vis("corpo") && (
       <Secao titulo="Corpo">
         <Chips
           nomes={CORPOS.map((c) => c.nome)}
@@ -62,6 +69,8 @@ export default function PainelMontar({
           aoEscolher={escolherCorpo}
         />
       </Secao>
+      )}
+      {vis("difusor") && (
       <Secao titulo="Difusor">
         <Chips
           nomes={DIFUSORES.map((d) => d.nome)}
@@ -69,7 +78,9 @@ export default function PainelMontar({
           aoEscolher={escolherDifusor}
         />
       </Secao>
+      )}
 
+      {vis("luzes") && (
       <Secao titulo="Pontos de luz">
         <PontosDeLuzCtl
           pontosDeLuz={pontosDeLuz}
@@ -81,7 +92,9 @@ export default function PainelMontar({
           aoMudarSep={setSeparacaoMm}
         />
       </Secao>
+      )}
 
+      {vis("cor") && (
       <Secao titulo="Cor — aplicar em">
         <div className="mb-3 flex gap-1.5">
           {ALVOS.map((a) => (
@@ -114,7 +127,9 @@ export default function PainelMontar({
           ))}
         </div>
       </Secao>
+      )}
 
+      {vis("regras") && (
       <Secao titulo="Regras embutidas">
         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
           <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
@@ -131,6 +146,7 @@ export default function PainelMontar({
           </div>
         </div>
       </Secao>
+      )}
     </div>
   );
 }

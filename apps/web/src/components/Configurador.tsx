@@ -37,6 +37,27 @@ type Modo = "montar" | "criar";
 const oDiametroCm = (raioMm: number) =>
   ((raioMm * 2) / 10).toFixed(1).replace(".", ",");
 
+/** Seções que orbitam a luminária no desktop. */
+const SECOES_MONTAR = [
+  { id: "base", rotulo: "Base" },
+  { id: "corpo", rotulo: "Corpo" },
+  { id: "difusor", rotulo: "Difusor" },
+  { id: "luzes", rotulo: "Luzes" },
+  { id: "cor", rotulo: "Cores" },
+  { id: "regras", rotulo: "Regras" },
+];
+const SECOES_CRIAR = [
+  { id: "base", rotulo: "Base" },
+  { id: "corpo", rotulo: "Corpo" },
+  { id: "silhueta", rotulo: "Silhueta" },
+  { id: "curva", rotulo: "Curva S" },
+  { id: "textura", rotulo: "Textura" },
+  { id: "difusor", rotulo: "Difusor" },
+  { id: "luzes", rotulo: "Luzes" },
+  { id: "regras", rotulo: "Regras" },
+  { id: "publicar", rotulo: "Publicar" },
+];
+
 export default function Configurador() {
   const [modo, setModo] = useState<Modo>("montar");
   const [iBase, setIBase] = useState(0);
@@ -53,6 +74,7 @@ export default function Configurador() {
   const [pontosDeLuz, setPontosDeLuz] = useState<1 | 2>(1);
   const [separacaoMm, setSeparacaoMm] = useState(100);
   const [remixDe, setRemixDe] = useState("");
+  const [secaoAtiva, setSecaoAtiva] = useState("corpo");
   const [criar, setCriar] = useState<EstadoCriar>({
     base: { ...BASES[0] },
     corpo: { ...CORPOS[0] },
@@ -130,6 +152,7 @@ export default function Configurador() {
       });
       setRemixDe(`${CORPOS[iCorpo].nome} + ${DIFUSORES[iDifusor].nome}`);
     }
+    setSecaoAtiva("corpo");
     setModo(m);
   }
 
@@ -225,8 +248,8 @@ export default function Configurador() {
 
   return (
     <div className="relative h-dvh overflow-hidden bg-[#121110] text-[#F2EDE4]">
-      {/* Cena em tela cheia — o palco (deslocada para a luminária viver à esquerda da lua) */}
-      <div className="absolute inset-0 md:-translate-x-[19vw]">
+      {/* Cena em tela cheia — o palco, com a luminária no centro da órbita */}
+      <div className="absolute inset-0">
         <Cena3D
           perfis={perfis}
           alturasMm={{
@@ -287,9 +310,9 @@ export default function Configurador() {
         </div>
       </div>
 
-      {/* Painel meia-lua */}
-      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/50 md:inset-x-auto md:inset-y-0 md:right-0 md:w-[max(430px,40vw)] md:rounded-l-[200px] md:rounded-r-none md:border-y-0 md:border-r-0 xl:w-[max(500px,38vw)]">
-        <div className="px-4 pb-1 pt-4 md:pt-7">
+      {/* Mobile: cartela deslizante */}
+      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/50 md:hidden">
+        <div className="px-4 pb-1 pt-4">
           <div className="mx-auto flex w-full max-w-[280px] rounded-full bg-white/[0.06] p-1">
             {(
               [
@@ -312,7 +335,7 @@ export default function Configurador() {
           </div>
         </div>
 
-        <div className="rolagem min-h-0 flex-1 overflow-y-auto md:px-6 md:pl-10">
+        <div className="rolagem min-h-0 flex-1 overflow-y-auto">
           {modo === "montar" ? (
             <PainelMontar
               iBase={iBase}
@@ -346,7 +369,7 @@ export default function Configurador() {
           )}
         </div>
 
-        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5 md:pb-6 md:pl-16 md:pr-10">
+        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex-1">
               <div className="font-serif text-[25px] font-medium leading-none tabular-nums">
@@ -405,6 +428,154 @@ export default function Configurador() {
           </div>
         </div>
       </aside>
+
+      {/* Desktop: órbita em volta da luminária */}
+      <div className="hidden md:block">
+        {/* Abas */}
+        <div className="vidro absolute left-1/2 top-5 z-20 flex w-[280px] -translate-x-1/2 rounded-full p-1">
+          {(
+            [
+              ["montar", "Montar"],
+              ["criar", "Criar"],
+            ] as const
+          ).map(([id, titulo]) => (
+            <button
+              key={id}
+              onClick={() => trocarModo(id)}
+              className={`flex-1 rounded-full py-2 text-[13px] transition-all ${
+                modo === id
+                  ? "bg-[#F2EDE4] font-semibold text-[#161412]"
+                  : "text-[#A69D8D] hover:text-[#E7E0D2]"
+              }`}
+            >
+              {titulo}
+            </button>
+          ))}
+        </div>
+
+        {/* Arco de seções */}
+        {(modo === "montar" ? SECOES_MONTAR : SECOES_CRIAR).map((s, i, arr) => {
+          const n = arr.length;
+          const max = n <= 6 ? 52 : 76;
+          const phi = ((-max + (i * 2 * max) / (n - 1)) * Math.PI) / 180;
+          const cos = Math.cos(phi).toFixed(4);
+          const sin = Math.sin(phi).toFixed(4);
+          return (
+            <button
+              key={s.id}
+              onClick={() => setSecaoAtiva(s.id)}
+              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full px-3.5 py-2 text-[12px] transition-all ${
+                secaoAtiva === s.id
+                  ? "bg-[#F2EDE4] font-semibold text-[#161412] shadow-lg shadow-black/40"
+                  : "vidro text-[#CFC7B8] hover:scale-105 hover:text-[#F2EDE4]"
+              }`}
+              style={{
+                left: `calc(50% + ${cos} * min(34vh, 23vw))`,
+                top: `calc(47% + ${sin} * min(34vh, 23vw))`,
+              }}
+            >
+              {s.rotulo}
+            </button>
+          );
+        })}
+
+        {/* Cartão da seção ativa */}
+        <div className="vidro rolagem absolute left-6 top-1/2 z-20 max-h-[calc(100dvh-190px)] w-[400px] -translate-y-1/2 overflow-y-auto rounded-3xl pb-2 pt-1 shadow-2xl shadow-black/50 xl:w-[440px]">
+          {modo === "montar" ? (
+            <PainelMontar
+              iBase={iBase}
+              iCorpo={iCorpo}
+              iDifusor={iDifusor}
+              escolherBase={setIBase}
+              escolherCorpo={setICorpo}
+              escolherDifusor={setIDifusor}
+              cores={cores}
+              alvoCor={alvoCor}
+              setAlvoCor={setAlvoCor}
+              escolherCor={escolherCor}
+              pontosDeLuz={pontosDeLuz}
+              separacaoMm={separacaoMm}
+              setPontosDeLuz={setPontosDeLuz}
+              setSeparacaoMm={setSeparacaoMm}
+              apenasSecao={secaoAtiva}
+            />
+          ) : (
+            <PainelCriar
+              criar={criar}
+              aoMudar={setCriar}
+              remixDe={remixDe}
+              iFaceta={iFaceta}
+              setIFaceta={setIFaceta}
+              estab={estab}
+              pontosDeLuz={pontosDeLuz}
+              separacaoMm={separacaoMm}
+              setPontosDeLuz={setPontosDeLuz}
+              setSeparacaoMm={setSeparacaoMm}
+              apenasSecao={secaoAtiva}
+            />
+          )}
+        </div>
+
+        {/* Barra inferior central */}
+        <div className="vidro absolute bottom-5 left-1/2 z-20 -translate-x-1/2 rounded-3xl px-6 py-3 shadow-2xl shadow-black/50">
+          <div className="flex items-center gap-3">
+            <div className="pr-2">
+              <div className="font-serif text-[22px] font-medium leading-none tabular-nums">
+                R$ {precoBRL.toLocaleString("pt-BR")}
+              </div>
+              <div className="mt-1 whitespace-nowrap text-[10px] text-[#7d766a]">
+                ~{Math.round(gramas)} g de PLA · módulo elétrico certificado
+              </div>
+            </div>
+            <button
+              onClick={() => setLuzAcesa(!luzAcesa)}
+              className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] transition-all ${
+                luzAcesa
+                  ? "bg-[#D3AC6C] font-semibold text-[#1b1206]"
+                  : "border border-white/15 bg-white/[0.05] text-[#CFC7B8]"
+              }`}
+            >
+              {luzAcesa ? "luz acesa" : "luz apagada"}
+            </button>
+            <button className="rounded-full bg-[#F2EDE4] px-5 py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white">
+              Encomendar
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-[#7d766a]">
+            <span>STL:</span>
+            {(["base", "corpo", "difusor"] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => baixarSTL(p)}
+                disabled={gerandoSTL !== null}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+              >
+                {gerandoSTL === p ? "gerando…" : p}
+              </button>
+            ))}
+            <span className="ml-1.5">kit F5:</span>
+            {[0.2, 0.3, 0.4].map((f) => (
+              <a
+                key={f}
+                href={`/api/calibracao?folgaMm=${f}`}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
+              >
+                {String(f).replace(".", ",")}
+              </a>
+            ))}
+            <button
+              onClick={copiarLink}
+              className={`ml-1.5 rounded-full border px-2.5 py-1 transition-colors ${
+                copiado
+                  ? "border-[#8FB07E]/40 text-[#8FB07E]"
+                  : "border-white/10 bg-white/[0.04] text-[#A69D8D] hover:border-white/25 hover:text-[#E7E0D2]"
+              }`}
+            >
+              {copiado ? "link copiado ✓" : "copiar link"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
