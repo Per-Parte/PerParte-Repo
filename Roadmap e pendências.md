@@ -20,7 +20,9 @@
 - [x] **Geometria real dos encaixes** (anel macho/fêmea, folga F5) nos STLs + kit de calibração no site ✓ 28/07/2026
 - [ ] **Sócio imprime o kit de calibração** (botões 0,2 / 0,3 / 0,4 no configurador) e escolhe a folga → travar F5 em `regras.ts` para sempre
 - [ ] Abstração de **arquétipos** no núcleo → famílias novas (task light, planos dobrados) rumo à variedade Gantri
-- [ ] Contas + salvar criações (Supabase) — embrião do marketplace
+- [x] **Link compartilhável da criação** — o estado inteiro do configurador vive na URL, botão "copiar link" ✓ 28/07/2026
+- [ ] **Publicar o site (Vercel)** — para o sócio abrir os links e baixar STLs da máquina dele; precisa de conta (grátis, login com o GitHub)
+- [ ] Contas + salvar criações (Supabase) — links curtos, galeria; embrião do marketplace
 - [ ] Landing e vitrine do marketplace (esboço rápido via Lovable)
 - [ ] Mais adiante: preço por slicer real, pagamentos com split de royalty
 

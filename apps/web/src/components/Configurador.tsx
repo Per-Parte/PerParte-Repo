@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BASES,
   CORPOS,
@@ -19,6 +19,7 @@ import {
 import Cena3D from "./Cena3D";
 import PainelMontar from "./PainelMontar";
 import PainelCriar from "./PainelCriar";
+import { codificarCriacao, decodificarCriacao } from "@/lib/criacao";
 
 export type ParteAlvo = "base" | "corpo" | "difusor";
 export type AlvoCor = "all" | ParteAlvo;
@@ -52,6 +53,52 @@ export default function Configurador() {
     corpo: { ...CORPOS[0] },
     difusor: { ...DIFUSORES[0] },
   });
+
+  // Carrega a criação do link (?c=...) uma única vez, ao abrir.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("c");
+    if (!param) return;
+    const c = decodificarCriacao(param);
+    if (!c) return;
+    setModo(c.modo);
+    setIBase(c.iBase);
+    setICorpo(c.iCorpo);
+    setIDifusor(c.iDifusor);
+    setCores(c.cores);
+    setIFaceta(c.iFaceta);
+    setLuzAcesa(c.luzAcesa);
+    setCriar(c.criar);
+    setRemixDe(
+      c.remixDe || `${CORPOS[c.iCorpo].nome} + ${DIFUSORES[c.iDifusor].nome}`
+    );
+  }, []);
+
+  // Espelha a criação atual na URL — o endereço da página é sempre o link dela.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const codigo = codificarCriacao({
+        v: 1,
+        modo,
+        iBase,
+        iCorpo,
+        iDifusor,
+        cores,
+        iFaceta,
+        luzAcesa,
+        criar,
+        remixDe,
+      });
+      window.history.replaceState(null, "", `?c=${codigo}`);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [modo, iBase, iCorpo, iDifusor, cores, iFaceta, luzAcesa, criar, remixDe]);
+
+  const [copiado, setCopiado] = useState(false);
+  async function copiarLink() {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  }
 
   function trocarModo(m: Modo) {
     if (m === "criar" && modo !== "criar") {
@@ -131,8 +178,20 @@ export default function Configurador() {
             monte por partes. crie cada parte.
           </div>
         </div>
-        <div className="rounded-full border border-[#DDD8CC] px-2.5 py-1 text-[11px] text-[#6E695E]">
-          configurador v0.2
+        <div className="flex items-center gap-2">
+          <button
+            onClick={copiarLink}
+            className={`rounded-full border px-3 py-1 text-[11px] transition-colors ${
+              copiado
+                ? "border-[#5F7A52] text-[#5F7A52]"
+                : "border-[#DDD8CC] text-[#6E695E] hover:border-[#6E695E]"
+            }`}
+          >
+            {copiado ? "link copiado ✓" : "copiar link da criação"}
+          </button>
+          <div className="rounded-full border border-[#DDD8CC] px-2.5 py-1 text-[11px] text-[#6E695E]">
+            configurador v0.2
+          </div>
         </div>
       </header>
 
