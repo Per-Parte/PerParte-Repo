@@ -225,8 +225,8 @@ export default function Configurador() {
 
   return (
     <div className="relative h-dvh overflow-hidden bg-[#121110] text-[#F2EDE4]">
-      {/* Cena em tela cheia — o palco */}
-      <div className="absolute inset-0">
+      {/* Cena em tela cheia — o palco (deslocada para a luminária viver à esquerda da lua) */}
+      <div className="absolute inset-0 md:-translate-x-[19vw]">
         <Cena3D
           perfis={perfis}
           alturasMm={{
@@ -267,14 +267,6 @@ export default function Configurador() {
             monte por partes. crie cada parte.
           </div>
         </a>
-        <button
-          onClick={copiarLink}
-          className={`vidro pointer-events-auto rounded-full px-4 py-2 text-[11.5px] transition-colors ${
-            copiado ? "text-[#8FB07E]" : "text-[#CFC7B8] hover:text-[#F2EDE4]"
-          }`}
-        >
-          {copiado ? "link copiado ✓" : "copiar link da criação"}
-        </button>
       </header>
 
       {/* Rodapé informativo da cena */}
@@ -295,10 +287,10 @@ export default function Configurador() {
         </div>
       </div>
 
-      {/* Painel flutuante */}
-      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/40 md:inset-x-auto md:bottom-5 md:right-5 md:top-[76px] md:w-[420px]">
-        <div className="px-4 pb-1 pt-4">
-          <div className="flex rounded-full bg-white/[0.06] p-1">
+      {/* Painel meia-lua */}
+      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/50 md:inset-x-auto md:inset-y-0 md:right-0 md:w-[max(430px,40vw)] md:rounded-l-[200px] md:rounded-r-none md:border-y-0 md:border-r-0 xl:w-[max(500px,38vw)]">
+        <div className="px-4 pb-1 pt-4 md:pt-7">
+          <div className="mx-auto flex w-full max-w-[280px] rounded-full bg-white/[0.06] p-1">
             {(
               [
                 ["montar", "Montar"],
@@ -320,7 +312,7 @@ export default function Configurador() {
           </div>
         </div>
 
-        <div className="rolagem min-h-0 flex-1 overflow-y-auto">
+        <div className="rolagem min-h-0 flex-1 overflow-y-auto md:px-6 md:pl-10">
           {modo === "montar" ? (
             <PainelMontar
               iBase={iBase}
@@ -354,7 +346,7 @@ export default function Configurador() {
           )}
         </div>
 
-        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
+        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5 md:pb-6 md:pl-16 md:pr-10">
           <div className="flex items-center gap-2.5">
             <div className="flex-1">
               <div className="font-serif text-[25px] font-medium leading-none tabular-nums">
@@ -400,6 +392,16 @@ export default function Configurador() {
                 {String(f).replace(".", ",")}
               </a>
             ))}
+            <button
+              onClick={copiarLink}
+              className={`ml-auto rounded-full border px-2.5 py-1 transition-colors ${
+                copiado
+                  ? "border-[#8FB07E]/40 text-[#8FB07E]"
+                  : "border-white/10 bg-white/[0.04] text-[#A69D8D] hover:border-white/25 hover:text-[#E7E0D2]"
+              }`}
+            >
+              {copiado ? "link copiado ✓" : "copiar link"}
+            </button>
           </div>
         </div>
       </aside>
