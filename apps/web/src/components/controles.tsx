@@ -45,6 +45,48 @@ export function Chips({
   );
 }
 
+export function PontosDeLuzCtl({
+  pontosDeLuz,
+  separacaoMm,
+  sepMin,
+  sepMax,
+  sepPasso,
+  aoMudarPontos,
+  aoMudarSep,
+}: {
+  pontosDeLuz: number;
+  separacaoMm: number;
+  sepMin: number;
+  sepMax: number;
+  sepPasso: number;
+  aoMudarPontos: (n: 1 | 2) => void;
+  aoMudarSep: (v: number) => void;
+}) {
+  return (
+    <div>
+      <Chips
+        nomes={["1 luz", "2 luzes"]}
+        selecionado={pontosDeLuz === 2 ? 1 : 0}
+        aoEscolher={(i) => aoMudarPontos(i === 1 ? 2 : 1)}
+      />
+      {pontosDeLuz === 2 && (
+        <div className="mt-3">
+          <SliderCtl
+            rotulo="Separação das colunas"
+            valorFmt={`${(separacaoMm / 10).toFixed(1).replace(".", ",")} cm`}
+            valor={separacaoMm}
+            min={sepMin}
+            max={sepMax}
+            passo={sepPasso}
+            aoMudar={aoMudarSep}
+            nota="o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SliderCtl({
   rotulo,
   valorFmt,

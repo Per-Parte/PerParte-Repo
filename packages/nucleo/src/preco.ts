@@ -18,13 +18,17 @@ export interface Estimativa {
 export function estimarPreco(
   perfilBase: Ponto2D[],
   perfilCorpo: Ponto2D[],
-  perfilDifusor: Ponto2D[]
+  perfilDifusor: Ponto2D[],
+  pontosDeLuz = 1
 ): Estimativa {
   const aBase = areaLateralMm2(perfilBase) / 100;
   const aCorpo = areaLateralMm2(perfilCorpo) / 100;
   const aDifusor = areaLateralMm2(perfilDifusor) / 100;
 
-  const gramas = (aBase * 0.24 + aCorpo * 0.2 + aDifusor * 0.12) * 1.24 + 70;
+  // Dois pontos de luz: corpo, difusor e módulo elétrico em dobro.
+  const n = pontosDeLuz === 2 ? 2 : 1;
+  const gramas =
+    (aBase * 0.24 + (aCorpo * 0.2 + aDifusor * 0.12) * n) * 1.24 + 70 * n;
   const precoBRL = Math.round((189 + gramas * 0.62) / 10) * 10 - 1;
 
   return { gramas, precoBRL };

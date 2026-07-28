@@ -7,12 +7,14 @@
  */
 
 import { LIMITES_CRIAR } from "./catalogo";
-import type {
-  CurvaBase,
-  FormaDifusor,
-  ParametrosBase,
-  ParametrosCorpo,
-  ParametrosDifusor,
+import {
+  deslocamentoMaximoMm,
+  TS_PERFIL_LIVRE,
+  type CurvaBase,
+  type FormaDifusor,
+  type ParametrosBase,
+  type ParametrosCorpo,
+  type ParametrosDifusor,
 } from "./geometria";
 
 interface Faixa {
@@ -44,8 +46,17 @@ export function grampearBase(p: Partial<ParametrosBase>): ParametrosBase {
 
 export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
   const L = LIMITES_CRIAR.corpo;
+  const alturaMm = grampear(p.alturaMm, L.alturaMm, 160);
+  const dMax = deslocamentoMaximoMm(alturaMm);
+  const perfilLivre =
+    Array.isArray(p.perfilLivre) &&
+    p.perfilLivre.length === TS_PERFIL_LIVRE.length
+      ? p.perfilLivre.map((r) =>
+          grampear(r, L.perfilLivreRaioMm, L.perfilLivreRaioMm.min)
+        )
+      : undefined;
   return {
-    alturaMm: grampear(p.alturaMm, L.alturaMm, 160),
+    alturaMm,
     volumeBojoMm: grampear(p.volumeBojoMm, L.volumeBojoMm, 0),
     posicaoBojo: grampear(p.posicaoBojo, L.posicaoBojo, 0),
     ondulacao: Math.round(grampear(p.ondulacao, L.ondulacao, 0)),
@@ -57,6 +68,29 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
       0
     ),
     torcaoGraus: grampear(p.torcaoGraus, L.torcaoGraus, 0),
+    deslocamentoMm: grampear(
+      p.deslocamentoMm,
+      { min: -dMax, max: dMax },
+      0
+    ),
+    posicaoDobra: grampear(p.posicaoDobra, L.posicaoDobra, 0),
+    ...(perfilLivre ? { perfilLivre } : {}),
+  };
+}
+
+export interface ConfiguracaoLuminaria {
+  pontosDeLuz: 1 | 2;
+  separacaoMm: number;
+}
+
+export function grampearLuminaria(p: {
+  pontosDeLuz?: unknown;
+  separacaoMm?: unknown;
+}): ConfiguracaoLuminaria {
+  const L = LIMITES_CRIAR.luminaria;
+  return {
+    pontosDeLuz: Number(p.pontosDeLuz) === 2 ? 2 : 1,
+    separacaoMm: grampear(p.separacaoMm, L.separacaoMm, 100),
   };
 }
 

@@ -7,7 +7,11 @@
  * que é a vertical de impressão (regra F8).
  */
 
-import type { Ponto2D } from "./geometria";
+import {
+  deslocamentoEspinhaMm,
+  type EspinhaLateral,
+  type Ponto2D,
+} from "./geometria";
 
 export interface Malha {
   /** x, y, z por vértice, em mm. Z é a vertical de impressão. */
@@ -45,7 +49,8 @@ function janelaTextura(t: number): number {
 export function malhaRevolucao(
   perfil: Ponto2D[],
   segmentos: number,
-  textura?: TexturaRevolucao
+  textura?: TexturaRevolucao,
+  espinha?: EspinhaLateral
 ): Malha {
   const nAneis = perfil.length;
   const nVertices = nAneis * segmentos + 2;
@@ -64,6 +69,8 @@ export function malhaRevolucao(
     : 0;
 
   for (let j = 0; j < nAneis; j++) {
+    // Espinha curva: o centro do anel se desloca em X conforme a altura.
+    const dx = espinha ? deslocamentoEspinhaMm(perfil[j].y, espinha) : 0;
     for (let i = 0; i < segmentos; i++) {
       const th = (i / segmentos) * Math.PI * 2;
       let r = perfil[j].x;
@@ -80,7 +87,7 @@ export function malhaRevolucao(
         }
       }
       const o = (j * segmentos + i) * 3;
-      posicoes[o] = r * Math.cos(th);
+      posicoes[o] = dx + r * Math.cos(th);
       posicoes[o + 1] = r * Math.sin(th);
       posicoes[o + 2] = perfil[j].y;
     }
@@ -89,7 +96,13 @@ export function malhaRevolucao(
   // Ápices que fecham o sólido no eixo (fundo e topo).
   const apiceInferior = nAneis * segmentos;
   const apiceSuperior = apiceInferior + 1;
+  posicoes[apiceInferior * 3] = espinha
+    ? deslocamentoEspinhaMm(perfil[0].y, espinha)
+    : 0;
   posicoes[apiceInferior * 3 + 2] = perfil[0].y;
+  posicoes[apiceSuperior * 3] = espinha
+    ? deslocamentoEspinhaMm(perfil[nAneis - 1].y, espinha)
+    : 0;
   posicoes[apiceSuperior * 3 + 2] = perfil[nAneis - 1].y;
 
   const indices: number[] = [];
@@ -115,12 +128,18 @@ export function malhaRevolucao(
   return { posicoes, indices: Uint32Array.from(indices) };
 }
 
-/** Desloca a malha no plano da mesa de impressão (X/Y), em mm. */
-export function transladarMalha(m: Malha, dxMm: number, dyMm: number): Malha {
+/** Desloca a malha em mm (X/Y no plano da mesa; Z para afundar/erguer). */
+export function transladarMalha(
+  m: Malha,
+  dxMm: number,
+  dyMm: number,
+  dzMm = 0
+): Malha {
   const posicoes = new Float32Array(m.posicoes);
   for (let i = 0; i < posicoes.length; i += 3) {
     posicoes[i] += dxMm;
     posicoes[i + 1] += dyMm;
+    posicoes[i + 2] += dzMm;
   }
   return { posicoes, indices: m.indices };
 }

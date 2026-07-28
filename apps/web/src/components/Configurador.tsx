@@ -50,6 +50,8 @@ export default function Configurador() {
   const [alvoCor, setAlvoCor] = useState<AlvoCor>("all");
   const [iFaceta, setIFaceta] = useState(0);
   const [luzAcesa, setLuzAcesa] = useState(true);
+  const [pontosDeLuz, setPontosDeLuz] = useState<1 | 2>(1);
+  const [separacaoMm, setSeparacaoMm] = useState(100);
   const [remixDe, setRemixDe] = useState("");
   const [criar, setCriar] = useState<EstadoCriar>({
     base: { ...BASES[0] },
@@ -70,6 +72,8 @@ export default function Configurador() {
     setCores(c.cores);
     setIFaceta(c.iFaceta);
     setLuzAcesa(c.luzAcesa);
+    setPontosDeLuz(c.pontosDeLuz);
+    setSeparacaoMm(c.separacaoMm);
     setCriar(c.criar);
     setRemixDe(
       c.remixDe || `${CORPOS[c.iCorpo].nome} + ${DIFUSORES[c.iDifusor].nome}`
@@ -88,13 +92,27 @@ export default function Configurador() {
         cores,
         iFaceta,
         luzAcesa,
+        pontosDeLuz,
+        separacaoMm,
         criar,
         remixDe,
       });
       window.history.replaceState(null, "", `?c=${codigo}`);
     }, 300);
     return () => clearTimeout(t);
-  }, [modo, iBase, iCorpo, iDifusor, cores, iFaceta, luzAcesa, criar, remixDe]);
+  }, [
+    modo,
+    iBase,
+    iCorpo,
+    iDifusor,
+    cores,
+    iFaceta,
+    luzAcesa,
+    pontosDeLuz,
+    separacaoMm,
+    criar,
+    remixDe,
+  ]);
 
   const [copiado, setCopiado] = useState(false);
   async function copiarLink() {
@@ -143,20 +161,34 @@ export default function Configurador() {
   );
 
   const estab = useMemo(
-    () => estabilidade(base, corpo, difusor),
-    [base, corpo, difusor]
+    () => estabilidade(base, corpo, difusor, pontosDeLuz),
+    [base, corpo, difusor, pontosDeLuz]
   );
   const perfis = useMemo(
     () => ({
-      base: perfilBase(base, estab.escala),
+      base: perfilBase(base, estab.escala, pontosDeLuz === 1),
       corpo: perfilCorpo(corpo),
       difusor: perfilDifusor(difusor),
     }),
-    [base, corpo, difusor, estab.escala]
+    [base, corpo, difusor, estab.escala, pontosDeLuz]
   );
   const { gramas, precoBRL } = useMemo(
-    () => estimarPreco(perfis.base, perfis.corpo, perfis.difusor),
-    [perfis]
+    () => estimarPreco(perfis.base, perfis.corpo, perfis.difusor, pontosDeLuz),
+    [perfis, pontosDeLuz]
+  );
+
+  const espinhaCorpo = useMemo(
+    () => ({
+      deslocamentoMm: corpo.deslocamentoMm,
+      posicaoDobra: corpo.posicaoDobra,
+      alturaMm: corpo.alturaMm,
+    }),
+    [corpo]
+  );
+  // As colunas precisam caber sobre a base (pastilha de encaixe inteira).
+  const separacaoEfetivaMm = Math.min(
+    separacaoMm,
+    Math.max(70, 2 * (base.raioMm * estab.escala - 34))
   );
 
   const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
@@ -168,7 +200,15 @@ export default function Configurador() {
       const resp = await fetch("/api/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parte, base, corpo, difusor, segmentos }),
+        body: JSON.stringify({
+          parte,
+          base,
+          corpo,
+          difusor,
+          segmentos,
+          pontosDeLuz,
+          separacaoMm,
+        }),
       });
       if (!resp.ok) return;
       const blob = await resp.blob();
@@ -234,6 +274,9 @@ export default function Configurador() {
             segmentos={segmentos}
             luzAcesa={luzAcesa}
             texturas={texturas}
+            espinhaCorpo={espinhaCorpo}
+            pontosDeLuz={pontosDeLuz}
+            separacaoMm={separacaoEfetivaMm}
           />
           <div className="absolute left-6 top-4 rounded-lg border border-[#DDD8CC] bg-[#FBFAF7]/80 px-2.5 py-1.5 text-[11.5px] text-[#6E695E]">
             encaixes fixos{" "}
@@ -289,6 +332,10 @@ export default function Configurador() {
                 alvoCor={alvoCor}
                 setAlvoCor={setAlvoCor}
                 escolherCor={escolherCor}
+                pontosDeLuz={pontosDeLuz}
+                separacaoMm={separacaoMm}
+                setPontosDeLuz={setPontosDeLuz}
+                setSeparacaoMm={setSeparacaoMm}
               />
             ) : (
               <PainelCriar
@@ -298,6 +345,10 @@ export default function Configurador() {
                 iFaceta={iFaceta}
                 setIFaceta={setIFaceta}
                 estab={estab}
+                pontosDeLuz={pontosDeLuz}
+                separacaoMm={separacaoMm}
+                setPontosDeLuz={setPontosDeLuz}
+                setSeparacaoMm={setSeparacaoMm}
               />
             )}
           </div>

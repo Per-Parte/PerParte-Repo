@@ -47,7 +47,13 @@ export interface CorpoOficial extends ParametrosCorpo {
   nome: string;
 }
 
-const CORPO_LISO = { gomos: 0, profundidadeGomosMm: 0, torcaoGraus: 0 };
+const CORPO_LISO = {
+  gomos: 0,
+  profundidadeGomosMm: 0,
+  torcaoGraus: 0,
+  deslocamentoMm: 0,
+  posicaoDobra: 0,
+};
 
 export const CORPOS: CorpoOficial[] = [
   { nome: "Coluna", alturaMm: 160, volumeBojoMm: 3, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
@@ -55,8 +61,9 @@ export const CORPOS: CorpoOficial[] = [
   { nome: "Cintura", alturaMm: 170, volumeBojoMm: -10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
   { nome: "Ondas", alturaMm: 160, volumeBojoMm: 9, posicaoBojo: 0, ondulacao: 8, amplitudeOndaMm: 2.5, ...CORPO_LISO },
   { nome: "Torre", alturaMm: 210, volumeBojoMm: 6, posicaoBojo: -0.5, ondulacao: 0, amplitudeOndaMm: 0, ...CORPO_LISO },
-  { nome: "Plissado", alturaMm: 170, volumeBojoMm: 14, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 18, profundidadeGomosMm: 2.5, torcaoGraus: 0 },
-  { nome: "Espiral", alturaMm: 180, volumeBojoMm: 10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 12, profundidadeGomosMm: 3, torcaoGraus: 60 },
+  { nome: "Plissado", alturaMm: 170, volumeBojoMm: 14, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 18, profundidadeGomosMm: 2.5, torcaoGraus: 0, deslocamentoMm: 0, posicaoDobra: 0 },
+  { nome: "Espiral", alturaMm: 180, volumeBojoMm: 10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 12, profundidadeGomosMm: 3, torcaoGraus: 60, deslocamentoMm: 0, posicaoDobra: 0 },
+  { nome: "Curva S", alturaMm: 190, volumeBojoMm: 4, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 0, profundidadeGomosMm: 0, torcaoGraus: 0, deslocamentoMm: 40, posicaoDobra: 0.2 },
 ];
 
 export interface DifusorOficial extends ParametrosDifusor {
@@ -108,11 +115,20 @@ export const LIMITES_CRIAR = {
     gomos: { min: 0, max: 24, passo: 2 },
     profundidadeGomosMm: { min: 0, max: 4, passo: 0.5 },
     torcaoGraus: { min: -90, max: 90, passo: 5 },
+    /** Teto absoluto; o teto real depende da altura (deslocamentoMaximoMm). */
+    deslocamentoMm: { min: -80, max: 80, passo: 5 },
+    posicaoDobra: { min: -1, max: 1, passo: 0.1 },
+    /** Faixa dos raios de controle da silhueta livre. */
+    perfilLivreRaioMm: { min: 16, max: 60, passo: 0.5 },
   },
   difusor: {
     alturaMm: { min: 60, max: 130, passo: 5 },
     raioMm: { min: 40, max: 90, passo: 2.5 },
     gomos: { min: 0, max: 24, passo: 2 },
     profundidadeGomosMm: { min: 0, max: 3, passo: 0.5 },
+  },
+  luminaria: {
+    /** Distância entre as duas colunas no modo de dois pontos de luz. */
+    separacaoMm: { min: 70, max: 160, passo: 5 },
   },
 } as const;

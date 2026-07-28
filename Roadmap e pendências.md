@@ -25,6 +25,7 @@
 - [ ] Contas + salvar criações (Supabase) — links curtos, galeria; embrião do marketplace
 - [x] **Landing page** em / com herói 3D girando; configurador movido para /configurador ✓ 28/07/2026
 - [x] **Personalização 2.0**: base esculpível no Criar, gomos + torção no corpo, plissê no difusor, 12 cores, partes novas (Plissado, Espiral, Plissê); preview passa a usar a malha do STL ✓ 28/07/2026
+- [x] **Formas Livres**: corpo em S (espinha curva, difusor na lateral), silhueta livre com 5 pontos arrastáveis (modo hard), dois pontos de luz com base dupla, aviso direcional de tombamento (CG real) ✓ 28/07/2026
 - [ ] Vitrine do marketplace (galeria de criações e criadores) — depende de banco
 - [ ] Mais adiante: preço por slicer real, pagamentos com split de royalty
 

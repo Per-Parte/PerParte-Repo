@@ -15,6 +15,7 @@ import {
   grampearBase,
   grampearCorpo,
   grampearDifusor,
+  grampearLuminaria,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -29,6 +30,8 @@ export interface CriacaoV1 {
   cores: { base: number; corpo: number; difusor: number };
   iFaceta: number;
   luzAcesa: boolean;
+  pontosDeLuz: 1 | 2;
+  separacaoMm: number;
   criar: {
     base: ParametrosBase;
     corpo: ParametrosCorpo;
@@ -66,6 +69,7 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
       },
       iFaceta: indice(bruto.iFaceta, FACETAS.length),
       luzAcesa: bruto.luzAcesa !== false,
+      ...grampearLuminaria(bruto),
       criar: {
         base: grampearBase(bruto.criar?.base ?? {}),
         corpo: grampearCorpo(bruto.criar?.corpo ?? {}),

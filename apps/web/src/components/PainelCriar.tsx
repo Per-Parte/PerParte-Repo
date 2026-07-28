@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import {
+  amostrarRaiosCorpo,
+  deslocamentoMaximoMm,
   DIFUSORES,
   FACETAS,
   LIMITES_CRIAR,
@@ -9,7 +11,8 @@ import {
   type CurvaBase,
   type ResultadoEstabilidade,
 } from "@per-parte/nucleo";
-import { Chips, Secao, SliderCtl } from "./controles";
+import { Chips, PontosDeLuzCtl, Secao, SliderCtl } from "./controles";
+import EditorSilhueta from "./EditorSilhueta";
 import type { EstadoCriar } from "./Configurador";
 
 const cm = (mm: number) => (mm / 10).toFixed(1).replace(".", ",");
@@ -29,6 +32,10 @@ interface Props {
   iFaceta: number;
   setIFaceta: (i: number) => void;
   estab: ResultadoEstabilidade;
+  pontosDeLuz: number;
+  separacaoMm: number;
+  setPontosDeLuz: (n: 1 | 2) => void;
+  setSeparacaoMm: (v: number) => void;
 }
 
 export default function PainelCriar({
@@ -38,6 +45,10 @@ export default function PainelCriar({
   iFaceta,
   setIFaceta,
   estab,
+  pontosDeLuz,
+  separacaoMm,
+  setPontosDeLuz,
+  setSeparacaoMm,
 }: Props) {
   const [nomePeca, setNomePeca] = useState("");
   const [publicada, setPublicada] = useState<string | null>(null);
@@ -60,6 +71,8 @@ export default function PainelCriar({
   const iForma = DIFUSORES.findIndex((d) => d.forma === criar.difusor.forma);
   const facetadoComGomos =
     iFaceta > 0 && (criar.corpo.gomos > 0 || criar.difusor.gomos > 0);
+  const modoLivre = !!criar.corpo.perfilLivre;
+  const dMax = deslocamentoMaximoMm(criar.corpo.alturaMm);
 
   return (
     <div>
@@ -114,6 +127,8 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("alturaMm", v)}
           nota={`regra: ${LC.alturaMm.min / 10}–${LC.alturaMm.max / 10} cm — acima disso a peça não cabe na impressora`}
         />
+        {!modoLivre && (
+        <>
         <SliderCtl
           rotulo="Volume do bojo"
           valorFmt={`${criar.corpo.volumeBojoMm >= 0 ? "+" : ""}${cm(criar.corpo.volumeBojoMm)} cm`}
@@ -151,6 +166,72 @@ export default function PainelCriar({
           passo={LC.amplitudeOndaMm.passo}
           aoMudar={(v) => mudarCorpo("amplitudeOndaMm", v)}
           nota={`regra: até ${LC.amplitudeOndaMm.max} mm — mais que isso vira balanço > ${REGRAS.F.balancoMaximoGraus}° e não imprime limpo`}
+        />
+        </>
+        )}
+      </Secao>
+
+      <Secao titulo="Silhueta livre (modo hard)">
+        {!modoLivre ? (
+          <button
+            onClick={() =>
+              aoMudar({
+                ...criar,
+                corpo: {
+                  ...criar.corpo,
+                  perfilLivre: amostrarRaiosCorpo(criar.corpo),
+                },
+              })
+            }
+            className="w-full rounded-[10px] border border-[#26241F] bg-white py-2 text-[12.5px] font-semibold hover:bg-[#F6EFE3]"
+          >
+            Esculpir a silhueta — arrastar as arestas
+          </button>
+        ) : (
+          <div>
+            <EditorSilhueta
+              corpo={criar.corpo}
+              aoMudar={(raios) =>
+                aoMudar({
+                  ...criar,
+                  corpo: { ...criar.corpo, perfilLivre: raios },
+                })
+              }
+            />
+            <button
+              onClick={() =>
+                aoMudar({
+                  ...criar,
+                  corpo: { ...criar.corpo, perfilLivre: undefined },
+                })
+              }
+              className="mt-2 w-full rounded-[10px] border border-[#DDD8CC] bg-white py-2 text-[12px] text-[#6E695E] hover:border-[#6E695E]"
+            >
+              voltar aos controles simples
+            </button>
+          </div>
+        )}
+      </Secao>
+
+      <Secao titulo="Curvar o corpo (S)">
+        <SliderCtl
+          rotulo="Deslocamento do topo"
+          valorFmt={`${criar.corpo.deslocamentoMm >= 0 ? "+" : ""}${cm(criar.corpo.deslocamentoMm)} cm`}
+          valor={criar.corpo.deslocamentoMm}
+          min={-dMax}
+          max={dMax}
+          passo={LC.deslocamentoMm.passo}
+          aoMudar={(v) => mudarCorpo("deslocamentoMm", v)}
+          nota={`o difusor vai junto para o lado; limite de ±${cm(dMax)} cm vem de F4 e cresce com a altura`}
+        />
+        <SliderCtl
+          rotulo="Altura da dobra"
+          valorFmt={fmtPos(criar.corpo.posicaoDobra)}
+          valor={criar.corpo.posicaoDobra}
+          min={LC.posicaoDobra.min}
+          max={LC.posicaoDobra.max}
+          passo={LC.posicaoDobra.passo}
+          aoMudar={(v) => mudarCorpo("posicaoDobra", v)}
         />
       </Secao>
 
@@ -244,6 +325,18 @@ export default function PainelCriar({
         </div>
       </Secao>
 
+      <Secao titulo="Pontos de luz">
+        <PontosDeLuzCtl
+          pontosDeLuz={pontosDeLuz}
+          separacaoMm={separacaoMm}
+          sepMin={LIMITES_CRIAR.luminaria.separacaoMm.min}
+          sepMax={LIMITES_CRIAR.luminaria.separacaoMm.max}
+          sepPasso={LIMITES_CRIAR.luminaria.separacaoMm.passo}
+          aoMudarPontos={setPontosDeLuz}
+          aoMudarSep={setSeparacaoMm}
+        />
+      </Secao>
+
       <Secao titulo="Regras embutidas">
         <div className="rounded-xl border border-[#DDD8CC] bg-white px-3.5 py-3">
           <div className="flex justify-between py-1 text-xs text-[#6E695E]">
@@ -265,16 +358,30 @@ export default function PainelCriar({
             <span>Estabilidade</span>
             <span
               className={`font-semibold ${
-                estab.pertoDoLimite ? "text-[#D9772F]" : "text-[#5F7A52]"
+                estab.tombando
+                  ? "text-[#B5432F]"
+                  : estab.pertoDoLimite
+                    ? "text-[#D9772F]"
+                    : "text-[#5F7A52]"
               }`}
             >
-              {estab.ajustada ? "base ajustada ✓" : "✓"}
+              {estab.tombando
+                ? `⚠ tombando para a ${estab.ladoTombando}`
+                : estab.ajustada
+                  ? "base ajustada ✓"
+                  : "✓"}
             </span>
           </div>
-          <div className="mt-2 text-[10.5px] text-[#6E695E] opacity-80">
-            {estab.ajustada
-              ? "A base foi alargada automaticamente para o conjunto não tombar — a regra é a ferramenta."
-              : "Tudo que estes controles permitem criar, a Per Parte fabrica."}
+          <div
+            className={`mt-2 text-[10.5px] ${
+              estab.tombando ? "text-[#B5432F]" : "text-[#6E695E] opacity-80"
+            }`}
+          >
+            {estab.tombando
+              ? "Do jeito atual ela cai — nem alargando a base ao máximo o peso fica sobre ela. Reduza o deslocamento do topo ou alargue a base."
+              : estab.ajustada
+                ? "A base foi alargada automaticamente para o conjunto não tombar — a regra é a ferramenta."
+                : "Tudo que estes controles permitem criar, a Per Parte fabrica."}
           </div>
         </div>
       </Secao>

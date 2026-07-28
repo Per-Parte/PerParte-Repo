@@ -1,7 +1,7 @@
 "use client";
 
-import { BASES, CORPOS, DIFUSORES, PALETA } from "@per-parte/nucleo";
-import { Chips, Secao } from "./controles";
+import { BASES, CORPOS, DIFUSORES, LIMITES_CRIAR, PALETA } from "@per-parte/nucleo";
+import { Chips, PontosDeLuzCtl, Secao } from "./controles";
 import type { AlvoCor, CoresPartes } from "./Configurador";
 
 const ALVOS: { id: AlvoCor; rotulo: string }[] = [
@@ -22,6 +22,10 @@ interface Props {
   alvoCor: AlvoCor;
   setAlvoCor: (a: AlvoCor) => void;
   escolherCor: (i: number) => void;
+  pontosDeLuz: number;
+  separacaoMm: number;
+  setPontosDeLuz: (n: 1 | 2) => void;
+  setSeparacaoMm: (v: number) => void;
 }
 
 export default function PainelMontar({
@@ -35,6 +39,10 @@ export default function PainelMontar({
   alvoCor,
   setAlvoCor,
   escolherCor,
+  pontosDeLuz,
+  separacaoMm,
+  setPontosDeLuz,
+  setSeparacaoMm,
 }: Props) {
   const corSelecionada = alvoCor === "all" ? cores.corpo : cores[alvoCor];
 
@@ -59,6 +67,18 @@ export default function PainelMontar({
           nomes={DIFUSORES.map((d) => d.nome)}
           selecionado={iDifusor}
           aoEscolher={escolherDifusor}
+        />
+      </Secao>
+
+      <Secao titulo="Pontos de luz">
+        <PontosDeLuzCtl
+          pontosDeLuz={pontosDeLuz}
+          separacaoMm={separacaoMm}
+          sepMin={LIMITES_CRIAR.luminaria.separacaoMm.min}
+          sepMax={LIMITES_CRIAR.luminaria.separacaoMm.max}
+          sepPasso={LIMITES_CRIAR.luminaria.separacaoMm.passo}
+          aoMudarPontos={setPontosDeLuz}
+          aoMudarSep={setSeparacaoMm}
         />
       </Secao>
 

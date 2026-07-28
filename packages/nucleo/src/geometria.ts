@@ -5,10 +5,10 @@
  * perfil que desenha o preview no navegador gera a malha de produção (STL).
  *
  * Toda parte é um perfil 2D (meridiano raio × altura, do eixo embaixo ao
- * eixo em cima) revolucionado no eixo vertical. As extremidades carregam os
- * ENCAIXES (F5): a peça de baixo termina num anel macho, a de cima começa
- * numa canaleta fêmea — é isso que garante que qualquer parte encaixa em
- * qualquer outra.
+ * eixo em cima) revolucionado. O corpo pode ainda curvar a própria ESPINHA
+ * (deslocamento lateral em S, com as pontas sempre verticais) — os encaixes
+ * continuam horizontais e padronizados (F5), e a inclinação da espinha fica
+ * dentro do balanço imprimível (F4).
  */
 
 import { ENCAIXES, RAIO_LIVRE_MIOLO_MM, REGRAS } from "./regras";
@@ -45,6 +45,16 @@ export interface ParametrosCorpo {
   profundidadeGomosMm: number;
   /** Giro dos gomos da base ao topo, em graus (espiral). */
   torcaoGraus: number;
+  /** Espinha: deslocamento lateral do topo, em mm (corpo em S). */
+  deslocamentoMm: number;
+  /** Espinha: onde a dobra acontece, -1 (baixo) a +1 (alto). */
+  posicaoDobra: number;
+  /**
+   * Silhueta livre (modo avançado): 5 raios de controle em
+   * t = 0,1 / 0,3 / 0,5 / 0,7 / 0,9. Quando presente, substitui
+   * bojo/posição/ondulação; gomos e espinha continuam valendo.
+   */
+  perfilLivre?: number[];
 }
 
 export interface ParametrosDifusor {
@@ -63,16 +73,58 @@ export interface AnelEncaixe {
   alturaMm: number;
 }
 
+/** Espinha curva do corpo (para a malha e para a cena). */
+export interface EspinhaLateral {
+  deslocamentoMm: number;
+  posicaoDobra: number;
+  alturaMm: number;
+}
+
 const RA = ENCAIXES.baseCorpo.raioMm;
 const RB = ENCAIXES.corpoDifusor.raioMm;
 
 /** Raio mínimo de qualquer ponto do perfil (fecha o sólido sem degenerar). */
 const RAIO_EIXO_MM = 0.6;
 
+/** Posições (t) dos 5 raios de controle da silhueta livre. */
+export const TS_PERFIL_LIVRE = [0.1, 0.3, 0.5, 0.7, 0.9] as const;
+
+/**
+ * Deslocamento lateral máximo da espinha para uma dada altura — derivado de
+ * F4: com a dobra em S a inclinação de pico é ~1,5·d/(0,7·h), e reservamos
+ * margem para a inclinação do próprio perfil. ⚑ validar impresso.
+ */
+export function deslocamentoMaximoMm(alturaMm: number): number {
+  return Math.min(80, Math.round(0.22 * alturaMm));
+}
+
+/** Fator 0→1 da dobra em S (pontas com tangente vertical). */
+function fatorEspinha(t: number, posicaoDobra: number): number {
+  const u = Math.min(1, Math.max(0, t));
+  const k = Math.pow(2, Math.min(1, Math.max(-1, posicaoDobra)));
+  const v = Math.pow(u, k);
+  return v * v * (3 - 2 * v);
+}
+
+/** Deslocamento X do eixo do corpo numa altura y, em mm. */
+export function deslocamentoEspinhaMm(
+  yMm: number,
+  espinha: EspinhaLateral
+): number {
+  if (!espinha.deslocamentoMm || espinha.alturaMm <= 0) return 0;
+  const d = Math.min(
+    Math.abs(espinha.deslocamentoMm),
+    deslocamentoMaximoMm(espinha.alturaMm)
+  );
+  return (
+    Math.sign(espinha.deslocamentoMm) *
+    d *
+    fatorEspinha(yMm / espinha.alturaMm, espinha.posicaoDobra)
+  );
+}
+
 /**
  * Anel macho no topo de uma peça (a face superior fica em `y`).
- * Continua o meridiano a partir do ponto (raio da interface, y) e termina
- * no eixo, pronto para a tampa.
  */
 export function pontosMacho(anel: AnelEncaixe, y: number): Ponto2D[] {
   return [
@@ -86,8 +138,6 @@ export function pontosMacho(anel: AnelEncaixe, y: number): Ponto2D[] {
 
 /**
  * Canaleta fêmea no fundo de uma peça (a face inferior fica em y = 0).
- * Começa o meridiano no eixo e termina na borda externa da canaleta,
- * pronto para emendar na parede lateral.
  */
 export function pontosFemea(anel: AnelEncaixe, folgaMm: number): Ponto2D[] {
   const profundidade = anel.alturaMm + ENCAIXES.folgaProfundidadeMm;
@@ -102,9 +152,14 @@ export function pontosFemea(anel: AnelEncaixe, folgaMm: number): Ponto2D[] {
 
 /**
  * Perfil da base. `escala` é o alargamento imposto pela estabilidade (E2).
- * Termina no anel macho do encaixe base↔corpo (F5).
+ * `comMacho` = false gera a base sem o anel central (usada na base dupla,
+ * que recebe pastilhas de encaixe nas duas posições).
  */
-export function perfilBase(p: ParametrosBase, escala = 1): Ponto2D[] {
+export function perfilBase(
+  p: ParametrosBase,
+  escala = 1,
+  comMacho = true
+): Ponto2D[] {
   const r = p.raioMm * escala;
   const h = p.alturaMm;
   const pontos: Ponto2D[] = [{ x: RAIO_EIXO_MM, y: 0 }];
@@ -124,43 +179,126 @@ export function perfilBase(p: ParametrosBase, escala = 1): Ponto2D[] {
             : RA;
     pontos.push({ x: Math.max(rr, RAIO_EIXO_MM), y: u * h });
   }
-  pontos.push(...pontosMacho(ENCAIXES.baseCorpo.anel, h));
+  if (comMacho) pontos.push(...pontosMacho(ENCAIXES.baseCorpo.anel, h));
+  else pontos.push({ x: RAIO_EIXO_MM, y: h });
   return pontos;
 }
 
+/** Catmull-Rom 1D com extremos presos, para a silhueta livre. */
+function interpolarCatmull(ts: number[], vs: number[], u: number): number {
+  let i = ts.length - 2;
+  for (let k = 0; k < ts.length - 1; k++) {
+    if (u >= ts[k] && u <= ts[k + 1]) {
+      i = k;
+      break;
+    }
+  }
+  if (u < ts[0]) i = 0;
+  const x = (u - ts[i]) / (ts[i + 1] - ts[i]);
+  const p1 = vs[i];
+  const p2 = vs[i + 1];
+  const p0 = i > 0 ? vs[i - 1] : p1;
+  const p3 = i + 2 < vs.length ? vs[i + 2] : p2;
+  return (
+    0.5 *
+    (2 * p1 +
+      (p2 - p0) * x +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * x * x +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * x * x * x)
+  );
+}
+
 /**
- * Perfil do corpo. Fêmea embaixo (recebe a base), macho em cima (recebe o
- * difusor). O miolo elétrico é um cilindro proibido que o perfil nunca
- * invade; perto da canaleta, a parede também não afunda na fêmea.
+ * Perfil do corpo. Fêmea embaixo, macho em cima. No modo silhueta livre os
+ * raios de controle passam por uma CASCATA DE CLAMPS: miolo elétrico, pé da
+ * canaleta e inclinação máxima F4 (reduzida quando a espinha está curvada) —
+ * arrastar além do permitido só "encosta" no limite, nunca dá erro.
  */
 export function perfilCorpo(
   p: ParametrosCorpo,
   folgaMm = ENCAIXES.folgaPadraoMm
 ): Ponto2D[] {
-  const { alturaMm: h, volumeBojoMm, posicaoBojo, ondulacao, amplitudeOndaMm } =
-    p;
-  const k = Math.pow(2, -posicaoBojo * 1.2);
+  const { alturaMm: h } = p;
   const anelBase = ENCAIXES.baseCorpo.anel;
   const alturaFemea = anelBase.alturaMm + ENCAIXES.folgaProfundidadeMm;
-  // Parede mínima em volta da canaleta (F2) — o pé do corpo não pode afinar
-  // a ponto de furar a fêmea.
   const raioPeMm =
     anelBase.externoMm + folgaMm + REGRAS.F.paredeEstruturalMm.min;
 
-  const pontos = pontosFemea(anelBase, folgaMm);
   const n = 56;
-  for (let i = 0; i <= n; i++) {
-    const u = i / n;
-    let rr = RA + (RB - RA) * u;
-    rr += volumeBojoMm * Math.sin(Math.PI * Math.pow(u, k));
-    rr += amplitudeOndaMm * Math.sin(u * ondulacao * Math.PI * 2);
-    rr = Math.max(rr, RAIO_LIVRE_MIOLO_MM);
-    const y = u * h;
-    if (y < alturaFemea + 1) rr = Math.max(rr, raioPeMm);
-    pontos.push({ x: rr, y });
+  const livre =
+    p.perfilLivre && p.perfilLivre.length === TS_PERFIL_LIVRE.length
+      ? p.perfilLivre
+      : null;
+
+  const raios: number[] = [];
+  if (livre) {
+    const ts = [0, ...TS_PERFIL_LIVRE, 1];
+    const vs = [RA, ...livre, RB];
+    for (let i = 0; i <= n; i++) raios.push(interpolarCatmull(ts, vs, i / n));
+  } else {
+    const k = Math.pow(2, -p.posicaoBojo * 1.2);
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      let rr = RA + (RB - RA) * u;
+      rr += p.volumeBojoMm * Math.sin(Math.PI * Math.pow(u, k));
+      rr += p.amplitudeOndaMm * Math.sin(u * p.ondulacao * Math.PI * 2);
+      raios.push(rr);
+    }
   }
+
+  // Cascata de clamps (na ordem: piso físico, depois inclinação F4).
+  const dY = h / n;
+  const dNorm = Math.min(
+    Math.abs(p.deslocamentoMm ?? 0),
+    deslocamentoMaximoMm(h)
+  );
+  const tanMax = Math.max(
+    0.25,
+    Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180) -
+      (1.5 * dNorm) / (0.7 * h)
+  );
+  for (let i = 0; i <= n; i++) {
+    raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
+    if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
+  }
+  if (livre) {
+    for (let i = 1; i <= n; i++) {
+      raios[i] = Math.min(
+        Math.max(raios[i], raios[i - 1] - tanMax * dY),
+        raios[i - 1] + tanMax * dY
+      );
+    }
+    for (let i = n - 1; i >= 0; i--) {
+      raios[i] = Math.min(
+        Math.max(raios[i], raios[i + 1] - tanMax * dY),
+        raios[i + 1] + tanMax * dY
+      );
+      raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
+      if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
+    }
+  }
+
+  const pontos = pontosFemea(anelBase, folgaMm);
+  for (let i = 0; i <= n; i++) pontos.push({ x: raios[i], y: i * dY });
   pontos.push(...pontosMacho(ENCAIXES.corpoDifusor.anel, h));
   return pontos;
+}
+
+/** Raios da silhueta atual nos 5 pontos de controle (para iniciar o editor). */
+export function amostrarRaiosCorpo(p: ParametrosCorpo): number[] {
+  const semLivre = { ...p, perfilLivre: undefined };
+  const perfil = perfilCorpo(semLivre);
+  const lateral = perfil.filter(
+    (q) => q.y >= 0 && q.y <= p.alturaMm && q.x >= RAIO_LIVRE_MIOLO_MM - 0.01
+  );
+  return TS_PERFIL_LIVRE.map((t) => {
+    const alvo = t * p.alturaMm;
+    let melhor = lateral[0];
+    for (const q of lateral) {
+      if (Math.abs(q.y - alvo) < Math.abs(melhor.y - alvo)) melhor = q;
+    }
+    return Math.round(melhor.x * 2) / 2;
+  });
 }
 
 /** Perfil do difusor. Fêmea embaixo (encaixa no topo do corpo). */
@@ -209,7 +347,6 @@ export function areaLateralMm2(perfil: Ponto2D[]): number {
 
 /**
  * Maior ângulo de balanço do perfil, em graus da vertical.
- * Uso: validação automática (Backend) e testes — deve ser ≤ F4.
  */
 export function anguloBalancoMaximoGraus(perfil: Ponto2D[]): number {
   let pior = 0;
