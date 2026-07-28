@@ -2,6 +2,12 @@
 
 Luminárias **de mesa** impressas em 3D, fabricadas sob demanda. O cliente monta ou cria a própria luminária num configurador web; criadores publicam partes e ganham royalties. Referência de mercado: [Gantri](https://www.gantri.com).
 
+## Notas vivas (dia a dia)
+
+- [[Decisões]] — o que já foi decidido e o que está em aberto
+- [[Roadmap e pendências]] — trilhas de negócio e de código, com checkboxes
+- [[Regras (resumo)]] — cola rápida das regras com os números
+
 ## Mapa do projeto
 
 ### Produto (documentos)
