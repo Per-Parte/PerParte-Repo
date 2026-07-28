@@ -156,11 +156,11 @@ export default function Configurador() {
           <div className="absolute left-6 top-4 rounded-lg border border-[#DDD8CC] bg-[#FBFAF7]/80 px-2.5 py-1.5 text-[11.5px] text-[#6E695E]">
             encaixes fixos{" "}
             <b className="font-semibold text-[#26241F]">
-              Ø{oDiametroCm(ENCAIXES.baseCorpoRaioMm)}
+              Ø{oDiametroCm(ENCAIXES.baseCorpo.raioMm)}
             </b>{" "}
             e{" "}
             <b className="font-semibold text-[#26241F]">
-              Ø{oDiametroCm(ENCAIXES.corpoDifusorRaioMm)} cm
+              Ø{oDiametroCm(ENCAIXES.corpoDifusor.raioMm)} cm
             </b>{" "}
             · partes livres
           </div>
@@ -220,8 +220,8 @@ export default function Configurador() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 border-t border-[#DDD8CC] px-5 py-2 text-[11px] text-[#6E695E]">
-            <span className="mr-1">STL de produção (teste):</span>
+          <div className="flex flex-wrap items-center gap-2 border-t border-[#DDD8CC] px-5 py-2 text-[11px] text-[#6E695E]">
+            <span>STL de produção (teste):</span>
             {(["base", "corpo", "difusor"] as const).map((p) => (
               <button
                 key={p}
@@ -231,6 +231,16 @@ export default function Configurador() {
               >
                 {gerandoSTL === p ? "gerando…" : p}
               </button>
+            ))}
+            <span className="ml-1">· kit de encaixe F5:</span>
+            {[0.2, 0.3, 0.4].map((f) => (
+              <a
+                key={f}
+                href={`/api/calibracao?folgaMm=${f}`}
+                className="rounded-md border border-[#DDD8CC] bg-white px-2 py-1 hover:border-[#6E695E]"
+              >
+                {String(f).replace(".", ",")}
+              </a>
             ))}
           </div>
 

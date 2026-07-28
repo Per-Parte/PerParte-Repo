@@ -53,13 +53,28 @@ export const REGRAS = {
 } as const;
 
 /**
- * F5 · Encaixes padronizados — os raios das duas interfaces fixas, em mm.
- * "Definida uma vez, testada, e nunca mais tocada." Valores do protótipo
- * conceitual (Ø 5,2 cm e Ø 3,8 cm). ⚑ validar com peças impressas reais.
+ * F5 · Encaixes padronizados — as duas interfaces fixas, em mm.
+ * "Definida uma vez, testada, e nunca mais tocada."
+ *
+ * `raioMm` é o raio externo da peça na interface (Ø 5,2 e Ø 3,8 cm, do
+ * protótipo). `anel` é o encaixe físico: um anel macho que sobe da peça de
+ * baixo e entra numa canaleta fêmea na peça de cima. A fêmea abre
+ * `folga` além do macho em cada superfície de contato.
+ * ⚑ TODAS as medidas de anel e folga aguardam o kit de calibração impresso.
  */
 export const ENCAIXES = {
-  baseCorpoRaioMm: 26,
-  corpoDifusorRaioMm: 19,
+  baseCorpo: {
+    raioMm: 26,
+    anel: { externoMm: 24, internoMm: 20, alturaMm: 6 },
+  },
+  corpoDifusor: {
+    raioMm: 19,
+    anel: { externoMm: 17, internoMm: 14, alturaMm: 5 },
+  },
+  /** Ponto de partida no meio da faixa F5 (0,2–0,4 mm). ⚑ */
+  folgaPadraoMm: 0.3,
+  /** Alívio no fundo da canaleta para o macho assentar na face, não no fundo. */
+  folgaProfundidadeMm: 0.2,
 } as const;
 
 /**

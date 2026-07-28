@@ -1,18 +1,17 @@
 /**
  * Geometria paramétrica do arquétipo de revolução — base, corpo e difusor.
  *
- * Portado do protótipo (`prototipo/configurador.html`), convertido para mm.
  * TypeScript puro e determinístico, sem dependência de Three.js: o mesmo
- * perfil que desenha o preview no navegador gera, no servidor, a malha de
- * produção (STL). "O que você viu é o que a gente imprime" é consequência
- * desta arquitetura.
+ * perfil que desenha o preview no navegador gera a malha de produção (STL).
  *
- * Toda parte é um perfil 2D (raio × altura) revolucionado no eixo Y.
- * As extremidades dos perfis terminam nos raios dos ENCAIXES (F5) — é isso
- * que garante que qualquer parte encaixa em qualquer outra.
+ * Toda parte é um perfil 2D (meridiano raio × altura, do eixo embaixo ao
+ * eixo em cima) revolucionado no eixo vertical. As extremidades carregam os
+ * ENCAIXES (F5): a peça de baixo termina num anel macho, a de cima começa
+ * numa canaleta fêmea — é isso que garante que qualquer parte encaixa em
+ * qualquer outra.
  */
 
-import { ENCAIXES, RAIO_LIVRE_MIOLO_MM } from "./regras";
+import { ENCAIXES, RAIO_LIVRE_MIOLO_MM, REGRAS } from "./regras";
 
 export interface Ponto2D {
   /** Raio (distância ao eixo de revolução), em mm. */
@@ -48,35 +47,60 @@ export interface ParametrosDifusor {
   raioMm: number;
 }
 
-const RA = ENCAIXES.baseCorpoRaioMm;
-const RB = ENCAIXES.corpoDifusorRaioMm;
+export interface AnelEncaixe {
+  externoMm: number;
+  internoMm: number;
+  alturaMm: number;
+}
+
+const RA = ENCAIXES.baseCorpo.raioMm;
+const RB = ENCAIXES.corpoDifusor.raioMm;
 
 /** Raio mínimo de qualquer ponto do perfil (fecha o sólido sem degenerar). */
 const RAIO_EIXO_MM = 0.6;
 
-function amostrar(fn: (t: number) => [number, number], n: number): Ponto2D[] {
-  const pontos: Ponto2D[] = [];
-  for (let i = 0; i <= n; i++) {
-    const [x, y] = fn(i / n);
-    pontos.push({ x: Math.max(x, RAIO_EIXO_MM), y });
-  }
-  return pontos;
+/**
+ * Anel macho no topo de uma peça (a face superior fica em `y`).
+ * Continua o meridiano a partir do ponto (raio da interface, y) e termina
+ * no eixo, pronto para a tampa.
+ */
+export function pontosMacho(anel: AnelEncaixe, y: number): Ponto2D[] {
+  return [
+    { x: anel.externoMm, y },
+    { x: anel.externoMm, y: y + anel.alturaMm },
+    { x: anel.internoMm, y: y + anel.alturaMm },
+    { x: anel.internoMm, y },
+    { x: RAIO_EIXO_MM, y },
+  ];
 }
 
 /**
- * Perfil da base. `escala` é o alargamento imposto pela estabilidade (E2):
- * a base cresce sozinha em vez de bloquear o cliente com um erro.
- * Termina sempre no encaixe base↔corpo (F5).
+ * Canaleta fêmea no fundo de uma peça (a face inferior fica em y = 0).
+ * Começa o meridiano no eixo e termina na borda externa da canaleta,
+ * pronto para emendar na parede lateral.
+ */
+export function pontosFemea(anel: AnelEncaixe, folgaMm: number): Ponto2D[] {
+  const profundidade = anel.alturaMm + ENCAIXES.folgaProfundidadeMm;
+  return [
+    { x: RAIO_EIXO_MM, y: 0 },
+    { x: anel.internoMm - folgaMm, y: 0 },
+    { x: anel.internoMm - folgaMm, y: profundidade },
+    { x: anel.externoMm + folgaMm, y: profundidade },
+    { x: anel.externoMm + folgaMm, y: 0 },
+  ];
+}
+
+/**
+ * Perfil da base. `escala` é o alargamento imposto pela estabilidade (E2).
+ * Termina no anel macho do encaixe base↔corpo (F5).
  */
 export function perfilBase(p: ParametrosBase, escala = 1): Ponto2D[] {
   const r = p.raioMm * escala;
   const h = p.alturaMm;
-  return amostrar((t) => {
-    if (t === 0) return [RAIO_EIXO_MM, 0];
-    if (t >= 1) return [RAIO_EIXO_MM, h];
-    const u = (t - 0.06) / 0.88;
-    if (u < 0) return [r * 0.97, 0];
-    if (u > 1) return [RA, h];
+  const pontos: Ponto2D[] = [{ x: RAIO_EIXO_MM, y: 0 }];
+  const n = 26;
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
     let rr: number;
     if (p.curva === "reta") rr = r - (r - RA) * Math.pow(u, 6);
     else if (p.curva === "cone") rr = r + (RA - r) * u;
@@ -88,38 +112,63 @@ export function perfilBase(p: ParametrosBase, escala = 1): Ponto2D[] {
           : u < 0.63
             ? r - (r - RA) * ((u - 0.55) / 0.08)
             : RA;
-    return [rr, u * h];
-  }, 26);
+    pontos.push({ x: Math.max(rr, RAIO_EIXO_MM), y: u * h });
+  }
+  pontos.push(...pontosMacho(ENCAIXES.baseCorpo.anel, h));
+  return pontos;
 }
 
 /**
- * Perfil do corpo. Vai do encaixe base↔corpo ao encaixe corpo↔difusor (F5);
- * o miolo elétrico é um cilindro proibido que o perfil nunca invade.
+ * Perfil do corpo. Fêmea embaixo (recebe a base), macho em cima (recebe o
+ * difusor). O miolo elétrico é um cilindro proibido que o perfil nunca
+ * invade; perto da canaleta, a parede também não afunda na fêmea.
  */
-export function perfilCorpo(p: ParametrosCorpo): Ponto2D[] {
+export function perfilCorpo(
+  p: ParametrosCorpo,
+  folgaMm = ENCAIXES.folgaPadraoMm
+): Ponto2D[] {
   const { alturaMm: h, volumeBojoMm, posicaoBojo, ondulacao, amplitudeOndaMm } =
     p;
   const k = Math.pow(2, -posicaoBojo * 1.2);
-  return amostrar((t) => {
-    if (t === 0) return [RAIO_EIXO_MM, 0];
-    if (t >= 1) return [RAIO_EIXO_MM, h];
-    const u = Math.min(Math.max((t - 0.02) / 0.96, 0), 1);
+  const anelBase = ENCAIXES.baseCorpo.anel;
+  const alturaFemea = anelBase.alturaMm + ENCAIXES.folgaProfundidadeMm;
+  // Parede mínima em volta da canaleta (F2) — o pé do corpo não pode afinar
+  // a ponto de furar a fêmea.
+  const raioPeMm =
+    anelBase.externoMm + folgaMm + REGRAS.F.paredeEstruturalMm.min;
+
+  const pontos = pontosFemea(anelBase, folgaMm);
+  const n = 56;
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
     let rr = RA + (RB - RA) * u;
     rr += volumeBojoMm * Math.sin(Math.PI * Math.pow(u, k));
     rr += amplitudeOndaMm * Math.sin(u * ondulacao * Math.PI * 2);
     rr = Math.max(rr, RAIO_LIVRE_MIOLO_MM);
-    return [rr, u * h];
-  }, 56);
+    const y = u * h;
+    if (y < alturaFemea + 1) rr = Math.max(rr, raioPeMm);
+    pontos.push({ x: rr, y });
+  }
+  pontos.push(...pontosMacho(ENCAIXES.corpoDifusor.anel, h));
+  return pontos;
 }
 
-/** Perfil do difusor. Nasce no encaixe corpo↔difusor (F5). */
-export function perfilDifusor(p: ParametrosDifusor): Ponto2D[] {
+/** Perfil do difusor. Fêmea embaixo (encaixa no topo do corpo). */
+export function perfilDifusor(
+  p: ParametrosDifusor,
+  folgaMm = ENCAIXES.folgaPadraoMm
+): Ponto2D[] {
   const { forma, alturaMm: dh, raioMm: dr } = p;
-  return amostrar((t) => {
-    const u = t;
+  const pontos = pontosFemea(ENCAIXES.corpoDifusor.anel, folgaMm);
+  const n = 34;
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
     let rr: number;
     if (forma === "globo") {
-      if (u >= 1) return [RAIO_EIXO_MM, dh];
+      if (u >= 1) {
+        pontos.push({ x: RAIO_EIXO_MM, y: dh });
+        continue;
+      }
       rr = RB + (dr - RB) * Math.sin(Math.PI * Math.pow(u, 0.9));
     } else if (forma === "sino") {
       rr = RB + (dr - RB) * Math.pow(u, 1.6);
@@ -129,8 +178,9 @@ export function perfilDifusor(p: ParametrosDifusor): Ponto2D[] {
       rr = RB + (dr - RB) * Math.min(1, u * 3.2);
       if (u > 0.92) rr -= (u - 0.92) * (dr - RB);
     }
-    return [rr, u * dh];
-  }, 34);
+    pontos.push({ x: Math.max(rr, RAIO_EIXO_MM), y: u * dh });
+  }
+  return pontos;
 }
 
 /** Área lateral do sólido de revolução, em mm² (insumo do peso/preço). */

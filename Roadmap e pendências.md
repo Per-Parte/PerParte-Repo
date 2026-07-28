@@ -17,7 +17,8 @@
 ## Trilha de código (Claude)
 
 - [x] **Gerador de STL no servidor** — mesmo núcleo do preview ✓ 28/07/2026
-- [ ] **Geometria real dos encaixes** (macho/fêmea + folga F5) nos STLs — hoje as partes só se empilham; imprimir e testar folga 0,2–0,4 mm com o sócio
+- [x] **Geometria real dos encaixes** (anel macho/fêmea, folga F5) nos STLs + kit de calibração no site ✓ 28/07/2026
+- [ ] **Sócio imprime o kit de calibração** (botões 0,2 / 0,3 / 0,4 no configurador) e escolhe a folga → travar F5 em `regras.ts` para sempre
 - [ ] Abstração de **arquétipos** no núcleo → famílias novas (task light, planos dobrados) rumo à variedade Gantri
 - [ ] Contas + salvar criações (Supabase) — embrião do marketplace
 - [ ] Landing e vitrine do marketplace (esboço rápido via Lovable)

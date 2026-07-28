@@ -59,3 +59,36 @@ export function malhaRevolucao(perfil: Ponto2D[], segmentos: number): Malha {
 
   return { posicoes, indices: Uint32Array.from(indices) };
 }
+
+/** Desloca a malha no plano da mesa de impressão (X/Y), em mm. */
+export function transladarMalha(m: Malha, dxMm: number, dyMm: number): Malha {
+  const posicoes = new Float32Array(m.posicoes);
+  for (let i = 0; i < posicoes.length; i += 3) {
+    posicoes[i] += dxMm;
+    posicoes[i + 1] += dyMm;
+  }
+  return { posicoes, indices: m.indices };
+}
+
+/** Une malhas independentes num único arquivo (sólidos separados na mesa). */
+export function unirMalhas(...malhas: Malha[]): Malha {
+  let nV = 0;
+  let nI = 0;
+  for (const m of malhas) {
+    nV += m.posicoes.length;
+    nI += m.indices.length;
+  }
+  const posicoes = new Float32Array(nV);
+  const indices = new Uint32Array(nI);
+  let oV = 0;
+  let oI = 0;
+  for (const m of malhas) {
+    posicoes.set(m.posicoes, oV);
+    for (let i = 0; i < m.indices.length; i++) {
+      indices[oI + i] = m.indices[i] + oV / 3;
+    }
+    oV += m.posicoes.length;
+    oI += m.indices.length;
+  }
+  return { posicoes, indices };
+}
