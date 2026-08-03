@@ -209,10 +209,13 @@ function interpolarCatmull(ts: number[], vs: number[], u: number): number {
 }
 
 /**
- * Perfil do corpo. Fêmea embaixo, macho em cima. No modo silhueta livre os
- * raios de controle passam por uma CASCATA DE CLAMPS: miolo elétrico, pé da
- * canaleta e inclinação máxima F4 (reduzida quando a espinha está curvada) —
- * arrastar além do permitido só "encosta" no limite, nunca dá erro.
+ * Perfil do corpo. Fêmea embaixo, macho em cima. Os raios de QUALQUER
+ * caminho (bojo/ondas ou silhueta livre) passam por uma CASCATA DE CLAMPS:
+ * miolo elétrico, pé da canaleta e inclinação máxima F4 (reduzida quando a
+ * espinha está curvada). Sliders isolados dentro da faixa não garantem a
+ * combinação — 12 ondas de 6 mm num corpo baixo passariam de 77° de
+ * balanço — então arrastar além do permitido só "encosta" no limite,
+ * nunca dá erro.
  */
 export function perfilCorpo(
   p: ParametrosCorpo,
@@ -261,21 +264,19 @@ export function perfilCorpo(
     raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
     if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
   }
-  if (livre) {
-    for (let i = 1; i <= n; i++) {
-      raios[i] = Math.min(
-        Math.max(raios[i], raios[i - 1] - tanMax * dY),
-        raios[i - 1] + tanMax * dY
-      );
-    }
-    for (let i = n - 1; i >= 0; i--) {
-      raios[i] = Math.min(
-        Math.max(raios[i], raios[i + 1] - tanMax * dY),
-        raios[i + 1] + tanMax * dY
-      );
-      raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
-      if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
-    }
+  for (let i = 1; i <= n; i++) {
+    raios[i] = Math.min(
+      Math.max(raios[i], raios[i - 1] - tanMax * dY),
+      raios[i - 1] + tanMax * dY
+    );
+  }
+  for (let i = n - 1; i >= 0; i--) {
+    raios[i] = Math.min(
+      Math.max(raios[i], raios[i + 1] - tanMax * dY),
+      raios[i + 1] + tanMax * dY
+    );
+    raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
+    if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
   }
 
   const pontos = pontosFemea(anelBase, folgaMm);
