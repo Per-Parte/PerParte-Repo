@@ -21,6 +21,7 @@ import {
 import Cena3D from "./Cena3D";
 import PainelMontar from "./PainelMontar";
 import PainelCriar from "./PainelCriar";
+import BotaoSalvar from "./BotaoSalvar";
 import { codificarCriacao, decodificarCriacao } from "@/lib/criacao";
 
 export type ParteAlvo = "base" | "corpo" | "difusor";
@@ -420,9 +421,12 @@ export default function Configurador() {
                 {String(f).replace(".", ",")}
               </a>
             ))}
+            <span className="ml-auto">
+              <BotaoSalvar />
+            </span>
             <button
               onClick={copiarLink}
-              className={`ml-auto rounded-full border px-2.5 py-1 transition-colors ${
+              className={`rounded-full border px-2.5 py-1 transition-colors ${
                 copiado
                   ? "border-[#8FB07E]/40 text-[#8FB07E]"
                   : "border-white/10 bg-white/[0.04] text-[#A69D8D] hover:border-white/25 hover:text-[#E7E0D2]"
@@ -568,6 +572,9 @@ export default function Configurador() {
                 {String(f).replace(".", ",")}
               </a>
             ))}
+            <span className="ml-1.5">
+              <BotaoSalvar />
+            </span>
             <button
               onClick={copiarLink}
               className={`ml-1.5 rounded-full border px-2.5 py-1 transition-colors ${
