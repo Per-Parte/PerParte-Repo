@@ -8,6 +8,11 @@ Empresa brasileira de luminárias impressas em 3D, fabricadas sob demanda. O cli
 
 A regra mestra do configurador: **se a ferramenta deixou criar, a Per Parte consegue fabricar.** O cliente nunca vê erro de fabricação — ele vê controles que não vão até onde não podem.
 
+## Onde as coisas moram (decisão de 02/08/2026)
+
+- **Este repositório** = código + documentação oficial. Sincroniza por **Git** entre os sócios.
+- **As notas vivas do dia a dia** (INICIO, Decisões, Roadmap, Regras-resumo, atas, ideias) moram numa pasta **separada**, fora deste repositório, sincronizada entre os sócios pelo **Obsidian Sync** (no Windows do Caio: `Documents\Per Parte — Notas`). Nunca misturar as duas: clone de código dentro de cofre do Obsidian já causou duplicação em cascata entre as máquinas.
+
 ## Estrutura deste repositório
 
 - `docs/documento-mestre.md` — **fonte de verdade do produto** (versão consolidada, 03/08/2026). Reúne tudo sobre produto, regras e forma de trabalho; quem lê só este entende o projeto inteiro. Substitui os documentos abaixo, mantidos como histórico.
