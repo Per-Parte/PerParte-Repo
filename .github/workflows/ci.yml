@@ -1,0 +1,36 @@
+# CI da Per Parte — roda a cada push e pull request.
+#
+# Proteção para dois sócios no mesmo repositório: nenhum push quebra o
+# núcleo de regras (testes), o padrão de código (lint) nem o site (build).
+# A Vercel faz o deploy por conta própria; este workflow é o selo de que
+# o que subiu está são.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint (apps/web)
+        run: npm run lint
+
+      - name: Testes do núcleo (packages/nucleo)
+        run: npm test
+
+      - name: Build do site (apps/web)
+        run: npm run build
