@@ -10,19 +10,20 @@ A regra mestra do configurador: **se a ferramenta deixou criar, a Per Parte cons
 
 ## Estrutura deste repositório
 
-- `docs/briefing-inicial.md` — contexto da empresa e da ideia (leitura rápida).
-- `docs/produto-e-regras-v0.1.md` — conceito completo do produto: anatomia da luminária, modos Montar/Criar, marketplace.
-- `docs/regras-do-produto-v0.2.md` — **fonte de verdade das regras**: especificação numerada (F=fabricação, S=segurança, E=estabilidade, M=marketplace, IP=propriedade intelectual), cada uma com valor de partida e onde é aplicada (Ferramenta / Backend / Curadoria).
-- `prototipo/configurador.html` — protótipo navegável do configurador (arquivo único, canvas 3D próprio, zero dependências). Abrir direto no navegador.
+- `docs/documento-mestre.md` — **fonte de verdade do produto** (versão consolidada, 03/08/2026). Reúne tudo sobre produto, regras e forma de trabalho; quem lê só este entende o projeto inteiro. Substitui os documentos abaixo, mantidos como histórico.
+- `docs/briefing-inicial.md`, `docs/produto-e-regras-v0.1.md`, `docs/regras-do-produto-v0.2.md` — rascunhos anteriores, histórico.
+- `apps/web` — o configurador real (Next.js + React Three Fiber).
+- `packages/nucleo` (`@per-parte/nucleo`) — regras do produto como código e geração de geometria paramétrica; mesmo código gera o preview no navegador e o STL de produção no servidor.
+- `prototipo/configurador.html` — protótipo original (arquivo único, canvas 3D próprio, zero dependências). Histórico; a versão real está em `apps/web`.
 
 ## Regras para trabalhar neste projeto
 
 - Idioma dos docs e da UI: **português (pt-BR)**.
-- As regras numeradas em `docs/regras-do-produto-v0.2.md` são a fonte de verdade. Valores marcados com ⚑ são provisórios (aguardam validação com as impressoras reais do sócio) — não os trate como definitivos nem invente valores novos sem marcar como proposta.
-- Regras de segurança elétrica (S1–S6) são invioláveis em qualquer implementação: só LED ≤ 9 W, distância mínima lâmpada↔parede ≥ 25 mm, cliente nunca desenha nada condutor, kernel elétrico fechado e certificado.
-- No modo Criar, geometria é sempre paramétrica (sólidos de revolução + texturas), nunca CAD livre. Limites de fabricação viram limites de sliders, não mensagens de erro.
-- Decisões ainda abertas (não implementar como se estivessem decididas): kernel E27 vs. LED integrado (aguarda consultoria sobre Portaria INMETRO 231/2026), percentual de royalty, nomes definitivos dos modos, exclusividade da licença de criadores.
+- `docs/documento-mestre.md` é a fonte de verdade. Valores marcados com ⚑ são provisórios (aguardam validação com as impressoras reais do sócio) — não os trate como definitivos nem invente valores novos sem marcar como proposta. ✗ = ninguém decidiu ainda.
+- Regras de segurança elétrica são invioláveis em qualquer implementação: só LED ≤ 9 W, distância mínima lâmpada↔parede ≥ 25 mm, cliente nunca desenha nada condutor, kernel elétrico fechado e certificado.
+- No modo Criar, geometria é sempre paramétrica (sólidos de revolução + texturas), nunca CAD livre. Limites de fabricação viram limites de controles, não mensagens de erro.
+- Decisões ainda abertas (não implementar como se estivessem decididas): kernel E27 vs. LED integrado (aguarda consultoria sobre Portaria INMETRO 231/2026), percentual de royalty, nomes definitivos dos modos (Montar/Criar vs. Compor/Esculpir), exclusividade da licença de criadores, escopo do lançamento (K1 + Montar vs. incluir Criar).
 
-## Estado atual e próximos passos prováveis
+## Estado atual
 
-Fase de conceito validado em protótipo. Próximos passos de código: evoluir o protótipo para um configurador real (stack a definir — o protótipo atual é vanilla JS de propósito, para não ancorar a escolha), geração de malha/STL no backend a partir dos parâmetros, cálculo de preço por estimativa de material/tempo, e o fluxo de publicação no marketplace.
+Configurador real em produção: [per-parte-web.vercel.app](https://per-parte-web.vercel.app) (`apps/web`), com modos Montar e Criar, geração de STL de produção, kit de calibração de encaixe (F5), links compartilháveis de criação, e interface em órbita ao redor da luminária. Próximas frentes: contas e galeria de criações (marketplace), arquétipos além da revolução (task light, formas planas), decisões de negócio pendentes acima.
