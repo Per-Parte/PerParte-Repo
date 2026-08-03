@@ -8,10 +8,11 @@ Empresa brasileira de luminárias impressas em 3D, fabricadas sob demanda. O cli
 
 A regra mestra do configurador: **se a ferramenta deixou criar, a Per Parte consegue fabricar.** O cliente nunca vê erro de fabricação — ele vê controles que não vão até onde não podem.
 
-## Onde as coisas moram (decisão de 02/08/2026)
+## Onde as coisas moram (decisão de 02/08/2026; Sync no ar desde 03/08/2026)
 
-- **Este repositório** = código + documentação oficial. Sincroniza por **Git** entre os sócios.
-- **As notas vivas do dia a dia** (INICIO, Decisões, Roadmap, Regras-resumo, atas, ideias) moram numa pasta **separada**, fora deste repositório, sincronizada entre os sócios pelo **Obsidian Sync** (no Windows do Caio: `Documents\Per Parte — Notas`). Nunca misturar as duas: clone de código dentro de cofre do Obsidian já causou duplicação em cascata entre as máquinas.
+- **Este repositório** = código + documentação oficial. Sincroniza por **Git** entre os sócios (`git pull` no começo da sessão, `git push` no fim).
+- **As notas vivas do dia a dia** (INICIO, Decisões, Roadmap, Regras-resumo, atas, ideias) moram numa pasta **separada**, fora deste repositório, sincronizada entre os sócios pelo **Obsidian Sync** — cofre remoto único **"Per Parte - Original"**. Nome da pasta local difere por máquina (Windows do Caio: `Documents\Per Parte — Notas`; Mac do Davi: "Per Parte - Original") — é o mesmo cofre. Nunca misturar notas e código: clone de código dentro de cofre do Obsidian já causou duplicação em cascata entre as máquinas.
+- ⚠️ No Windows do Caio, o clone deste repo fica em `Documents\Projeto Per Parte` — nome parecido com o do antigo cofre bagunçado já causou exclusão acidental da pasta (03/08/2026, recuperada da Lixeira). **Nunca apagar essa pasta**; sessões do Claude Code devem ser abertas nela.
 
 ## Estrutura deste repositório
 
