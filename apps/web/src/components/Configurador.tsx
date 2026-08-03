@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   BASES,
@@ -87,6 +88,9 @@ export default function Configurador() {
     if (!param) return;
     const c = decodificarCriacao(param);
     if (!c) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- sincronização única
+       URL→estado na montagem: a URL é o sistema externo aqui, e o estado só
+       pode ser lido no cliente (window). */
     setModo(c.modo);
     setIBase(c.iBase);
     setICorpo(c.iCorpo);
@@ -100,6 +104,7 @@ export default function Configurador() {
     setRemixDe(
       c.remixDe || `${CORPOS[c.iCorpo].nome} + ${DIFUSORES[c.iDifusor].nome}`
     );
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Espelha a criação atual na URL — o endereço da página é sempre o link dela.
@@ -273,7 +278,7 @@ export default function Configurador() {
 
       {/* Cabeçalho flutuante */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-5">
-        <a href="/" className="pointer-events-auto block">
+        <Link href="/" className="pointer-events-auto block">
           <div className="text-[19px] font-extrabold tracking-[0.16em]">
             PER P
             <span
@@ -289,7 +294,7 @@ export default function Configurador() {
           <div className="text-[11px] text-[#A69D8D]">
             monte por partes. crie cada parte.
           </div>
-        </a>
+        </Link>
       </header>
 
       {/* Rodapé informativo da cena */}
