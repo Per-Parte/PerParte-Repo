@@ -7,6 +7,7 @@ import {
   CORPOS,
   DIFUSORES,
   ENCAIXES,
+  ESTRUTURAIS,
   FACETAS,
   PALETA,
   estabilidade,
@@ -14,6 +15,7 @@ import {
   perfilBase,
   perfilCorpo,
   perfilDifusor,
+  perfilEstrutural,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -42,6 +44,7 @@ const oDiametroCm = (raioMm: number) =>
 /** Seções que orbitam a luminária no desktop. */
 const SECOES_MONTAR = [
   { id: "base", rotulo: "Base" },
+  { id: "pilha", rotulo: "Empilhar" },
   { id: "corpo", rotulo: "Corpo" },
   { id: "difusor", rotulo: "Difusor" },
   { id: "luzes", rotulo: "Luzes" },
@@ -70,6 +73,8 @@ export default function Configurador() {
     corpo: 0,
     difusor: 1,
   });
+  /** Pilha de estruturais entre a base e o corpo (índices, de baixo para cima). */
+  const [estruturais, setEstruturais] = useState<number[]>([]);
   const [alvoCor, setAlvoCor] = useState<AlvoCor>("all");
   const [iFaceta, setIFaceta] = useState(0);
   const [luzAcesa, setLuzAcesa] = useState(true);
@@ -97,6 +102,7 @@ export default function Configurador() {
     setICorpo(c.iCorpo);
     setIDifusor(c.iDifusor);
     setCores(c.cores);
+    setEstruturais(c.estruturais);
     setIFaceta(c.iFaceta);
     setLuzAcesa(c.luzAcesa);
     setPontosDeLuz(c.pontosDeLuz);
@@ -118,6 +124,7 @@ export default function Configurador() {
         iCorpo,
         iDifusor,
         cores,
+        estruturais,
         iFaceta,
         luzAcesa,
         pontosDeLuz,
@@ -134,6 +141,7 @@ export default function Configurador() {
     iCorpo,
     iDifusor,
     cores,
+    estruturais,
     iFaceta,
     luzAcesa,
     pontosDeLuz,
@@ -189,20 +197,46 @@ export default function Configurador() {
     [corpo, difusor]
   );
 
+  // A pilha de estruturais sobe o corpo e o difusor: para a física (CG,
+  // alargamento E2) o efeito é o de um corpo mais alto na mesma coluna.
+  const pecasEstruturais = useMemo(
+    () => estruturais.map((i) => ESTRUTURAIS[i]),
+    [estruturais]
+  );
+  const alturaEstruturaisMm = pecasEstruturais.reduce(
+    (s, p) => s + p.alturaMm,
+    0
+  );
+  const corpoParaFisica = useMemo(
+    () =>
+      alturaEstruturaisMm > 0
+        ? { ...corpo, alturaMm: corpo.alturaMm + alturaEstruturaisMm }
+        : corpo,
+    [corpo, alturaEstruturaisMm]
+  );
+
   const estab = useMemo(
-    () => estabilidade(base, corpo, difusor, pontosDeLuz),
-    [base, corpo, difusor, pontosDeLuz]
+    () => estabilidade(base, corpoParaFisica, difusor, pontosDeLuz),
+    [base, corpoParaFisica, difusor, pontosDeLuz]
   );
   const perfis = useMemo(
     () => ({
       base: perfilBase(base, estab.escala, pontosDeLuz === 1),
       corpo: perfilCorpo(corpo),
       difusor: perfilDifusor(difusor),
+      estruturais: pecasEstruturais.map((p) => perfilEstrutural(p)),
     }),
-    [base, corpo, difusor, estab.escala, pontosDeLuz]
+    [base, corpo, difusor, estab.escala, pontosDeLuz, pecasEstruturais]
   );
   const { gramas, precoBRL } = useMemo(
-    () => estimarPreco(perfis.base, perfis.corpo, perfis.difusor, pontosDeLuz),
+    () =>
+      estimarPreco(
+        perfis.base,
+        perfis.corpo,
+        perfis.difusor,
+        pontosDeLuz,
+        perfis.estruturais
+      ),
     [perfis, pontosDeLuz]
   );
 
@@ -222,18 +256,21 @@ export default function Configurador() {
 
   const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
 
-  const [gerandoSTL, setGerandoSTL] = useState<ParteAlvo | null>(null);
-  async function baixarSTL(parte: ParteAlvo) {
-    setGerandoSTL(parte);
+  const [gerandoSTL, setGerandoSTL] = useState<string | null>(null);
+  async function baixarSTL(parte: ParteAlvo | "estrutural", indice = 0) {
+    const chave = parte === "estrutural" ? `estrutural-${indice}` : parte;
+    setGerandoSTL(chave);
     try {
       const resp = await fetch("/api/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           parte,
+          indice,
           base,
           corpo,
           difusor,
+          estruturais: pecasEstruturais,
           segmentos,
           pontosDeLuz,
           separacaoMm,
@@ -244,7 +281,10 @@ export default function Configurador() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `per-parte-${parte}.stl`;
+      a.download =
+        parte === "estrutural"
+          ? `per-parte-peca-${indice + 1}.stl`
+          : `per-parte-${parte}.stl`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
@@ -262,11 +302,13 @@ export default function Configurador() {
             base: base.alturaMm,
             corpo: corpo.alturaMm,
             difusor: difusor.alturaMm,
+            estruturais: pecasEstruturais.map((p) => p.alturaMm),
           }}
           coresHex={{
             base: PALETA[cores.base].hex,
             corpo: PALETA[cores.corpo].hex,
             difusor: PALETA[cores.difusor].hex,
+            estruturais: pecasEstruturais.map(() => PALETA[cores.corpo].hex),
           }}
           segmentos={segmentos}
           luzAcesa={luzAcesa}
@@ -350,6 +392,8 @@ export default function Configurador() {
               escolherBase={setIBase}
               escolherCorpo={setICorpo}
               escolherDifusor={setIDifusor}
+              estruturais={estruturais}
+              setEstruturais={setEstruturais}
               cores={cores}
               alvoCor={alvoCor}
               setAlvoCor={setAlvoCor}
@@ -409,6 +453,18 @@ export default function Configurador() {
                 className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
               >
                 {gerandoSTL === p ? "gerando…" : p}
+              </button>
+            ))}
+            {pecasEstruturais.map((p, k) => (
+              <button
+                key={`estrutural-${k}`}
+                onClick={() => baixarSTL("estrutural", k)}
+                disabled={gerandoSTL !== null}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+              >
+                {gerandoSTL === `estrutural-${k}`
+                  ? "gerando…"
+                  : p.nome.toLowerCase()}
               </button>
             ))}
             <span className="ml-1.5">kit F5:</span>
@@ -498,6 +554,8 @@ export default function Configurador() {
               escolherBase={setIBase}
               escolherCorpo={setICorpo}
               escolherDifusor={setIDifusor}
+              estruturais={estruturais}
+              setEstruturais={setEstruturais}
               cores={cores}
               alvoCor={alvoCor}
               setAlvoCor={setAlvoCor}
@@ -560,6 +618,18 @@ export default function Configurador() {
                 className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
               >
                 {gerandoSTL === p ? "gerando…" : p}
+              </button>
+            ))}
+            {pecasEstruturais.map((p, k) => (
+              <button
+                key={`estrutural-${k}`}
+                onClick={() => baixarSTL("estrutural", k)}
+                disabled={gerandoSTL !== null}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+              >
+                {gerandoSTL === `estrutural-${k}`
+                  ? "gerando…"
+                  : p.nome.toLowerCase()}
               </button>
             ))}
             <span className="ml-1.5">kit F5:</span>

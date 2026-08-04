@@ -10,7 +10,9 @@ import {
   BASES,
   CORPOS,
   DIFUSORES,
+  ESTRUTURAIS,
   FACETAS,
+  MAX_ESTRUTURAIS,
   PALETA,
   grampearBase,
   grampearCorpo,
@@ -28,6 +30,8 @@ export interface CriacaoV1 {
   iCorpo: number;
   iDifusor: number;
   cores: { base: number; corpo: number; difusor: number };
+  /** Pilha de estruturais entre a base e o corpo (índices do catálogo, de baixo para cima). */
+  estruturais: number[];
   iFaceta: number;
   luzAcesa: boolean;
   pontosDeLuz: 1 | 2;
@@ -67,6 +71,11 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
         corpo: indice(bruto.cores?.corpo, PALETA.length),
         difusor: indice(bruto.cores?.difusor, PALETA.length),
       },
+      estruturais: Array.isArray(bruto.estruturais)
+        ? bruto.estruturais
+            .slice(0, MAX_ESTRUTURAIS)
+            .map((e: unknown) => indice(e, ESTRUTURAIS.length))
+        : [],
       iFaceta: indice(bruto.iFaceta, FACETAS.length),
       luzAcesa: bruto.luzAcesa !== false,
       ...grampearLuminaria(bruto),

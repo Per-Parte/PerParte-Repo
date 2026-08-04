@@ -6,7 +6,7 @@
  * da regra mestra: nunca erro, sempre limite.
  */
 
-import { LIMITES_CRIAR } from "./catalogo";
+import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
 import {
   deslocamentoMaximoMm,
   TS_PERFIL_LIVRE,
@@ -15,6 +15,8 @@ import {
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
+  type ParametrosEstrutural,
+  type TipoEstrutural,
 } from "./geometria";
 
 interface Faixa {
@@ -113,6 +115,29 @@ export function grampearDifusor(
       0
     ),
   };
+}
+
+const TIPOS_ESTRUTURAIS: TipoEstrutural[] = ["haste", "anel"];
+
+export function grampearEstrutural(
+  p: Partial<ParametrosEstrutural>
+): ParametrosEstrutural {
+  const L = LIMITES_CRIAR.estrutural;
+  return {
+    tipo: TIPOS_ESTRUTURAIS.includes(p.tipo as TipoEstrutural)
+      ? (p.tipo as TipoEstrutural)
+      : "haste",
+    alturaMm: grampear(p.alturaMm, L.alturaMm, 100),
+    barrigaMm: grampear(p.barrigaMm, L.barrigaMm, 0),
+  };
+}
+
+/** A pilha vinda de fora: no máximo MAX_ESTRUTURAIS peças, cada uma grampeada. */
+export function grampearEstruturais(v: unknown): ParametrosEstrutural[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .slice(0, MAX_ESTRUTURAIS)
+    .map((e) => grampearEstrutural((e ?? {}) as Partial<ParametrosEstrutural>));
 }
 
 const SEGMENTOS_VALIDOS = [6, 8, 12, 16, 40];

@@ -93,9 +93,25 @@ function Parte({
 }
 
 export interface Cena3DProps {
-  perfis: { base: Ponto2D[]; corpo: Ponto2D[]; difusor: Ponto2D[] };
-  alturasMm: { base: number; corpo: number; difusor: number };
-  coresHex: { base: string; corpo: string; difusor: string };
+  perfis: {
+    base: Ponto2D[];
+    corpo: Ponto2D[];
+    difusor: Ponto2D[];
+    /** Pilha entre a base e o corpo, de baixo para cima. */
+    estruturais?: Ponto2D[][];
+  };
+  alturasMm: {
+    base: number;
+    corpo: number;
+    difusor: number;
+    estruturais?: number[];
+  };
+  coresHex: {
+    base: string;
+    corpo: string;
+    difusor: string;
+    estruturais?: string[];
+  };
   segmentos: number;
   luzAcesa: boolean;
   texturas?: { corpo?: TexturaRevolucao; difusor?: TexturaRevolucao };
@@ -115,10 +131,15 @@ export default function Cena3D({
   pontosDeLuz = 1,
   separacaoMm = 0,
 }: Cena3DProps) {
-  const totalMm = alturasMm.base + alturasMm.corpo + alturasMm.difusor;
+  // A pilha de estruturais vive entre a base e o corpo — soma altura a
+  // tudo que está acima dela.
+  const altEstruturais = alturasMm.estruturais ?? [];
+  const totalEstrMm = altEstruturais.reduce((s, h) => s + h, 0);
+  const yCorpoMm = alturasMm.base + totalEstrMm;
+  const totalMm = yCorpoMm + alturasMm.corpo + alturasMm.difusor;
   const alvoY = (totalMm * 0.52) / MM;
   const lampadaY =
-    (alturasMm.base + alturasMm.corpo + alturasMm.difusor * 0.45) / MM;
+    (yCorpoMm + alturasMm.corpo + alturasMm.difusor * 0.45) / MM;
 
   const dxTopoMm = espinhaCorpo
     ? deslocamentoEspinhaMm(alturasMm.corpo, espinhaCorpo)
@@ -179,11 +200,28 @@ export default function Cena3D({
             segmentos={40}
           />
         ))}
+      {(perfis.estruturais ?? []).map((perfil, k) => {
+        // Altura acumulada das estruturais abaixo desta.
+        const yK =
+          alturasMm.base +
+          altEstruturais.slice(0, k).reduce((s, h) => s + h, 0);
+        return colunas.map((c, i) => (
+          <Parte
+            key={`estrutural-${k}-${i}`}
+            perfil={perfil}
+            yMm={yK}
+            xMm={c.xCorpo}
+            giroY={c.giro}
+            cor={coresHex.estruturais?.[k] ?? coresHex.corpo}
+            segmentos={40}
+          />
+        ));
+      })}
       {colunas.map((c, i) => (
         <Parte
           key={`corpo-${i}`}
           perfil={perfis.corpo}
-          yMm={alturasMm.base}
+          yMm={yCorpoMm}
           xMm={c.xCorpo}
           giroY={c.giro}
           cor={coresHex.corpo}
@@ -196,7 +234,7 @@ export default function Cena3D({
         <Parte
           key={`difusor-${i}`}
           perfil={perfis.difusor}
-          yMm={alturasMm.base + alturasMm.corpo}
+          yMm={yCorpoMm + alturasMm.corpo}
           xMm={c.xTopo}
           cor={coresHex.difusor}
           segmentos={segmentos}

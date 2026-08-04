@@ -10,6 +10,7 @@ import type {
   ParametrosBase,
   ParametrosCorpo,
   ParametrosDifusor,
+  ParametrosEstrutural,
 } from "./geometria";
 
 export interface Cor {
@@ -65,6 +66,27 @@ export const CORPOS: CorpoOficial[] = [
   { nome: "Espiral", alturaMm: 180, volumeBojoMm: 10, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 12, profundidadeGomosMm: 3, torcaoGraus: 60, deslocamentoMm: 0, posicaoDobra: 0 },
   { nome: "Curva S", alturaMm: 190, volumeBojoMm: 4, posicaoBojo: 0, ondulacao: 0, amplitudeOndaMm: 0, gomos: 0, profundidadeGomosMm: 0, torcaoGraus: 0, deslocamentoMm: 40, posicaoDobra: 0.2 },
 ];
+
+export interface EstruturalOficial extends ParametrosEstrutural {
+  nome: string;
+}
+
+/**
+ * Peças estruturais empilháveis — vivem entre a base e o corpo, fêmea e
+ * macho da MESMA interface base↔corpo nas duas pontas (F5): qualquer uma
+ * monta sobre qualquer outra. Hastes dão altura; anéis dão ritmo.
+ */
+export const ESTRUTURAIS: EstruturalOficial[] = [
+  { nome: "Junco", tipo: "haste", alturaMm: 120, barrigaMm: 0 },
+  { nome: "Fuso", tipo: "haste", alturaMm: 110, barrigaMm: 10 },
+  { nome: "Cinta", tipo: "haste", alturaMm: 100, barrigaMm: -8 },
+  { nome: "Colar", tipo: "anel", alturaMm: 24, barrigaMm: 4 },
+  { nome: "Gola", tipo: "anel", alturaMm: 32, barrigaMm: 9 },
+  { nome: "Aro", tipo: "anel", alturaMm: 24, barrigaMm: 0 },
+];
+
+/** Máximo de peças estruturais na pilha (entre a base e o corpo). */
+export const MAX_ESTRUTURAIS = 3;
 
 export interface DifusorOficial extends ParametrosDifusor {
   nome: string;
@@ -126,6 +148,10 @@ export const LIMITES_CRIAR = {
     raioMm: { min: 40, max: 90, passo: 2.5 },
     gomos: { min: 0, max: 24, passo: 2 },
     profundidadeGomosMm: { min: 0, max: 3, passo: 0.5 },
+  },
+  estrutural: {
+    alturaMm: { min: 20, max: 160, passo: 2 },
+    barrigaMm: { min: -10, max: 14, passo: 1 },
   },
   luminaria: {
     /** Distância entre as duas colunas no modo de dois pontos de luz. */

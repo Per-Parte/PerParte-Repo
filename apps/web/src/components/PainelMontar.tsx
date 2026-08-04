@@ -1,6 +1,14 @@
 "use client";
 
-import { BASES, CORPOS, DIFUSORES, LIMITES_CRIAR, PALETA } from "@per-parte/nucleo";
+import {
+  BASES,
+  CORPOS,
+  DIFUSORES,
+  ESTRUTURAIS,
+  LIMITES_CRIAR,
+  MAX_ESTRUTURAIS,
+  PALETA,
+} from "@per-parte/nucleo";
 import { Chips, PontosDeLuzCtl, Secao } from "./controles";
 import type { AlvoCor, CoresPartes } from "./Configurador";
 
@@ -18,6 +26,9 @@ interface Props {
   escolherBase: (i: number) => void;
   escolherCorpo: (i: number) => void;
   escolherDifusor: (i: number) => void;
+  /** Pilha de estruturais entre a base e o corpo (índices, de baixo para cima). */
+  estruturais: number[];
+  setEstruturais: (e: number[]) => void;
   cores: CoresPartes;
   alvoCor: AlvoCor;
   setAlvoCor: (a: AlvoCor) => void;
@@ -37,6 +48,8 @@ export default function PainelMontar({
   escolherBase,
   escolherCorpo,
   escolherDifusor,
+  estruturais,
+  setEstruturais,
   cores,
   alvoCor,
   setAlvoCor,
@@ -61,6 +74,74 @@ export default function PainelMontar({
         />
       </Secao>
       )}
+      {vis("pilha") && (
+      <Secao titulo="Empilhar — a luminária cresce por peças">
+        {/* A pilha, de cima para baixo: difusor / corpo / estruturais / base. */}
+        <div className="mb-3 space-y-1.5">
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
+            difusor · <b className="text-[#A69D8D]">{DIFUSORES[iDifusor].nome}</b>
+          </div>
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
+            corpo · <b className="text-[#A69D8D]">{CORPOS[iCorpo].nome}</b>
+          </div>
+          {[...estruturais].reverse().map((ie, kInv) => {
+            const k = estruturais.length - 1 - kInv;
+            return (
+              <div
+                key={`slot-${k}`}
+                className="rounded-xl border border-[#D3AC6C]/25 bg-[#D3AC6C]/[0.05] px-3.5 py-2.5"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-wider text-[#A69D8D]">
+                    {ESTRUTURAIS[ie].tipo === "anel" ? "anel" : "haste"} ·{" "}
+                    {(ESTRUTURAIS[ie].alturaMm / 10)
+                      .toFixed(1)
+                      .replace(".", ",")}{" "}
+                    cm
+                  </span>
+                  <button
+                    onClick={() =>
+                      setEstruturais(estruturais.filter((_, j) => j !== k))
+                    }
+                    className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-[#A69D8D] transition-colors hover:border-[#E06A55]/50 hover:text-[#E06A55]"
+                  >
+                    remover
+                  </button>
+                </div>
+                <Chips
+                  nomes={ESTRUTURAIS.map((e) => e.nome)}
+                  selecionado={ie}
+                  aoEscolher={(i) =>
+                    setEstruturais(estruturais.map((v, j) => (j === k ? i : v)))
+                  }
+                />
+              </div>
+            );
+          })}
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
+            base · <b className="text-[#A69D8D]">{BASES[iBase].nome}</b>
+          </div>
+        </div>
+        {estruturais.length < MAX_ESTRUTURAIS ? (
+          <button
+            onClick={() => setEstruturais([...estruturais, 0])}
+            className="w-full rounded-full border border-dashed border-white/20 py-2.5 text-[12.5px] text-[#A69D8D] transition-colors hover:border-[#D3AC6C]/60 hover:text-[#D3AC6C]"
+          >
+            + somar uma peça entre a base e o corpo
+          </button>
+        ) : (
+          <div className="text-center text-[10.5px] text-[#7d766a]">
+            pilha cheia — até {MAX_ESTRUTURAIS} peças entre a base e o corpo
+          </div>
+        )}
+        <div className="mt-2.5 text-[10px] leading-relaxed text-[#7d766a]">
+          Os encaixes são os mesmos em toda peça (F5): tudo monta em tudo, em
+          qualquer ordem. É assim que uma luminária de meio metro sai de uma
+          impressora comum — em impressões separadas.
+        </div>
+      </Secao>
+      )}
+
       {vis("corpo") && (
       <Secao titulo="Corpo">
         <Chips

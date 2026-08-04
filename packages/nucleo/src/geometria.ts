@@ -285,6 +285,73 @@ export function perfilCorpo(
   return pontos;
 }
 
+export type TipoEstrutural = "haste" | "anel";
+
+export interface ParametrosEstrutural {
+  tipo: TipoEstrutural;
+  alturaMm: number;
+  /** Barriga do perfil, em mm (negativo = cintura). */
+  barrigaMm: number;
+}
+
+/**
+ * Perfil de uma peça estrutural empilhável (haste ou anel) — vive entre a
+ * base e o corpo. Fêmea base↔corpo embaixo e macho base↔corpo em cima: é a
+ * MESMA interface nas duas pontas, então qualquer estrutural monta sobre
+ * qualquer outra, em qualquer ordem e quantidade (F5) — é assim que uma
+ * luminária de 480 mm cabe numa impressora de 300. As pontas ficam presas
+ * em RA; a barriga passa pela mesma cascata de clamps do corpo (miolo
+ * elétrico, pé da canaleta, inclinação F4).
+ */
+export function perfilEstrutural(
+  p: ParametrosEstrutural,
+  folgaMm = ENCAIXES.folgaPadraoMm
+): Ponto2D[] {
+  const h = p.alturaMm;
+  const anel = ENCAIXES.baseCorpo.anel;
+  const alturaFemea = anel.alturaMm + ENCAIXES.folgaProfundidadeMm;
+  const raioPeMm = anel.externoMm + folgaMm + REGRAS.F.paredeEstruturalMm.min;
+
+  const n = 40;
+  const dY = h / n;
+  const raios: number[] = [];
+  for (let i = 0; i <= n; i++) {
+    raios.push(RA + p.barrigaMm * Math.sin(Math.PI * (i / n)));
+  }
+
+  // Cascata de clamps — piso físico, depois inclinação F4 (como no corpo).
+  // No topo o assento do macho exige a parede de volta em RA; o piso do
+  // macho é simétrico ao do pé da fêmea.
+  const tanMax = Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180);
+  const piso = (i: number) => {
+    const y = i * dY;
+    let r = RAIO_LIVRE_MIOLO_MM;
+    if (y < alturaFemea + 1 || y > h - anel.alturaMm - 1) {
+      r = Math.max(r, raioPeMm);
+    }
+    return r;
+  };
+  for (let i = 0; i <= n; i++) raios[i] = Math.max(raios[i], piso(i));
+  for (let i = 1; i <= n; i++) {
+    raios[i] = Math.min(
+      Math.max(raios[i], raios[i - 1] - tanMax * dY),
+      raios[i - 1] + tanMax * dY
+    );
+  }
+  for (let i = n - 1; i >= 0; i--) {
+    raios[i] = Math.min(
+      Math.max(raios[i], raios[i + 1] - tanMax * dY),
+      raios[i + 1] + tanMax * dY
+    );
+    raios[i] = Math.max(raios[i], piso(i));
+  }
+
+  const pontos = pontosFemea(anel, folgaMm);
+  for (let i = 0; i <= n; i++) pontos.push({ x: raios[i], y: i * dY });
+  pontos.push(...pontosMacho(anel, h));
+  return pontos;
+}
+
 /** Raios da silhueta atual nos 5 pontos de controle (para iniciar o editor). */
 export function amostrarRaiosCorpo(p: ParametrosCorpo): number[] {
   const semLivre = { ...p, perfilLivre: undefined };

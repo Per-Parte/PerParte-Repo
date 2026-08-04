@@ -5,12 +5,14 @@ import {
   grampearBase,
   grampearCorpo,
   grampearDifusor,
+  grampearEstruturais,
   grampearLuminaria,
   grampearSegmentos,
   malhaRevolucao,
   perfilBase,
   perfilCorpo,
   perfilDifusor,
+  perfilEstrutural,
   perfilPastilhaMacho,
   transladarMalha,
   unirMalhas,
@@ -18,7 +20,7 @@ import {
   type TexturaRevolucao,
 } from "@per-parte/nucleo";
 
-const PARTES = ["base", "corpo", "difusor"] as const;
+const PARTES = ["base", "corpo", "difusor", "estrutural"] as const;
 type Parte = (typeof PARTES)[number];
 
 /** Acabamento "Liso" sobe para resolução de produção; facetas são design e ficam exatas. */
@@ -30,7 +32,7 @@ export async function POST(req: Request) {
   const dados = await req.json().catch(() => null);
   if (!dados || !PARTES.includes(dados.parte)) {
     return Response.json(
-      { erro: "informe parte: base | corpo | difusor" },
+      { erro: "informe parte: base | corpo | difusor | estrutural" },
       { status: 400 }
     );
   }
@@ -40,10 +42,50 @@ export async function POST(req: Request) {
   const base = grampearBase(dados.base ?? {});
   const corpo = grampearCorpo(dados.corpo ?? {});
   const difusor = grampearDifusor(dados.difusor ?? {});
+  const estruturais = grampearEstruturais(dados.estruturais);
   const segmentos = grampearSegmentos(dados.segmentos);
   const luminaria = grampearLuminaria(dados);
 
-  const est = estabilidade(base, corpo, difusor, luminaria.pontosDeLuz);
+  // A pilha sobe corpo e difusor: para o alargamento da base (E2) o efeito
+  // é o de um corpo mais alto — mesmo cálculo da Ferramenta.
+  const alturaEstruturaisMm = estruturais.reduce((s, p) => s + p.alturaMm, 0);
+  const corpoParaFisica =
+    alturaEstruturaisMm > 0
+      ? { ...corpo, alturaMm: corpo.alturaMm + alturaEstruturaisMm }
+      : corpo;
+  const est = estabilidade(
+    base,
+    corpoParaFisica,
+    difusor,
+    luminaria.pontosDeLuz
+  );
+
+  if (parte === "estrutural") {
+    const indice = Math.min(
+      Math.max(0, Math.trunc(Number(dados.indice) || 0)),
+      Math.max(0, estruturais.length - 1)
+    );
+    if (!estruturais.length) {
+      return Response.json(
+        { erro: "a pilha está vazia — envie estruturais" },
+        { status: 400 }
+      );
+    }
+    const malhaEstrutural = malhaRevolucao(
+      perfilEstrutural(estruturais[indice]),
+      SEGMENTOS_PRODUCAO_LISO
+    );
+    const stlEstrutural = gerarSTLBinario(
+      malhaEstrutural,
+      `estrutural-${indice + 1}`
+    );
+    return new Response(new Blob([stlEstrutural.buffer as ArrayBuffer]), {
+      headers: {
+        "Content-Type": "model/stl",
+        "Content-Disposition": `attachment; filename="per-parte-peca-${indice + 1}.stl"`,
+      },
+    });
+  }
 
   let malha;
   if (parte === "base") {
