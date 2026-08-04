@@ -7,6 +7,7 @@
  */
 
 import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
+import { grampearCorteBorda } from "./terminacao";
 import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
 import { grampearVazado } from "./vazados";
 import {
@@ -120,11 +121,13 @@ export function grampearDifusor(
 ): ParametrosDifusor {
   const L = LIMITES_CRIAR.difusor;
   const vazado = grampearVazado(p.vazado);
+  const alturaMm = grampear(p.alturaMm, L.alturaMm, 100);
+  const corte = grampearCorteBorda(p.corte, alturaMm);
   return {
     forma: FORMAS.includes(p.forma as FormaDifusor)
       ? (p.forma as FormaDifusor)
       : "globo",
-    alturaMm: grampear(p.alturaMm, L.alturaMm, 100),
+    alturaMm,
     raioMm: grampear(p.raioMm, L.raioMm, 65),
     gomos: Math.round(grampear(p.gomos, L.gomos, 0)),
     profundidadeGomosMm: grampear(
@@ -133,6 +136,7 @@ export function grampearDifusor(
       0
     ),
     ...(vazado ? { vazado } : {}),
+    ...(corte ? { corte } : {}),
   };
 }
 

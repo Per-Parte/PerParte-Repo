@@ -14,6 +14,7 @@ import {
   type FacetasRevolucao,
   type Ponto2D,
 } from "./geometria";
+import { deltaCorteMm, type CorteBorda } from "./terminacao";
 import {
   profundidadeEfetivaTexturaMm,
   valorTextura,
@@ -69,11 +70,17 @@ export function malhaRevolucao(
   segmentos: number,
   textura?: TexturaRevolucao,
   espinha?: EspinhaLateral,
-  facetas?: FacetasRevolucao
+  facetas?: FacetasRevolucao,
+  corte?: CorteBorda
 ): Malha {
   const nAneis = perfil.length;
   const nVertices = nAneis * segmentos + 2;
   const posicoes = new Float32Array(nVertices * 3);
+
+  // Corte de terminação (z(θ)): a borda livre desce para topo − δ(θ).
+  // `min` é monótono, então anéis nunca se invertem e a malha continua
+  // estanque; abaixo do corte nada muda.
+  const yTopoMm = corte ? Math.max(...perfil.map((p) => p.y)) : 0;
 
   // Texturas pedem malha fina; acabamentos facetados (poucos segmentos) são
   // um estilo próprio e desligam a textura — regra como ferramenta, sem erro.
@@ -152,10 +159,14 @@ export function malhaRevolucao(
           r = rf;
         }
       }
+      let z = perfil[j].y;
+      if (corte) {
+        z = Math.min(z, yTopoMm - deltaCorteMm(corte, i / segmentos));
+      }
       const o = (j * segmentos + i) * 3;
       posicoes[o] = dx + r * Math.cos(th);
       posicoes[o + 1] = r * Math.sin(th);
-      posicoes[o + 2] = perfil[j].y;
+      posicoes[o + 2] = z;
     }
   }
 
@@ -169,7 +180,11 @@ export function malhaRevolucao(
   posicoes[apiceSuperior * 3] = espinha
     ? deslocamentoEspinhaMm(perfil[nAneis - 1].y, espinha)
     : 0;
-  posicoes[apiceSuperior * 3 + 2] = perfil[nAneis - 1].y;
+  // Com corte, o ápice fica no fundo do corte — o leque da tampa nunca
+  // sobe acima da borda cortada em nenhum θ.
+  posicoes[apiceSuperior * 3 + 2] = corte
+    ? Math.min(perfil[nAneis - 1].y, yTopoMm - corte.profundidadeMm)
+    : perfil[nAneis - 1].y;
 
   const indices: number[] = [];
 

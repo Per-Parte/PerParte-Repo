@@ -15,6 +15,7 @@ import {
   mascaraVazado,
   modulaPorTheta,
   perfilPastilhaMacho,
+  type CorteBorda,
   type EspinhaLateral,
   type FacetasRevolucao,
   type ParametrosVazado,
@@ -40,6 +41,8 @@ interface ParteProps {
   vazado?: ParametrosVazado;
   /** Facetas geométricas na lateral (encaixes ficam redondos — F5). */
   facetas?: FacetasRevolucao;
+  /** Corte da borda livre (z(θ)): oblíquo ou dentes — só no difusor. */
+  corte?: CorteBorda;
 }
 
 /**
@@ -59,6 +62,7 @@ function Parte({
   luzAcesa = false,
   vazado,
   facetas,
+  corte,
 }: ParteProps) {
   const geometria = useMemo(() => {
     // Facetado/squircle é um estilo próprio e desliga a textura (regra
@@ -78,7 +82,8 @@ function Parte({
       seg,
       comFacetas ? undefined : textura,
       espinha,
-      facetas
+      facetas,
+      corte
     );
     const pos = new Float32Array(m.posicoes.length);
     for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
@@ -104,7 +109,7 @@ function Parte({
       g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
     }
     return g;
-  }, [perfil, segmentos, textura, espinha, vazado, facetas]);
+  }, [perfil, segmentos, textura, espinha, vazado, facetas, corte]);
 
   useEffect(() => () => geometria.dispose(), [geometria]);
 
@@ -203,6 +208,8 @@ export interface Cena3DProps {
   vazadoDifusor?: ParametrosVazado;
   /** Superelipse (squircle): expoente do acabamento, quando escolhido. */
   expoente?: number;
+  /** Corte da borda livre do difusor (oblíquo/dentes). */
+  corteDifusor?: CorteBorda;
 }
 
 export default function Cena3D({
@@ -217,6 +224,7 @@ export default function Cena3D({
   separacaoMm = 0,
   vazadoDifusor,
   expoente,
+  corteDifusor,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
   // tudo que está acima dela.
@@ -369,6 +377,7 @@ export default function Cena3D({
           luzAcesa={luzAcesa}
           vazado={vazadoDifusor}
           facetas={facetasDifusor}
+          corte={corteDifusor}
         />
       ))}
 

@@ -198,12 +198,15 @@ export async function POST(req: Request) {
       : comTextura
         ? SEGMENTOS_PRODUCAO_GOMOS
         : SEGMENTOS_PRODUCAO_LISO;
+    // Corte de borda (z(θ)) é malha pura e SAI em produção — só no difusor,
+    // cuja terminação de cima é livre (o topo do corpo carrega o macho F5).
     malha = malhaRevolucao(
       perfil,
       segmentosParte,
       comTheta ? undefined : textura,
       espinha,
-      facetas
+      facetas,
+      parte === "difusor" ? difusor.corte : undefined
     );
   }
 

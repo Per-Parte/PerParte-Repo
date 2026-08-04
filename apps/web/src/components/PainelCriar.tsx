@@ -7,11 +7,14 @@ import {
   DIFUSORES,
   FACETAS,
   FAMILIAS_TEXTURA,
+  LIMITES_CORTE_BORDA,
   LIMITES_CRIAR,
   LIMITES_VAZADO,
   NOMES_FAMILIAS,
   PADROES_VAZADO,
+  profundidadeMaximaCorteMm,
   REGRAS,
+  TIPOS_CORTE_BORDA,
   type CurvaBase,
   type FamiliaTextura,
   type ResultadoEstabilidade,
@@ -419,6 +422,83 @@ export default function PainelCriar({
             nota="com a luz acesa, o plissê vira desenho de sombra na parede"
           />
         </div>
+        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
+          Borda de cima
+        </div>
+        <Chips
+          nomes={["Reta", ...TIPOS_CORTE_BORDA.map((t) => t.nome)]}
+          selecionado={
+            criar.difusor.corte
+              ? 1 +
+                TIPOS_CORTE_BORDA.findIndex(
+                  (t) => t.id === criar.difusor.corte?.tipo
+                )
+              : 0
+          }
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                corte:
+                  i === 0
+                    ? undefined
+                    : {
+                        tipo: TIPOS_CORTE_BORDA[i - 1].id,
+                        profundidadeMm:
+                          criar.difusor.corte?.profundidadeMm ?? 12,
+                        repeticao: criar.difusor.corte?.repeticao ?? 8,
+                      },
+              },
+            })
+          }
+        />
+        {criar.difusor.corte && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Profundidade do corte"
+              valorFmt={`${Math.round(criar.difusor.corte.profundidadeMm)} mm`}
+              valor={criar.difusor.corte.profundidadeMm}
+              min={LIMITES_CORTE_BORDA.profundidadeMm.min}
+              max={profundidadeMaximaCorteMm(criar.difusor.alturaMm)}
+              passo={LIMITES_CORTE_BORDA.profundidadeMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    corte: { ...criar.difusor.corte!, profundidadeMm: v },
+                  },
+                })
+              }
+              nota={
+                criar.difusor.corte.tipo === "obliquo"
+                  ? "a boca vira um plano inclinado — o corte cresce com a altura do difusor"
+                  : "coroa de dentes na borda — o corte cresce com a altura do difusor"
+              }
+              motivoMax="Mais fundo que isso o corte chegaria perto do encaixe — a borda de baixo é dele."
+            />
+            {criar.difusor.corte.tipo === "dentes" && (
+              <SliderCtl
+                rotulo="Dentes"
+                valorFmt={`${criar.difusor.corte.repeticao ?? 8} dentes`}
+                valor={criar.difusor.corte.repeticao ?? 8}
+                min={LIMITES_CORTE_BORDA.repeticao.min}
+                max={LIMITES_CORTE_BORDA.repeticao.max}
+                passo={LIMITES_CORTE_BORDA.repeticao.passo}
+                aoMudar={(v) =>
+                  aoMudar({
+                    ...criar,
+                    difusor: {
+                      ...criar.difusor,
+                      corte: { ...criar.difusor.corte!, repeticao: v },
+                    },
+                  })
+                }
+              />
+            )}
+          </div>
+        )}
         <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Vazado</div>
         <Chips
           nomes={["Nenhum", ...PADROES_VAZADO.map((p) => p.nome)]}

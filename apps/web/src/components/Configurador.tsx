@@ -336,6 +336,7 @@ export default function Configurador() {
           pontosDeLuz={pontosDeLuz}
           separacaoMm={separacaoEfetivaMm}
           vazadoDifusor={difusor.vazado}
+          corteDifusor={difusor.corte}
         />
       </div>
 

@@ -1,6 +1,7 @@
 export * from "./regras";
 export * from "./texturas";
 export * from "./vazados";
+export * from "./terminacao";
 export * from "./geometria";
 export * from "./estabilidade";
 export * from "./preco";

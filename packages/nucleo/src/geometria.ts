@@ -79,6 +79,11 @@ export interface ParametrosDifusor {
    * difusor vazado fica bloqueado na interface até lá).
    */
   vazado?: import("./vazados").ParametrosVazado;
+  /**
+   * Corte da borda livre (topo): oblíquo ou dentes — máquina z(θ).
+   * Diferente do vazado, é malha pura e SAI em produção.
+   */
+  corte?: import("./terminacao").CorteBorda;
 }
 
 export interface AnelEncaixe {
