@@ -108,7 +108,7 @@ export default function PaginaMinhasCriacoes() {
 
             {criacoes.length === 0 ? (
               <div className="vidro rounded-3xl p-10 text-center">
-                <p className="font-serif text-[22px]">Nada por aqui ainda.</p>
+                <p className="font-display text-[22px]">Nada por aqui ainda.</p>
                 <p className="mx-auto mt-2 max-w-[400px] text-[13px] text-[#A69D8D]">
                   Monte ou crie uma luminária no configurador e use o botão{" "}
                   <b className="text-[#E7E0D2]">salvar</b> — ela aparece aqui,

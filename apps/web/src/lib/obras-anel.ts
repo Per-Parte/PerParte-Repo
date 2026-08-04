@@ -1,0 +1,107 @@
+/**
+ * ARQUIVO GERADO por `node apps/web/scripts/gerar-obras-anel.mjs` — não editar à mão.
+ *
+ * As obras do Anel (§3.3): 5 fotos de campanha e 13 presets do catálogo,
+ * cada preset com o link ?c= que abre a criação no configurador.
+ */
+
+export interface ObraDoAnel {
+  /** Caminho da imagem em /public. */
+  src: string;
+  alt: string;
+  /** Destino do clique no card. */
+  href: string;
+}
+
+export const OBRAS_ANEL: ObraDoAnel[] = [
+  {
+    src: "/obras/mood-pp-01-manifesto-vermelho.jpg",
+    alt: "Luminária Per Parte vermelha em cena de campanha",
+    href: "/configurador",
+  },
+  {
+    src: "/obras/mood-pp-02-manifesto-bege.jpg",
+    alt: "Luminária Per Parte bege em cena de campanha",
+    href: "/configurador",
+  },
+  {
+    src: "/obras/mood-pp-03-manifesto-verde.jpg",
+    alt: "Luminária Per Parte verde em cena de campanha",
+    href: "/configurador",
+  },
+  {
+    src: "/obras/mood-pp-04-close-juncao.jpg",
+    alt: "Detalhe da junção entre duas partes de uma luminária",
+    href: "/configurador",
+  },
+  {
+    src: "/obras/mood-pp-05-obra-minima-quarto.jpg",
+    alt: "Obra mínima acesa na mesa de cabeceira de um quarto",
+    href: "/configurador",
+  },
+  {
+    src: "/obras/preset-01.svg",
+    alt: "Luminária com base Disco, corpo Coluna e difusor Globo",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjAsImlDb3JwbyI6MCwiaURpZnVzb3IiOjAsImNvcmVzIjp7ImJhc2UiOjcsImNvcnBvIjo0LCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-02.svg",
+    alt: "Luminária com base Prato, corpo Bojo e difusor Sino",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjEsImlDb3JwbyI6MSwiaURpZnVzb3IiOjEsImNvcmVzIjp7ImJhc2UiOjEwLCJjb3JwbyI6MiwiZGlmdXNvciI6MX0sImVzdHJ1dHVyYWlzIjpbXSwiaUZhY2V0YSI6MCwibHV6QWNlc2EiOnRydWUsInBvbnRvc0RlTHV6IjoxLCJzZXBhcmFjYW9NbSI6MTAwLCJwbGFjYSI6bnVsbCwiY3JpYXIiOnsiYmFzZSI6eyJhbHR1cmFNbSI6MjYsInJhaW9NbSI6ODIsImN1cnZhIjoicmV0YSJ9LCJjb3JwbyI6eyJhbHR1cmFNbSI6MTYwLCJ2b2x1bWVCb2pvTW0iOjAsInBvc2ljYW9Cb2pvIjowLCJvbmR1bGFjYW8iOjAsImFtcGxpdHVkZU9uZGFNbSI6MCwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjAsInRvcmNhb0dyYXVzIjowLCJkZXNsb2NhbWVudG9NbSI6MCwicG9zaWNhb0RvYnJhIjowfSwiZGlmdXNvciI6eyJmb3JtYSI6Imdsb2JvIiwiYWx0dXJhTW0iOjEwMCwicmFpb01tIjo2NSwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjB9fSwicmVtaXhEZSI6IiJ9",
+  },
+  {
+    src: "/obras/preset-03.svg",
+    alt: "Luminária com base Cone, corpo Torre e difusor Cone",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjIsImlDb3JwbyI6NCwiaURpZnVzb3IiOjIsImNvcmVzIjp7ImJhc2UiOjgsImNvcnBvIjozLCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-04.svg",
+    alt: "Luminária com base Prato, corpo Plissado e difusor Globo",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjEsImlDb3JwbyI6NSwiaURpZnVzb3IiOjAsImNvcmVzIjp7ImJhc2UiOjgsImNvcnBvIjoyLCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-05.svg",
+    alt: "Luminária com base Cone, corpo Espiral e difusor Sino",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjIsImlDb3JwbyI6NiwiaURpZnVzb3IiOjEsImNvcmVzIjp7ImJhc2UiOjQsImNvcnBvIjo3LCJkaWZ1c29yIjozfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-06.svg",
+    alt: "Luminária com base Degrau, corpo Ondas e difusor Lanterna",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjMsImlDb3JwbyI6MywiaURpZnVzb3IiOjMsImNvcmVzIjp7ImJhc2UiOjMsImNvcnBvIjo0LCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-07.svg",
+    alt: "Luminária com base Degrau, corpo Curva S e difusor Cone",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjMsImlDb3JwbyI6NywiaURpZnVzb3IiOjIsImNvcmVzIjp7ImJhc2UiOjIsImNvcnBvIjoxMCwiZGlmdXNvciI6MX0sImVzdHJ1dHVyYWlzIjpbXSwiaUZhY2V0YSI6MCwibHV6QWNlc2EiOnRydWUsInBvbnRvc0RlTHV6IjoxLCJzZXBhcmFjYW9NbSI6MTAwLCJwbGFjYSI6bnVsbCwiY3JpYXIiOnsiYmFzZSI6eyJhbHR1cmFNbSI6MjYsInJhaW9NbSI6ODIsImN1cnZhIjoicmV0YSJ9LCJjb3JwbyI6eyJhbHR1cmFNbSI6MTYwLCJ2b2x1bWVCb2pvTW0iOjAsInBvc2ljYW9Cb2pvIjowLCJvbmR1bGFjYW8iOjAsImFtcGxpdHVkZU9uZGFNbSI6MCwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjAsInRvcmNhb0dyYXVzIjowLCJkZXNsb2NhbWVudG9NbSI6MCwicG9zaWNhb0RvYnJhIjowfSwiZGlmdXNvciI6eyJmb3JtYSI6Imdsb2JvIiwiYWx0dXJhTW0iOjEwMCwicmFpb01tIjo2NSwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjB9fSwicmVtaXhEZSI6IiJ9",
+  },
+  {
+    src: "/obras/preset-08.svg",
+    alt: "Luminária com base Disco, corpo Torre e difusor Lanterna",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjAsImlDb3JwbyI6NCwiaURpZnVzb3IiOjMsImNvcmVzIjp7ImJhc2UiOjMsImNvcnBvIjoyLCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-09.svg",
+    alt: "Luminária com base Disco, corpo Cintura e difusor Plissê",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjAsImlDb3JwbyI6MiwiaURpZnVzb3IiOjQsImNvcmVzIjp7ImJhc2UiOjAsImNvcnBvIjoyLCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-10.svg",
+    alt: "Luminária com base Degrau, corpo Espiral e difusor Sino",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjMsImlDb3JwbyI6NiwiaURpZnVzb3IiOjEsImNvcmVzIjp7ImJhc2UiOjgsImNvcnBvIjoyLCJkaWZ1c29yIjozfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-11.svg",
+    alt: "Luminária com base Prato, corpo Cintura e difusor Globo",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjEsImlDb3JwbyI6MiwiaURpZnVzb3IiOjAsImNvcmVzIjp7ImJhc2UiOjcsImNvcnBvIjozLCJkaWZ1c29yIjoxfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+  {
+    src: "/obras/preset-12.svg",
+    alt: "Luminária com base Cone, corpo Bojo e difusor Plissê",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjIsImlDb3JwbyI6MSwiaURpZnVzb3IiOjQsImNvcmVzIjp7ImJhc2UiOjAsImNvcnBvIjoxMCwiZGlmdXNvciI6MX0sImVzdHJ1dHVyYWlzIjpbXSwiaUZhY2V0YSI6MCwibHV6QWNlc2EiOnRydWUsInBvbnRvc0RlTHV6IjoxLCJzZXBhcmFjYW9NbSI6MTAwLCJwbGFjYSI6bnVsbCwiY3JpYXIiOnsiYmFzZSI6eyJhbHR1cmFNbSI6MjYsInJhaW9NbSI6ODIsImN1cnZhIjoicmV0YSJ9LCJjb3JwbyI6eyJhbHR1cmFNbSI6MTYwLCJ2b2x1bWVCb2pvTW0iOjAsInBvc2ljYW9Cb2pvIjowLCJvbmR1bGFjYW8iOjAsImFtcGxpdHVkZU9uZGFNbSI6MCwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjAsInRvcmNhb0dyYXVzIjowLCJkZXNsb2NhbWVudG9NbSI6MCwicG9zaWNhb0RvYnJhIjowfSwiZGlmdXNvciI6eyJmb3JtYSI6Imdsb2JvIiwiYWx0dXJhTW0iOjEwMCwicmFpb01tIjo2NSwiZ29tb3MiOjAsInByb2Z1bmRpZGFkZUdvbW9zTW0iOjB9fSwicmVtaXhEZSI6IiJ9",
+  },
+  {
+    src: "/obras/preset-13.svg",
+    alt: "Luminária com base Disco, corpo Curva S e difusor Plissê",
+    href: "/configurador?c=eyJ2IjoxLCJtb2RvIjoibW9udGFyIiwiaUJhc2UiOjAsImlDb3JwbyI6NywiaURpZnVzb3IiOjQsImNvcmVzIjp7ImJhc2UiOjQsImNvcnBvIjoxLCJkaWZ1c29yIjozfSwiZXN0cnV0dXJhaXMiOltdLCJpRmFjZXRhIjowLCJsdXpBY2VzYSI6dHJ1ZSwicG9udG9zRGVMdXoiOjEsInNlcGFyYWNhb01tIjoxMDAsInBsYWNhIjpudWxsLCJjcmlhciI6eyJiYXNlIjp7ImFsdHVyYU1tIjoyNiwicmFpb01tIjo4MiwiY3VydmEiOiJyZXRhIn0sImNvcnBvIjp7ImFsdHVyYU1tIjoxNjAsInZvbHVtZUJvam9NbSI6MCwicG9zaWNhb0Jvam8iOjAsIm9uZHVsYWNhbyI6MCwiYW1wbGl0dWRlT25kYU1tIjowLCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MCwidG9yY2FvR3JhdXMiOjAsImRlc2xvY2FtZW50b01tIjowLCJwb3NpY2FvRG9icmEiOjB9LCJkaWZ1c29yIjp7ImZvcm1hIjoiZ2xvYm8iLCJhbHR1cmFNbSI6MTAwLCJyYWlvTW0iOjY1LCJnb21vcyI6MCwicHJvZnVuZGlkYWRlR29tb3NNbSI6MH19LCJyZW1peERlIjoiIn0",
+  },
+];

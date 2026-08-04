@@ -1,27 +1,25 @@
 import type { Metadata } from "next";
-import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-ui",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz"],
+// Display placeholder até a tipografia própria (B4). Exposta ao Tailwind
+// como --font-clash → utilitário font-display (globals.css @theme).
+const clashDisplay = localFont({
+  src: "../fontes/ClashDisplay-Semibold.woff2",
+  weight: "600",
+  variable: "--font-clash",
 });
 
 export const metadata: Metadata = {
-  title: "Per Parte — Configurador",
+  title: "Per Parte — Criado por você, feito por partes.",
   description:
-    "Luminárias impressas em 3D, montadas parte por parte. Esqueleto técnico do configurador.",
+    "Escolha cada parte — ou invente as suas. A gente imprime em 3D, sob demanda, e entrega uma obra que é só sua.",
 };
 
 export default function RootLayout({
@@ -32,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${inter.variable} ${clashDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

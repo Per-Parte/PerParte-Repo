@@ -1,31 +1,69 @@
 @import "tailwindcss";
 
-/* Per Parte — tema "galeria à noite": fundo escuro quente, luz âmbar. */
+/* Per Parte — fundamentos do redesign (docs/design-do-site-v1.md §2). */
 :root {
-  --fundo: #121110;
-  --tinta: #f2ede4;
-  --tinta2: #a69d8d;
-  /* acentos premium: cobre suave + champanhe */
-  --acento: #c08552;
-  --ambar: #d3ac6c;
-  --ok: #8fb07e;
-  --alerta: #e08a4a;
-  --perigo: #e06a55;
+  /* Constantes */
+  --luz-acesa: #F6E7C4;
+  --areia: #E4DCCB;
+  --palco-claro: #E7DFD0;
+  --palco-escuro: #1E1E1E;
+
+  /* Família ativa (default: Marco) — trocável por data-familia */
+  --dominante: #7D8C6F;      /* Verde Marco */
+  --acento: #D9A441;         /* Âmbar Marco */
+  --profundo: #2F4A3E;       /* Verde Profundo (topo de gradiente) */
+
+  /* Derivados */
+  --grad-hero: linear-gradient(180deg, var(--profundo) 0%, var(--areia) 62%);
+  --glow: radial-gradient(closest-side, var(--luz-acesa), transparent);
+  --raio-painel: 24px;
+  --raio-card: 12px;
+  --grain: 0.05; /* 0 desliga */
+
+  /* Motion */
+  --easing: cubic-bezier(0.22, 1, 0.36, 1);
 }
+[data-familia="brasa"] { --dominante:#B03A2E; --acento:#E5B22B; --profundo:#7B241C; }
+[data-familia="sol"]   { --dominante:#CC6B2C; --acento:#E5B22B; --profundo:#8C3D14; }
 
 @theme inline {
-  --color-background: var(--fundo);
-  --color-foreground: var(--tinta);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-fraunces);
+  --color-luz-acesa: var(--luz-acesa);
+  --color-areia: var(--areia);
+  --color-palco-claro: var(--palco-claro);
+  --color-palco-escuro: var(--palco-escuro);
+  --color-dominante: var(--dominante);
+  --color-acento: var(--acento);
+  --color-profundo: var(--profundo);
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-clash);
+  --ease-padrao: var(--easing);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
-  background: var(--fundo);
-  color: var(--tinta);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--palco-claro);
+  color: var(--palco-escuro);
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Grain — só no herói/campanha, nunca em áreas de leitura/ferramentas (§2). */
+.grao {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ——— Casca antiga do configurador (re-skin em fase própria) ——— */
 
 /* Painel de vidro */
 .vidro {
@@ -55,11 +93,11 @@ input[type="range"].ctl::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--tinta);
+  background: var(--luz-acesa);
   border: 2px solid var(--acento);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s var(--easing);
 }
 input[type="range"].ctl::-webkit-slider-thumb:hover {
   transform: scale(1.15);
@@ -68,7 +106,7 @@ input[type="range"].ctl::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--tinta);
+  background: var(--luz-acesa);
   border: 2px solid var(--acento);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   cursor: pointer;

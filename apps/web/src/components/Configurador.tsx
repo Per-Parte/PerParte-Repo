@@ -487,7 +487,7 @@ export default function Configurador() {
         <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex-1">
-              <div className="font-serif text-[25px] font-medium leading-none tabular-nums">
+              <div className="font-display text-[25px] font-medium leading-none tabular-nums">
                 R$ {precoBRL.toLocaleString("pt-BR")}
               </div>
               <div className="mt-1 text-[10px] text-[#7d766a]">
@@ -674,7 +674,7 @@ export default function Configurador() {
         <div className="vidro absolute bottom-5 left-1/2 z-20 -translate-x-1/2 rounded-3xl px-6 py-3 shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
             <div className="pr-2">
-              <div className="font-serif text-[22px] font-medium leading-none tabular-nums">
+              <div className="font-display text-[22px] font-medium leading-none tabular-nums">
                 R$ {precoBRL.toLocaleString("pt-BR")}
               </div>
               <div className="mt-1 whitespace-nowrap text-[10px] text-[#7d766a]">
