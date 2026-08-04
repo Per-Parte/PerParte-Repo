@@ -136,6 +136,16 @@ export async function POST(req: Request) {
         alturaMm: corpo.alturaMm,
       };
     } else {
+      // Difusor vazado: preview existe, produção aguarda booleanos no
+      // núcleo (manifold) — bloquear aqui é o backend não confiando na UI.
+      if (difusor.vazado) {
+        return Response.json(
+          {
+            erro: "difusor vazado ainda não tem STL de produção (⚑ booleanos) — remova o vazado para gerar",
+          },
+          { status: 422 }
+        );
+      }
       perfil = perfilDifusor(difusor);
       textura = {
         gomos: difusor.gomos,

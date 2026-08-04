@@ -318,6 +318,7 @@ export default function Configurador() {
           espinhaCorpo={espinhaCorpo}
           pontosDeLuz={pontosDeLuz}
           separacaoMm={separacaoEfetivaMm}
+          vazadoDifusor={difusor.vazado}
         />
       </div>
 
@@ -447,16 +448,24 @@ export default function Configurador() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] text-[#7d766a]">
             <span>STL:</span>
-            {(["base", "corpo", "difusor"] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => baixarSTL(p)}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === p ? "gerando…" : p}
-              </button>
-            ))}
+            {(["base", "corpo", "difusor"] as const).map((p) => {
+              const travadoPorVazado = p === "difusor" && !!difusor.vazado;
+              return (
+                <button
+                  key={p}
+                  onClick={() => baixarSTL(p)}
+                  disabled={gerandoSTL !== null || travadoPorVazado}
+                  title={
+                    travadoPorVazado
+                      ? "difusor vazado: preview pronto, produção em preparação — tire o vazado para gerar o STL"
+                      : undefined
+                  }
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+                >
+                  {gerandoSTL === p ? "gerando…" : travadoPorVazado ? "difusor ⚑" : p}
+                </button>
+              );
+            })}
             {pecasEstruturais.map((p, k) => (
               <button
                 key={`estrutural-${k}`}
@@ -612,16 +621,24 @@ export default function Configurador() {
           </div>
           <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-[#7d766a]">
             <span>STL:</span>
-            {(["base", "corpo", "difusor"] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => baixarSTL(p)}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === p ? "gerando…" : p}
-              </button>
-            ))}
+            {(["base", "corpo", "difusor"] as const).map((p) => {
+              const travadoPorVazado = p === "difusor" && !!difusor.vazado;
+              return (
+                <button
+                  key={p}
+                  onClick={() => baixarSTL(p)}
+                  disabled={gerandoSTL !== null || travadoPorVazado}
+                  title={
+                    travadoPorVazado
+                      ? "difusor vazado: preview pronto, produção em preparação — tire o vazado para gerar o STL"
+                      : undefined
+                  }
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+                >
+                  {gerandoSTL === p ? "gerando…" : travadoPorVazado ? "difusor ⚑" : p}
+                </button>
+              );
+            })}
             {pecasEstruturais.map((p, k) => (
               <button
                 key={`estrutural-${k}`}

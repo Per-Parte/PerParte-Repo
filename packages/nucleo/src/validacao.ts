@@ -8,6 +8,7 @@
 
 import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
 import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
+import { grampearVazado } from "./vazados";
 import {
   deslocamentoMaximoMm,
   TS_PERFIL_LIVRE,
@@ -118,6 +119,7 @@ export function grampearDifusor(
   p: Partial<ParametrosDifusor>
 ): ParametrosDifusor {
   const L = LIMITES_CRIAR.difusor;
+  const vazado = grampearVazado(p.vazado);
   return {
     forma: FORMAS.includes(p.forma as FormaDifusor)
       ? (p.forma as FormaDifusor)
@@ -130,6 +132,7 @@ export function grampearDifusor(
       L.profundidadeGomosMm,
       0
     ),
+    ...(vazado ? { vazado } : {}),
   };
 }
 

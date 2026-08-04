@@ -74,6 +74,11 @@ export interface ParametrosDifusor {
   gomos: number;
   /** Profundidade dos gomos, em mm. */
   profundidadeGomosMm: number;
+  /**
+   * Vazado do difusor (preview; produção aguarda booleanos ⚑ — o STL de
+   * difusor vazado fica bloqueado na interface até lá).
+   */
+  vazado?: import("./vazados").ParametrosVazado;
 }
 
 export interface AnelEncaixe {

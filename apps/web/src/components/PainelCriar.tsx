@@ -8,7 +8,9 @@ import {
   FACETAS,
   FAMILIAS_TEXTURA,
   LIMITES_CRIAR,
+  LIMITES_VAZADO,
   NOMES_FAMILIAS,
+  PADROES_VAZADO,
   REGRAS,
   type CurvaBase,
   type FamiliaTextura,
@@ -403,6 +405,85 @@ export default function PainelCriar({
             nota="com a luz acesa, o plissê vira desenho de sombra na parede"
           />
         </div>
+        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Vazado</div>
+        <Chips
+          nomes={["Nenhum", ...PADROES_VAZADO.map((p) => p.nome)]}
+          selecionado={
+            criar.difusor.vazado
+              ? 1 +
+                PADROES_VAZADO.findIndex(
+                  (p) => p.id === criar.difusor.vazado?.padrao
+                )
+              : 0
+          }
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                vazado:
+                  i === 0
+                    ? undefined
+                    : {
+                        padrao: PADROES_VAZADO[i - 1].id,
+                        densidade: criar.difusor.vazado?.densidade ?? 0.45,
+                        gradiente: criar.difusor.vazado?.gradiente ?? 0,
+                      },
+              },
+            })
+          }
+        />
+        {criar.difusor.vazado && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Vazios"
+              valorFmt={`${Math.round(criar.difusor.vazado.densidade * 100)}%`}
+              valor={criar.difusor.vazado.densidade}
+              min={LIMITES_VAZADO.densidade.min}
+              max={LIMITES_VAZADO.densidade.max}
+              passo={LIMITES_VAZADO.densidade.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    vazado: { ...criar.difusor.vazado!, densidade: v },
+                  },
+                })
+              }
+              motivoMax="Mais aberto que isso a peça perde estrutura — e a lâmpada ficaria exposta demais."
+            />
+            <SliderCtl
+              rotulo="Distribuição"
+              valorFmt={
+                Math.abs(criar.difusor.vazado.gradiente) < 0.06
+                  ? "igual em toda a altura"
+                  : criar.difusor.vazado.gradiente > 0
+                    ? "mais aberto em cima"
+                    : "mais aberto embaixo"
+              }
+              valor={criar.difusor.vazado.gradiente}
+              min={LIMITES_VAZADO.gradiente.min}
+              max={LIMITES_VAZADO.gradiente.max}
+              passo={LIMITES_VAZADO.gradiente.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    vazado: { ...criar.difusor.vazado!, gradiente: v },
+                  },
+                })
+              }
+            />
+            <div className="mt-1 rounded-lg border border-[#D3AC6C]/25 bg-[#D3AC6C]/[0.06] px-2.5 py-1.5 text-[10px] leading-relaxed text-[#CFC7B8]">
+              O vazado é o que desenha a sombra na parede — acenda a luz para
+              ver. <b className="text-[#D3AC6C]">Produção em preparação ⚑</b>:
+              o STL deste difusor fica travado enquanto o vazado estiver
+              ligado.
+            </div>
+          </div>
+        )}
       </Secao>
       )}
 

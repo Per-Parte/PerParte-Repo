@@ -8,8 +8,10 @@ import {
   deslocamentoEspinhaMm,
   ENCAIXES,
   malhaRevolucao,
+  mascaraVazado,
   perfilPastilhaMacho,
   type EspinhaLateral,
+  type ParametrosVazado,
   type Ponto2D,
   type TexturaRevolucao,
 } from "@per-parte/nucleo";
@@ -28,6 +30,8 @@ interface ParteProps {
   espinha?: EspinhaLateral;
   difusor?: boolean;
   luzAcesa?: boolean;
+  /** Vazado (preview): furos recortados por textura alpha, sem tocar a malha. */
+  vazado?: ParametrosVazado;
 }
 
 /**
@@ -45,6 +49,7 @@ function Parte({
   espinha,
   difusor = false,
   luzAcesa = false,
+  vazado,
 }: ParteProps) {
   const geometria = useMemo(() => {
     const comTextura =
@@ -62,10 +67,58 @@ function Parte({
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     g.setIndex(new THREE.BufferAttribute(m.indices, 1));
     g.computeVertexNormals();
+    if (vazado) {
+      // UVs para a máscara de vazado: u dá a volta, v sobe a peça.
+      // A ordem dos vértices é a da malhaRevolucao: anel a anel + 2 ápices.
+      const nAneis = perfil.length;
+      const yMax = Math.max(...perfil.map((p) => p.y), 1);
+      const uv = new Float32Array((nAneis * seg + 2) * 2);
+      for (let j = 0; j < nAneis; j++) {
+        for (let i = 0; i < seg; i++) {
+          const k = (j * seg + i) * 2;
+          uv[k] = i / seg;
+          uv[k + 1] = perfil[j].y / yMax;
+        }
+      }
+      uv[nAneis * seg * 2 + 1] = 0;
+      uv[nAneis * seg * 2 + 3] = 1;
+      g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    }
     return g;
-  }, [perfil, segmentos, textura, espinha]);
+  }, [perfil, segmentos, textura, espinha, vazado]);
 
   useEffect(() => () => geometria.dispose(), [geometria]);
+
+  // A máscara do vazado vira textura alpha: furo = transparente. A malha de
+  // produção não é tocada — vazado impresso aguarda booleanos no núcleo ⚑.
+  const mapaVazado = useMemo(() => {
+    if (!vazado) return null;
+    const lateral = perfil.filter((p) => p.y >= 0);
+    const yMax = Math.max(...lateral.map((p) => p.y), 1);
+    const rMedio =
+      lateral.reduce((s, p) => s + p.x, 0) / Math.max(1, lateral.length);
+    const cv = document.createElement("canvas");
+    cv.width = 512;
+    cv.height = 256;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = "#000";
+    for (let py = 0; py < cv.height; py++) {
+      const v = 1 - py / (cv.height - 1);
+      for (let px = 0; px < cv.width; px++) {
+        if (mascaraVazado(vazado, px / cv.width, v, rMedio, yMax)) {
+          ctx.fillRect(px, py, 1, 1);
+        }
+      }
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.wrapS = THREE.RepeatWrapping;
+    return tex;
+  }, [vazado, perfil]);
+
+  useEffect(() => () => mapaVazado?.dispose(), [mapaVazado]);
 
   const facetado = segmentos <= 16;
 
@@ -74,7 +127,7 @@ function Parte({
       <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
         {difusor ? (
           <meshStandardMaterial
-            key={`dif-${facetado}-${luzAcesa}`}
+            key={`dif-${facetado}-${luzAcesa}-${mapaVazado ? "vaz" : "solido"}`}
             color={cor}
             roughness={0.5}
             transparent
@@ -84,6 +137,8 @@ function Parte({
             emissiveIntensity={luzAcesa ? 0.85 : 0}
             flatShading={facetado}
             depthWrite={false}
+            alphaMap={mapaVazado ?? undefined}
+            alphaTest={mapaVazado ? 0.5 : 0}
           />
         ) : (
           <meshStandardMaterial
@@ -124,6 +179,8 @@ export interface Cena3DProps {
   espinhaCorpo?: EspinhaLateral;
   pontosDeLuz?: number;
   separacaoMm?: number;
+  /** Vazado do difusor (preview). */
+  vazadoDifusor?: ParametrosVazado;
 }
 
 export default function Cena3D({
@@ -136,6 +193,7 @@ export default function Cena3D({
   espinhaCorpo,
   pontosDeLuz = 1,
   separacaoMm = 0,
+  vazadoDifusor,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
   // tudo que está acima dela.
@@ -247,6 +305,7 @@ export default function Cena3D({
           textura={texturas?.difusor}
           difusor
           luzAcesa={luzAcesa}
+          vazado={vazadoDifusor}
         />
       ))}
 
