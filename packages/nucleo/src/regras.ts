@@ -49,6 +49,13 @@ export const REGRAS = {
   E: {
     /** E1 · A projeção do centro de gravidade cai no terço central do raio da base. */
     fracaoCentralDaBaseParaCG: 1 / 3,
+    /**
+     * E3 · Contrapeso máximo por luminária, em gramas — inserto de peso que
+     * entra na cavidade da base quando alargar não basta (corpo muito
+     * debruçado). Item de produção/BOM, não de geometria: o STL não muda.
+     * ▸ proposto — teto a validar com o inserto real (aço? areia selada?).
+     */
+    contrapesoMaximoG: 300,
   },
 } as const;
 

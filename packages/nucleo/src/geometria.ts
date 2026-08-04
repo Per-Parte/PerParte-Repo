@@ -103,13 +103,32 @@ const RAIO_EIXO_MM = 0.6;
 /** Posições (t) dos 5 raios de controle da silhueta livre. */
 export const TS_PERFIL_LIVRE = [0.1, 0.3, 0.5, 0.7, 0.9] as const;
 
+/** Piso da inclinação que o PERFIL sempre conserva (tan), mesmo com a
+ *  espinha no máximo — é o `Math.max(0.25, …)` da cascata de clamps. */
+const TAN_MINIMO_PERFIL = 0.25;
+
 /**
  * Deslocamento lateral máximo da espinha para uma dada altura — derivado de
- * F4: com a dobra em S a inclinação de pico é ~1,5·d/(0,7·h), e reservamos
- * margem para a inclinação do próprio perfil. ⚑ validar impresso.
+ * F4, agora até o fim do orçamento (OFF): a dobra em S tem inclinação de
+ * pico ~1,5·d/(0,7·h), e no domínio das tangentes os custos SOMAM exato
+ * (deslocamentos horizontais por unidade de altura). O que a espinha pode
+ * gastar é tudo que sobra do balanço depois do piso do perfil:
+ *
+ *     1,5·d/(0,7·h) ≤ tan(F4) − TAN_MINIMO_PERFIL  →  d ≤ 0,35·h
+ *
+ * (com F4 = 45°). O antigo 0,22·h reservava mais margem para o perfil;
+ * quem paga o alcance extra agora é o próprio perfil, que a cascata aplaina
+ * até o piso quando o corpo está debruçado — limite como ferramenta.
+ * Teto em mm = 0,35 × altura máxima do Criar (240 mm). O tombo que o
+ * alcance novo provoca é problema do E1/E3, não do F4. ⚑ validar impresso.
  */
 export function deslocamentoMaximoMm(alturaMm: number): number {
-  return Math.min(80, Math.round(0.22 * alturaMm));
+  const fator =
+    ((Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180) -
+      TAN_MINIMO_PERFIL) *
+      0.7) /
+    1.5;
+  return Math.min(85, Math.round(fator * alturaMm));
 }
 
 /** Fator 0→1 da dobra em S (pontas com tangente vertical). */
@@ -278,7 +297,7 @@ export function perfilCorpo(
     alturaMm: h,
   });
   const tanMax = Math.max(
-    0.25,
+    TAN_MINIMO_PERFIL,
     Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180) -
       (1.5 * dNorm) / (0.7 * h) -
       reservaTextura

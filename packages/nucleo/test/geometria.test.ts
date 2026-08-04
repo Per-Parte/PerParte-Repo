@@ -93,10 +93,22 @@ describe("F4 — balanço máximo imprimível", () => {
     expect(angulo).toBeCloseTo(45, 5);
   });
 
-  it("deslocamento máximo da espinha cresce com a altura e satura em 80", () => {
-    expect(deslocamentoMaximoMm(100)).toBe(22);
-    expect(deslocamentoMaximoMm(240)).toBe(53);
-    expect(deslocamentoMaximoMm(1000)).toBe(80);
+  it("deslocamento máximo da espinha usa o orçamento F4 inteiro (0,35·h) e satura em 85", () => {
+    // (tan 45° − piso do perfil 0,25) · 0,7 / 1,5 = 0,35
+    expect(deslocamentoMaximoMm(100)).toBe(35);
+    expect(deslocamentoMaximoMm(240)).toBe(84);
+    expect(deslocamentoMaximoMm(1000)).toBe(85);
+  });
+
+  it("no deslocamento máximo, espinha + perfil esgotam exatamente o balanço F4", () => {
+    // No domínio das tangentes os custos somam: pico da espinha
+    // 1,5·d/(0,7·h) + piso do perfil 0,25 = tan(45°).
+    const h = 200;
+    const d = deslocamentoMaximoMm(h);
+    const tanEspinha = (1.5 * d) / (0.7 * h);
+    expect(tanEspinha + 0.25).toBeLessThanOrEqual(
+      Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180) + 0.01
+    );
   });
 });
 

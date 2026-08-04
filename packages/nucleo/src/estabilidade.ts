@@ -1,12 +1,14 @@
 /**
- * E1/E2 · Estabilidade — a regra é a ferramenta, até onde a física deixa.
+ * E1/E2/E3 · Estabilidade — a regra é a ferramenta, até onde a física deixa.
  *
  * Além da heurística vertical do protótipo (base alarga sozinha quando a
  * criação pesa no topo), calcula o DESVIO LATERAL do centro de gravidade
  * quando a espinha do corpo é curvada: a projeção do CG precisa cair no
- * terço central da base (E1). A base alarga para compensar; se nem o
- * alargamento máximo resolve, a luminária está tombando — e aí o aviso é
- * honesto, com direção e tudo.
+ * terço central da base (E1). A escada de compensação tem três degraus:
+ * a base alarga (E2); se não basta, um CONTRAPESO na base puxa o CG de
+ * volta (E3 — inserto de peso, item de produção); se nem o contrapeso
+ * máximo segura, a luminária está tombando — e aí o aviso é honesto,
+ * com direção e tudo.
  */
 
 import { REGRAS } from "./regras";
@@ -84,4 +86,33 @@ export function estabilidade(
     ladoTombando: tombando ? (xCgMm > 0 ? "direita" : "esquerda") : null,
     xCgMm,
   };
+}
+
+/**
+ * E3 · Contrapeso necessário, em gramas — o degrau depois do alargamento.
+ *
+ * O inserto entra CENTRADO na cavidade da base (onde já mora o miolo), a
+ * massa impressa `m` está com o CG desviado `xCg` do eixo, e o conjunto só
+ * é estável se a projeção combinada cair no terço central (E1):
+ *
+ *     |x'| = m·|xCg| / (m + mᵢ) ≤ L   →   mᵢ ≥ m·(|xCg|/L − 1)
+ *
+ * onde L = raio da base (já alargada) × fração central. Aproximação
+ * conservadora: ignora que o inserto também ABAIXA o CG, o que só ajuda.
+ * `gramasImpressos` vem da estimativa de peso (⚑ até o slicer real).
+ * Retorna 0 quando a luminária fica de pé sem inserto; o teto do que a
+ * produção aceita é REGRAS.E.contrapesoMaximoG — acima dele, tombando de
+ * verdade. Arredonda para cima em passos de 10 g (granularidade de BOM).
+ */
+export function contrapesoNecessarioG(
+  est: ResultadoEstabilidade,
+  raioBaseMm: number,
+  gramasImpressos: number
+): number {
+  const limiteMm =
+    raioBaseMm * est.escala * REGRAS.E.fracaoCentralDaBaseParaCG;
+  const desvio = Math.abs(est.xCgMm);
+  if (desvio <= limiteMm + 0.5 || limiteMm <= 0) return 0;
+  const g = Math.max(0, gramasImpressos) * (desvio / limiteMm - 1);
+  return Math.ceil(g / 10) * 10;
 }

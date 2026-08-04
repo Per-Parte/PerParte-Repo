@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import {
   BASES,
+  contrapesoNecessarioG,
   CORPOS,
   DIFUSORES,
   estabilidade,
@@ -13,6 +14,7 @@ import {
   perfilBase,
   perfilCorpo,
   perfilDifusor,
+  REGRAS,
   type ParametrosCorpo,
 } from "../src";
 
@@ -74,6 +76,55 @@ describe("estabilidade", () => {
     );
     expect(r.xCgMm).toBe(0);
     expect(r.tombando).toBe(false);
+  });
+});
+
+describe("E3 — contrapeso", () => {
+  const BASE_MINIMA = { alturaMm: 20, raioMm: 60, curva: "reta" as const };
+  const DIFUSOR_GRANDE = {
+    forma: "globo" as const,
+    alturaMm: 130,
+    raioMm: 90,
+    gomos: 0,
+    profundidadeGomosMm: 0,
+  };
+
+  it("composição estável não pede contrapeso", () => {
+    const r = estabilidade(BASES[0], CORPOS[0], DIFUSORES[0]);
+    expect(contrapesoNecessarioG(r, BASES[0].raioMm, 400)).toBe(0);
+  });
+
+  it("corpo debruçado além do que a base segura pede gramas — e mais inclinação pede mais", () => {
+    const g = (deslocamentoMm: number) =>
+      contrapesoNecessarioG(
+        estabilidade(
+          BASE_MINIMA,
+          { ...CORPO_RETO, deslocamentoMm },
+          DIFUSOR_GRANDE
+        ),
+        BASE_MINIMA.raioMm,
+        400
+      );
+    expect(g(84)).toBeGreaterThan(0);
+    expect(g(84)).toBeGreaterThanOrEqual(g(60));
+    // Granularidade de BOM: passos de 10 g.
+    expect(g(84) % 10).toBe(0);
+  });
+
+  it("a física é a do momento: dobro de massa impressa, dobro de contrapeso", () => {
+    const est = estabilidade(
+      BASE_MINIMA,
+      { ...CORPO_RETO, deslocamentoMm: 84 },
+      DIFUSOR_GRANDE
+    );
+    const g1 = contrapesoNecessarioG(est, BASE_MINIMA.raioMm, 400);
+    const g2 = contrapesoNecessarioG(est, BASE_MINIMA.raioMm, 800);
+    expect(g2).toBeGreaterThanOrEqual(g1 * 2 - 10);
+    expect(g2).toBeLessThanOrEqual(g1 * 2 + 10);
+  });
+
+  it("o teto E3 existe e é positivo (produção decide o valor ▸)", () => {
+    expect(REGRAS.E.contrapesoMaximoG).toBeGreaterThan(0);
   });
 });
 

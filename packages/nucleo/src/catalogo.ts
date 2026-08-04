@@ -142,7 +142,7 @@ export const LIMITES_CRIAR = {
     /** Repetição das famílias de textura que não são gomos. */
     repeticaoTextura: { min: 3, max: 24, passo: 1 },
     /** Teto absoluto; o teto real depende da altura (deslocamentoMaximoMm). */
-    deslocamentoMm: { min: -80, max: 80, passo: 5 },
+    deslocamentoMm: { min: -85, max: 85, passo: 5 },
     posicaoDobra: { min: -1, max: 1, passo: 0.1 },
     /** Faixa dos raios de controle da silhueta livre. */
     perfilLivreRaioMm: { min: 16, max: 60, passo: 0.5 },

@@ -10,6 +10,7 @@ import {
   ESTRUTURAIS,
   FACETAS,
   PALETA,
+  contrapesoNecessarioG,
   estabilidade,
   estimarPreco,
   perfilBase,
@@ -242,6 +243,12 @@ export default function Configurador() {
       ),
     [perfis, pontosDeLuz]
   );
+  // E3: corpo debruçado além do que a base alargada segura pede um inserto
+  // de peso na base — item de produção, o STL não muda.
+  const contrapesoG = useMemo(
+    () => contrapesoNecessarioG(estab, base.raioMm, gramas),
+    [estab, base.raioMm, gramas]
+  );
 
   const espinhaCorpo = useMemo(
     () => ({
@@ -420,6 +427,7 @@ export default function Configurador() {
               iFaceta={iFaceta}
               setIFaceta={setIFaceta}
               estab={estab}
+              contrapesoG={contrapesoG}
               pontosDeLuz={pontosDeLuz}
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
@@ -591,6 +599,7 @@ export default function Configurador() {
               iFaceta={iFaceta}
               setIFaceta={setIFaceta}
               estab={estab}
+              contrapesoG={contrapesoG}
               pontosDeLuz={pontosDeLuz}
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}

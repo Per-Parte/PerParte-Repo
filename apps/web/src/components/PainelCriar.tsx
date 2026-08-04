@@ -37,6 +37,8 @@ interface Props {
   iFaceta: number;
   setIFaceta: (i: number) => void;
   estab: ResultadoEstabilidade;
+  /** E3: gramas de inserto na base (0 = fica de pé sozinha). */
+  contrapesoG: number;
   pontosDeLuz: number;
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
@@ -52,6 +54,7 @@ export default function PainelCriar({
   iFaceta,
   setIFaceta,
   estab,
+  contrapesoG,
   pontosDeLuz,
   separacaoMm,
   setPontosDeLuz,
@@ -85,6 +88,11 @@ export default function PainelCriar({
       criar.difusor.gomos > 0);
   const modoLivre = !!criar.corpo.perfilLivre;
   const dMax = deslocamentoMaximoMm(criar.corpo.alturaMm);
+  // E3: a escada da estabilidade — base alarga, contrapeso entra, e só
+  // depois disso o aviso de tombamento é honesto.
+  const comContrapeso =
+    contrapesoG > 0 && contrapesoG <= REGRAS.E.contrapesoMaximoG;
+  const tombaMesmo = contrapesoG > REGRAS.E.contrapesoMaximoG;
 
   return (
     <div>
@@ -253,6 +261,12 @@ export default function PainelCriar({
           motivoMax="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
           motivoMin="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
         />
+        {comContrapeso && (
+          <div className="mt-2 text-[10px] text-[#E08A4A]">
+            debruçada assim, ela leva um contrapeso de ~{contrapesoG} g dentro
+            da base — vai montado, você não vê
+          </div>
+        )}
         <SliderCtl
           rotulo="Altura da dobra"
           valorFmt={fmtPos(criar.corpo.posicaoDobra)}
@@ -505,7 +519,7 @@ export default function PainelCriar({
       <Secao titulo="Regras embutidas">
         <div
           className={`rounded-2xl border px-4 py-3 ${
-            estab.tombando
+            tombaMesmo
               ? "border-[#E06A55]/40 bg-[#E06A55]/[0.08]"
               : "border-white/[0.08] bg-white/[0.03]"
           }`}
@@ -529,30 +543,34 @@ export default function PainelCriar({
             <span>Estabilidade</span>
             <span
               className={`font-semibold ${
-                estab.tombando
+                tombaMesmo
                   ? "text-[#E06A55]"
-                  : estab.pertoDoLimite
+                  : comContrapeso || estab.pertoDoLimite
                     ? "text-[#E08A4A]"
                     : "text-[#8FB07E]"
               }`}
             >
-              {estab.tombando
+              {tombaMesmo
                 ? `⚠ tombando para a ${estab.ladoTombando}`
-                : estab.ajustada
-                  ? "base ajustada ✓"
-                  : "✓"}
+                : comContrapeso
+                  ? `contrapeso de ~${contrapesoG} g ✓`
+                  : estab.ajustada
+                    ? "base ajustada ✓"
+                    : "✓"}
             </span>
           </div>
           <div
             className={`mt-2 text-[10.5px] ${
-              estab.tombando ? "text-[#E06A55]" : "text-[#7d766a]"
+              tombaMesmo ? "text-[#E06A55]" : "text-[#7d766a]"
             }`}
           >
-            {estab.tombando
-              ? "Do jeito atual ela cai — nem alargando a base ao máximo o peso fica sobre ela. Reduza o deslocamento do topo ou alargue a base."
-              : estab.ajustada
-                ? "A base foi alargada automaticamente para o conjunto não tombar — a regra é a ferramenta."
-                : "Tudo que estes controles permitem criar, a Per Parte fabrica."}
+            {tombaMesmo
+              ? "Do jeito atual ela cai — nem base larga nem contrapeso seguram tanto peso fora do eixo. Reduza o deslocamento do topo ou alargue a base."
+              : comContrapeso
+                ? "Debruçada assim, ela ganha um inserto de peso dentro da base para o conjunto ficar firme — a regra é a ferramenta."
+                : estab.ajustada
+                  ? "A base foi alargada automaticamente para o conjunto não tombar — a regra é a ferramenta."
+                  : "Tudo que estes controles permitem criar, a Per Parte fabrica."}
           </div>
         </div>
       </Secao>
