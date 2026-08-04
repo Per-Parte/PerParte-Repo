@@ -10,6 +10,7 @@
 import {
   deslocamentoEspinhaMm,
   type EspinhaLateral,
+  type FacetasRevolucao,
   type Ponto2D,
 } from "./geometria";
 import {
@@ -55,11 +56,19 @@ function janelaTextura(t: number): number {
   return Math.min(1, (t - 0.05) / 0.08, (0.95 - t) / 0.08);
 }
 
+/** Peso 0→1 da zona facetada numa altura y (rampa suave nas duas pontas). */
+function pesoFacetas(y: number, f: FacetasRevolucao): number {
+  const t = Math.max(0.01, f.transicaoMm ?? 8);
+  const w = Math.min((y - f.yMinMm) / t, (f.yMaxMm - y) / t, 1);
+  return w <= 0 ? 0 : w > 1 ? 1 : w;
+}
+
 export function malhaRevolucao(
   perfil: Ponto2D[],
   segmentos: number,
   textura?: TexturaRevolucao,
-  espinha?: EspinhaLateral
+  espinha?: EspinhaLateral,
+  facetas?: FacetasRevolucao
 ): Malha {
   const nAneis = perfil.length;
   const nVertices = nAneis * segmentos + 2;
@@ -103,6 +112,23 @@ export function malhaRevolucao(
             w *
             0.5 *
             (valorTextura(familia, u, t, repeticao) - 1);
+        }
+      }
+      // Facetas: modula o raio pela equação do polígono regular (vértices
+      // no raio do perfil, faces para dentro), só na janela da lateral —
+      // as zonas de encaixe ficam redondas. Exige `segmentos` múltiplo de
+      // `lados` para as arestas caírem exatamente nos vértices.
+      if (facetas && facetas.lados >= 3) {
+        const wf = pesoFacetas(perfil[j].y, facetas);
+        if (wf > 0) {
+          const setor = Math.PI / facetas.lados;
+          const dth = ((th % (2 * setor)) + 2 * setor) % (2 * setor) - setor;
+          const rPoly = (r * Math.cos(setor)) / Math.cos(dth);
+          let rf = r + (rPoly - r) * wf;
+          if (facetas.pisoMm != null) {
+            rf = Math.max(rf, Math.min(r, facetas.pisoMm));
+          }
+          r = rf;
         }
       }
       const o = (j * segmentos + i) * 3;

@@ -375,6 +375,63 @@ export function perfilEstrutural(
   return pontos;
 }
 
+/**
+ * Facetas de revolução — o caminho do prisma extrudado (EXT).
+ *
+ * Em vez de girar o perfil em poucos segmentos (o que facetaria TAMBÉM os
+ * anéis de encaixe e quebraria o ajuste F5 — a fêmea poligonal interfere no
+ * macho redondo), a malha continua fina e o RAIO é modulado pela equação do
+ * polígono regular apenas numa janela vertical: a lateral vira prisma de N
+ * faces, e as zonas de encaixe ficam sempre circulares, com transição suave
+ * entre as duas (a rampa fica dentro do balanço F4).
+ *
+ * Os vértices do polígono ficam NO raio do perfil (polígono inscrito): a
+ * silhueta continua sendo o envelope externo da peça. `pisoMm` impede que o
+ * meio da face mergulhe além do piso físico (miolo elétrico, no corpo).
+ */
+export interface FacetasRevolucao {
+  /** Número de faces planas (4 = caixa/pirâmide). */
+  lados: number;
+  /** Início da zona facetada, em mm (abaixo disso: redondo). */
+  yMinMm: number;
+  /** Fim da zona facetada, em mm (acima disso: redondo). */
+  yMaxMm: number;
+  /** Comprimento da rampa redondo↔facetado, em mm. */
+  transicaoMm?: number;
+  /** Piso físico do raio dentro da zona facetada (miolo, eixo). */
+  pisoMm?: number;
+}
+
+/** Janela de facetas do corpo: poupa a fêmea de baixo e o assento do macho. */
+export function facetasParaCorpo(
+  lados: number,
+  alturaMm: number
+): FacetasRevolucao {
+  const anelBase = ENCAIXES.baseCorpo.anel;
+  return {
+    lados,
+    yMinMm: anelBase.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
+    yMaxMm: alturaMm - ENCAIXES.corpoDifusor.anel.alturaMm - 2,
+    transicaoMm: 8,
+    pisoMm: RAIO_LIVRE_MIOLO_MM,
+  };
+}
+
+/** Janela de facetas do difusor: poupa a fêmea; o topo é livre até o ápice. */
+export function facetasParaDifusor(
+  lados: number,
+  alturaMm: number
+): FacetasRevolucao {
+  const anel = ENCAIXES.corpoDifusor.anel;
+  return {
+    lados,
+    yMinMm: anel.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
+    yMaxMm: alturaMm + 8,
+    transicaoMm: 8,
+    pisoMm: RAIO_EIXO_MM,
+  };
+}
+
 /** Raios da silhueta atual nos 5 pontos de controle (para iniciar o editor). */
 export function amostrarRaiosCorpo(p: ParametrosCorpo): number[] {
   const semLivre = { ...p, perfilLivre: undefined };

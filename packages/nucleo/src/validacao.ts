@@ -159,7 +159,7 @@ export function grampearEstruturais(v: unknown): ParametrosEstrutural[] {
     .map((e) => grampearEstrutural((e ?? {}) as Partial<ParametrosEstrutural>));
 }
 
-const SEGMENTOS_VALIDOS = [6, 8, 12, 16, 40];
+const SEGMENTOS_VALIDOS = [4, 6, 8, 12, 16, 40];
 
 export function grampearSegmentos(s: unknown): number {
   const n = Math.round(numero(s, 40));

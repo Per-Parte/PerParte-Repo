@@ -113,6 +113,8 @@ export const FACETAS: Faceta[] = [
   { nome: "8 facetas", segmentos: 8 },
   { nome: "12 facetas", segmentos: 12 },
   { nome: "16 facetas", segmentos: 16 },
+  // No fim para não mudar o significado dos links ?c= antigos (iFaceta).
+  { nome: "4 facetas", segmentos: 4 },
 ];
 
 /**

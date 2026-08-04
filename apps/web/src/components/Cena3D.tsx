@@ -7,10 +7,13 @@ import * as THREE from "three";
 import {
   deslocamentoEspinhaMm,
   ENCAIXES,
+  facetasParaCorpo,
+  facetasParaDifusor,
   malhaRevolucao,
   mascaraVazado,
   perfilPastilhaMacho,
   type EspinhaLateral,
+  type FacetasRevolucao,
   type ParametrosVazado,
   type Ponto2D,
   type TexturaRevolucao,
@@ -32,6 +35,8 @@ interface ParteProps {
   luzAcesa?: boolean;
   /** Vazado (preview): furos recortados por textura alpha, sem tocar a malha. */
   vazado?: ParametrosVazado;
+  /** Facetas geométricas na lateral (encaixes ficam redondos — F5). */
+  facetas?: FacetasRevolucao;
 }
 
 /**
@@ -50,17 +55,28 @@ function Parte({
   difusor = false,
   luzAcesa = false,
   vazado,
+  facetas,
 }: ParteProps) {
   const geometria = useMemo(() => {
+    // Facetado é um estilo próprio e desliga a textura (regra existente);
+    // a malha fica fina para as faces saírem planas e o encaixe redondo.
+    const comFacetas = !!facetas && facetas.lados >= 3;
     const comTextura =
+      !comFacetas &&
       !!textura &&
       textura.profundidadeMm > 0 &&
       segmentos >= 32 &&
       (textura.familia && textura.familia !== "gomos"
         ? (textura.repeticao ?? 0) > 0
         : textura.gomos > 0);
-    const seg = comTextura ? 96 : segmentos;
-    const m = malhaRevolucao(perfil, seg, textura, espinha);
+    const seg = comFacetas ? 96 : comTextura ? 96 : segmentos;
+    const m = malhaRevolucao(
+      perfil,
+      seg,
+      comFacetas ? undefined : textura,
+      espinha,
+      facetas
+    );
     const pos = new Float32Array(m.posicoes.length);
     for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
     const g = new THREE.BufferGeometry();
@@ -85,7 +101,7 @@ function Parte({
       g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
     }
     return g;
-  }, [perfil, segmentos, textura, espinha, vazado]);
+  }, [perfil, segmentos, textura, espinha, vazado, facetas]);
 
   useEffect(() => () => geometria.dispose(), [geometria]);
 
@@ -216,6 +232,18 @@ export default function Cena3D({
     [duo]
   );
 
+  // Acabamento facetado (≤16 segmentos): a lateral vira prisma de N faces
+  // com os encaixes redondos — a janela vem do núcleo.
+  const lados = segmentos <= 16 ? segmentos : 0;
+  const facetasCorpo = useMemo(
+    () => (lados ? facetasParaCorpo(lados, alturasMm.corpo) : undefined),
+    [lados, alturasMm.corpo]
+  );
+  const facetasDifusor = useMemo(
+    () => (lados ? facetasParaDifusor(lados, alturasMm.difusor) : undefined),
+    [lados, alturasMm.difusor]
+  );
+
   // Posições X dos corpos e dos topos (difusor + lâmpada), em mm.
   const colunas = duo
     ? [
@@ -292,6 +320,7 @@ export default function Cena3D({
           segmentos={segmentos}
           textura={texturas?.corpo}
           espinha={espinhaCorpo}
+          facetas={facetasCorpo}
         />
       ))}
       {colunas.map((c, i) => (
@@ -306,6 +335,7 @@ export default function Cena3D({
           difusor
           luzAcesa={luzAcesa}
           vazado={vazadoDifusor}
+          facetas={facetasDifusor}
         />
       ))}
 

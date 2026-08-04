@@ -1,6 +1,8 @@
 import {
   ENCAIXES,
   estabilidade,
+  facetasParaCorpo,
+  facetasParaDifusor,
   gerarSTLBinario,
   grampearBase,
   grampearCorpo,
@@ -160,13 +162,28 @@ export async function POST(req: Request) {
         (!!textura.familia &&
           textura.familia !== "gomos" &&
           (textura.repeticao ?? 0) > 0));
-    const segmentosParte =
-      segmentos === 40
-        ? comTextura
-          ? SEGMENTOS_PRODUCAO_GOMOS
-          : SEGMENTOS_PRODUCAO_LISO
-        : segmentos;
-    malha = malhaRevolucao(perfil, segmentosParte, textura, espinha);
+    // Facetado (≤16): a lateral vira prisma de N faces com encaixes
+    // REDONDOS — a malha fica fina (192 é múltiplo de 4/6/8/12/16, então
+    // as arestas caem exatamente nos vértices do polígono) e o ajuste F5
+    // não depende do número de faces.
+    const lados = segmentos <= 16 ? segmentos : 0;
+    const facetas = lados
+      ? parte === "corpo"
+        ? facetasParaCorpo(lados, corpo.alturaMm)
+        : facetasParaDifusor(lados, difusor.alturaMm)
+      : undefined;
+    const segmentosParte = lados
+      ? SEGMENTOS_PRODUCAO_GOMOS
+      : comTextura
+        ? SEGMENTOS_PRODUCAO_GOMOS
+        : SEGMENTOS_PRODUCAO_LISO;
+    malha = malhaRevolucao(
+      perfil,
+      segmentosParte,
+      lados ? undefined : textura,
+      espinha,
+      facetas
+    );
   }
 
   const stl = gerarSTLBinario(malha, parte);
