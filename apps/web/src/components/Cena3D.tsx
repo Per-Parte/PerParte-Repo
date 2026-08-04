@@ -7,8 +7,10 @@ import * as THREE from "three";
 import {
   deslocamentoEspinhaMm,
   ENCAIXES,
+  facetasParaBase,
   facetasParaCorpo,
   facetasParaDifusor,
+  facetasParaEstrutural,
   malhaRevolucao,
   mascaraVazado,
   perfilPastilhaMacho,
@@ -136,7 +138,7 @@ function Parte({
 
   useEffect(() => () => mapaVazado?.dispose(), [mapaVazado]);
 
-  const facetado = segmentos <= 16;
+  const facetado = segmentos <= 16 || (!!facetas && facetas.lados >= 3);
 
   return (
     <group position={[xMm / MM, yMm / MM, 0]} rotation={[0, giroY, 0]}>
@@ -233,7 +235,9 @@ export default function Cena3D({
   );
 
   // Acabamento facetado (≤16 segmentos): a lateral vira prisma de N faces
-  // com os encaixes redondos — a janela vem do núcleo.
+  // com os encaixes redondos — a janela vem do núcleo. A base e a pilha
+  // facetam JUNTO (fase 2 do EXT): "faceta o corpo mas não a base" é
+  // meio-estado que o cliente lê como defeito.
   const lados = segmentos <= 16 ? segmentos : 0;
   const facetasCorpo = useMemo(
     () => (lados ? facetasParaCorpo(lados, alturasMm.corpo) : undefined),
@@ -242,6 +246,20 @@ export default function Cena3D({
   const facetasDifusor = useMemo(
     () => (lados ? facetasParaDifusor(lados, alturasMm.difusor) : undefined),
     [lados, alturasMm.difusor]
+  );
+  const facetasBase = useMemo(
+    () => (lados ? facetasParaBase(lados, alturasMm.base) : undefined),
+    [lados, alturasMm.base]
+  );
+  const chaveEstruturais = altEstruturais.join(",");
+  const facetasEstruturais = useMemo(
+    () =>
+      lados && chaveEstruturais
+        ? chaveEstruturais
+            .split(",")
+            .map((h) => facetasParaEstrutural(lados, Number(h)))
+        : undefined,
+    [lados, chaveEstruturais]
   );
 
   // Posições X dos corpos e dos topos (difusor + lâmpada), em mm.
@@ -279,6 +297,7 @@ export default function Cena3D({
         yMm={0}
         cor={coresHex.base}
         segmentos={40}
+        facetas={facetasBase}
       />
       {duo &&
         perfilPastilha &&
@@ -306,6 +325,7 @@ export default function Cena3D({
             giroY={c.giro}
             cor={coresHex.estruturais?.[k] ?? coresHex.corpo}
             segmentos={40}
+            facetas={facetasEstruturais?.[k]}
           />
         ));
       })}

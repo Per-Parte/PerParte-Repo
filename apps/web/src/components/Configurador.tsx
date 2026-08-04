@@ -16,6 +16,7 @@ import {
   perfilCorpo,
   perfilDifusor,
   perfilEstrutural,
+  separacaoMaximaMm,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -250,13 +251,18 @@ export default function Configurador() {
     }),
     [corpo]
   );
-  // As colunas precisam caber sobre a base (pastilha de encaixe inteira).
+  const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
+
+  // As colunas precisam caber sobre a base (pastilha de encaixe inteira) —
+  // e numa base facetada o raio útil cai para o do meio da face.
   const separacaoEfetivaMm = Math.min(
     separacaoMm,
-    Math.max(70, 2 * (base.raioMm * estab.escala - 34))
+    separacaoMaximaMm(
+      base.raioMm,
+      estab.escala,
+      segmentos <= 16 ? segmentos : 0
+    )
   );
-
-  const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
 
   const [gerandoSTL, setGerandoSTL] = useState<string | null>(null);
   async function baixarSTL(parte: ParteAlvo | "estrutural", indice = 0) {

@@ -417,6 +417,93 @@ export function facetasParaCorpo(
   };
 }
 
+/**
+ * Piso do raio nas partes que carregam a interface F5 na TERMINAÇÃO — a
+ * parede que sobra em volta do anel quando o meio da face afunda o máximo.
+ */
+const RAIO_PISO_JUNTA_MM =
+  ENCAIXES.baseCorpo.anel.externoMm +
+  ENCAIXES.folgaPadraoMm +
+  REGRAS.F.paredeEstruturalMm.min;
+
+/**
+ * Facetas de uma parte cujas DUAS pontas são encaixe: a base (face de apoio
+ * embaixo, macho em cima) e as estruturais (fêmea embaixo, macho em cima).
+ *
+ * Aqui não existe janela vertical — a peça faceta inteira e é o PISO que
+ * arredonda. Como o meio da face vale
+ *     f(r) = max(r·cos(π/N), min(r, piso))
+ * todo ponto do perfil com r ≤ piso sai exatamente circular (canaleta, anel
+ * macho, eixo) e o pescoço, onde o raio já desceu para o da interface, fica
+ * redondo sozinho.
+ *
+ * Isso paga duas dívidas de uma vez. F5: o encaixe é redondo sem depender do
+ * número de faces. F4: f é monótona e 1-Lipschitz em r, então o balanço da
+ * peça facetada nunca é pior que o da peça lisa — não há rampa para orçar.
+ *
+ * Preço honesto: parte esbelta faceta pouco ou nada. Uma haste reta no raio
+ * da interface não tem material para facetar sem furar o próprio encaixe —
+ * limite físico, não escolha de interface.
+ */
+function facetasComPescocoRedondo(
+  lados: number,
+  alturaTotalMm: number
+): FacetasRevolucao {
+  const transicaoMm = 8;
+  return {
+    lados,
+    yMinMm: -transicaoMm,
+    yMaxMm: alturaTotalMm + transicaoMm,
+    transicaoMm,
+    pisoMm: RAIO_PISO_JUNTA_MM,
+  };
+}
+
+/**
+ * Facetas da base — é ela que dá a silhueta quadrada apoiada na mesa (o
+ * gesto do Zen). O pescoço do macho arredonda pelo piso, sem rampa.
+ */
+export function facetasParaBase(
+  lados: number,
+  alturaMm: number
+): FacetasRevolucao {
+  return facetasComPescocoRedondo(
+    lados,
+    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm
+  );
+}
+
+/**
+ * Facetas de uma peça estrutural da pilha. Sem isto, um corpo facetado sobre
+ * uma haste redonda seria um meio-estado que o cliente encontra sozinho e lê
+ * como defeito.
+ */
+export function facetasParaEstrutural(
+  lados: number,
+  alturaMm: number
+): FacetasRevolucao {
+  return facetasComPescocoRedondo(
+    lados,
+    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm
+  );
+}
+
+/**
+ * Separação máxima entre as duas colunas da base dupla, em mm. A pastilha de
+ * encaixe (mais margem) precisa caber INTEIRA sobre a face da base — e numa
+ * base facetada o raio útil, no meio da face, cai para r·cos(π/N). Limite de
+ * controle, não erro: o slider encolhe junto com o número de faces.
+ */
+export function separacaoMaximaMm(
+  raioBaseMm: number,
+  escala = 1,
+  lados = 0
+): number {
+  const raioUtil =
+    (lados >= 3 ? Math.cos(Math.PI / lados) : 1) * raioBaseMm * escala;
+  return Math.max(70, 2 * (raioUtil - 34));
+}
+
 /** Janela de facetas do difusor: poupa a fêmea; o topo é livre até o ápice. */
 export function facetasParaDifusor(
   lados: number,

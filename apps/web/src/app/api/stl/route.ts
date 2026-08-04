@@ -1,8 +1,10 @@
 import {
   ENCAIXES,
   estabilidade,
+  facetasParaBase,
   facetasParaCorpo,
   facetasParaDifusor,
+  facetasParaEstrutural,
   gerarSTLBinario,
   grampearBase,
   grampearCorpo,
@@ -16,6 +18,7 @@ import {
   perfilDifusor,
   perfilEstrutural,
   perfilPastilhaMacho,
+  separacaoMaximaMm,
   transladarMalha,
   unirMalhas,
   type EspinhaLateral,
@@ -62,6 +65,11 @@ export async function POST(req: Request) {
     luminaria.pontosDeLuz
   );
 
+  // Acabamento facetado (≤16): vale para a LUMINÁRIA inteira — base e pilha
+  // facetam junto com corpo e difusor (fase 2 do EXT). 192 é múltiplo de
+  // 4/6/8/12/16, então as arestas caem exatamente nos vértices do polígono.
+  const lados = segmentos <= 16 ? segmentos : 0;
+
   if (parte === "estrutural") {
     const indice = Math.min(
       Math.max(0, Math.trunc(Number(dados.indice) || 0)),
@@ -75,7 +83,12 @@ export async function POST(req: Request) {
     }
     const malhaEstrutural = malhaRevolucao(
       perfilEstrutural(estruturais[indice]),
-      SEGMENTOS_PRODUCAO_LISO
+      lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+      undefined,
+      undefined,
+      lados
+        ? facetasParaEstrutural(lados, estruturais[indice].alturaMm)
+        : undefined
     );
     const stlEstrutural = gerarSTLBinario(
       malhaEstrutural,
@@ -97,11 +110,15 @@ export async function POST(req: Request) {
       const meiaSep =
         Math.min(
           luminaria.separacaoMm,
-          Math.max(70, 2 * (base.raioMm * est.escala - 34))
+          separacaoMaximaMm(base.raioMm, est.escala, lados)
         ) / 2;
+      // O prato faceta; as pastilhas são encaixe puro e ficam sempre redondas.
       const prato = malhaRevolucao(
         perfilBase(base, est.escala, false),
-        SEGMENTOS_PRODUCAO_LISO
+        lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+        undefined,
+        undefined,
+        lados ? facetasParaBase(lados, base.alturaMm) : undefined
       );
       const pastilha = malhaRevolucao(
         perfilPastilhaMacho(ENCAIXES.baseCorpo.anel),
@@ -115,7 +132,10 @@ export async function POST(req: Request) {
     } else {
       malha = malhaRevolucao(
         perfilBase(base, est.escala),
-        SEGMENTOS_PRODUCAO_LISO
+        lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+        undefined,
+        undefined,
+        lados ? facetasParaBase(lados, base.alturaMm) : undefined
       );
     }
   } else {
@@ -162,11 +182,8 @@ export async function POST(req: Request) {
         (!!textura.familia &&
           textura.familia !== "gomos" &&
           (textura.repeticao ?? 0) > 0));
-    // Facetado (≤16): a lateral vira prisma de N faces com encaixes
-    // REDONDOS — a malha fica fina (192 é múltiplo de 4/6/8/12/16, então
-    // as arestas caem exatamente nos vértices do polígono) e o ajuste F5
-    // não depende do número de faces.
-    const lados = segmentos <= 16 ? segmentos : 0;
+    // Facetado: a lateral vira prisma de N faces com encaixes REDONDOS —
+    // o ajuste F5 não depende do número de faces.
     const facetas = lados
       ? parte === "corpo"
         ? facetasParaCorpo(lados, corpo.alturaMm)
