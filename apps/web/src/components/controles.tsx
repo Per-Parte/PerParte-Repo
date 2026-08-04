@@ -3,24 +3,64 @@
 import { useEffect, useRef, useState } from "react";
 import {
   LIMITES_PLACA,
+  PALETA,
   PLACA_PADRAO,
   type ParametrosPlaca,
 } from "@per-parte/nucleo";
+import { FAMILIAS_PALETA } from "@/lib/familias-paleta";
 
+/**
+ * Seção colapsável do painel, com header sticky no scroll do painel.
+ * O data-secao é o gancho estável para a próxima fase (scroll-driven camera).
+ */
 export function Secao({
+  id,
   titulo,
+  aberta = true,
   children,
 }: {
+  /** Âncora estável no DOM (data-secao) — a câmera pluga aqui depois. */
+  id: string;
   titulo: string;
+  /** Estado inicial de abertura (o visitante pode fechar/abrir). */
+  aberta?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-b border-white/[0.06] px-5 py-4 last:border-b-0">
-      <h3 className="mb-3 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#A69D8D]">
-        {titulo}
-      </h3>
+    <details
+      open={aberta}
+      data-secao={id}
+      className="group border-b border-black/[0.06] last:border-b-0"
+    >
+      <summary className="sticky top-0 z-10 flex cursor-pointer select-none list-none items-center justify-between gap-3 bg-white px-5 py-3.5 [&::-webkit-details-marker]:hidden">
+        <h3 className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#6D675C]">
+          {titulo}
+        </h3>
+        <svg
+          viewBox="0 0 10 6"
+          className="h-1.5 w-2.5 text-[#97907F] transition-transform duration-200 ease-padrao group-open:rotate-180"
+          aria-hidden
+        >
+          <path
+            d="M1 1l4 4 4-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </summary>
+      <div className="px-5 pb-5">{children}</div>
+    </details>
+  );
+}
+
+/** Subtítulo de bloco dentro de uma seção. */
+export function SubRotulo({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-2 mt-4 text-[13px] font-medium text-palco-escuro">
       {children}
-    </section>
+    </div>
   );
 }
 
@@ -41,8 +81,8 @@ export function Chips({
           onClick={() => aoEscolher(i)}
           className={`rounded-full px-3.5 py-1.5 text-[12.5px] transition-all ${
             i === selecionado
-              ? "bg-[#F2EDE4] font-semibold text-[#161412]"
-              : "border border-white/10 bg-white/[0.04] text-[#CFC7B8] hover:border-white/25 hover:bg-white/[0.08]"
+              ? "bg-palco-escuro font-semibold text-luz-acesa"
+              : "border border-black/10 bg-black/[0.02] text-[#4A463D] hover:border-black/30"
           }`}
         >
           {n}
@@ -50,6 +90,68 @@ export function Chips({
       ))}
     </div>
   );
+}
+
+/** Swatches circulares 28 px, agrupados por família da paleta (§4.2). */
+export function PaletaFamilias({
+  selecionado,
+  aoEscolher,
+}: {
+  selecionado: number;
+  aoEscolher: (i: number) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {FAMILIAS_PALETA.map((f) => (
+        <div key={f.nome}>
+          <div className="mb-1.5 text-[10px] uppercase tracking-[0.14em] text-[#97907F]">
+            {f.nome}
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {f.indices.map((i) => (
+              <button
+                key={PALETA[i].nome}
+                title={PALETA[i].nome}
+                onClick={() => aoEscolher(i)}
+                className={`h-7 w-7 rounded-full transition-transform hover:scale-110 ${
+                  selecionado === i
+                    ? "ring-2 ring-palco-escuro ring-offset-2 ring-offset-white"
+                    : "ring-1 ring-black/15"
+                }`}
+                style={{ background: PALETA[i].hex }}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Número que anima em contagem (~300 ms) a cada mudança — o preço evolutivo
+ * virando experiência (§4.1). Com prefers-reduced-motion, troca seco.
+ */
+export function NumeroAnimado({ valor }: { valor: number }) {
+  const [mostrado, setMostrado] = useState(valor);
+  const partida = useRef(valor);
+  useEffect(() => {
+    const de = partida.current;
+    if (de === valor) return;
+    const seco = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t0 = performance.now();
+    let raf = requestAnimationFrame(function passo(t) {
+      const p = seco ? 1 : Math.min(1, (t - t0) / 300);
+      const suave = 1 - Math.pow(1 - p, 3);
+      setMostrado(Math.round(de + (valor - de) * suave));
+      if (p < 1) raf = requestAnimationFrame(passo);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      partida.current = valor;
+    };
+  }, [valor]);
+  return <>{mostrado.toLocaleString("pt-BR")}</>;
 }
 
 export function SliderCtl({
@@ -98,8 +200,8 @@ export function SliderCtl({
   return (
     <div className="mb-4 last:mb-0">
       <div className="mb-1.5 flex items-baseline justify-between">
-        <label className="text-[13px] text-[#E7E0D2]">{rotulo}</label>
-        <span className="text-[12.5px] font-medium tabular-nums text-[#D3AC6C]">
+        <label className="text-[13px] text-[#4A463D]">{rotulo}</label>
+        <span className="text-[12.5px] font-semibold tabular-nums text-palco-escuro">
           {valorFmt}
         </span>
       </div>
@@ -118,13 +220,13 @@ export function SliderCtl({
         }}
       />
       {motivo && (
-        <div className="mt-1.5 flex items-start gap-1.5 rounded-lg border border-[#D3AC6C]/30 bg-[#D3AC6C]/[0.08] px-2.5 py-1.5 text-[10.5px] leading-relaxed text-[#E8CE9E]">
-          <span className="font-bold text-[#D3AC6C]">!</span>
+        <div className="mt-1.5 flex items-start gap-1.5 rounded-lg border border-acento/40 bg-acento/10 px-2.5 py-1.5 text-[10.5px] leading-relaxed text-[#6B4E12]">
+          <span className="font-bold text-[#A87A16]">!</span>
           <span>{motivo}</span>
         </div>
       )}
       {nota && !motivo && (
-        <div className="mt-1.5 text-[10px] leading-relaxed text-[#7d766a]">
+        <div className="mt-1.5 text-[10px] leading-relaxed text-[#97907F]">
           {nota}
         </div>
       )}

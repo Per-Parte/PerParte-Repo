@@ -52,7 +52,7 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-2">
+    <div className="rounded-2xl border border-black/[0.08] bg-black/[0.02] p-2">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${LARGURA} ${ALTURA}`}
@@ -73,11 +73,11 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
           y1={MARGEM}
           x2={MARGEM}
           y2={ALTURA - MARGEM}
-          stroke="rgba(255,255,255,0.18)"
+          stroke="rgba(30,30,30,0.22)"
           strokeDasharray="3 3"
         />
         {/* silhueta real */}
-        <path d={caminho} fill="none" stroke="#F2EDE4" strokeWidth={1.6} />
+        <path d={caminho} fill="none" stroke="#1E1E1E" strokeWidth={1.6} />
         {/* pontos de controle */}
         {TS_PERFIL_LIVRE.map((t, i) => (
           <circle
@@ -85,8 +85,8 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
             cx={xPx(raios[i] ?? L.min)}
             cy={yPx(t)}
             r={6}
-            fill={arrastando === i ? "#D9772F" : "#1E1B18"}
-            stroke="#D3AC6C"
+            fill={arrastando === i ? "var(--acento)" : "#FFFFFF"}
+            stroke="var(--acento)"
             strokeWidth={1.5}
             style={{ cursor: "ew-resize" }}
             onPointerDown={(e) => {
@@ -96,7 +96,7 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
           />
         ))}
       </svg>
-      <div className="px-1 pb-1 text-[10px] text-[#7d766a]">
+      <div className="px-1 pb-1 text-[10px] text-[#97907F]">
         Arraste os pontos para os lados. O traço é a peça real — os limites de
         fabricação seguram o arrasto sozinhos.
       </div>

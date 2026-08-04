@@ -63,17 +63,9 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
-/* ——— Casca antiga do configurador (re-skin em fase própria) ——— */
+/* ——— Configurador — casca clara (§4.1–4.2) ——— */
 
-/* Painel de vidro */
-.vidro {
-  background: rgba(26, 24, 21, 0.78);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Sliders — trilho com preenchimento de acento via --pct */
+/* Sliders — trilho de acento sobre cinza claro, thumb branco com borda de acento */
 input[type="range"].ctl {
   -webkit-appearance: none;
   appearance: none;
@@ -83,7 +75,7 @@ input[type="range"].ctl {
   background: linear-gradient(
     to right,
     var(--acento) var(--pct, 50%),
-    rgba(255, 255, 255, 0.12) var(--pct, 50%)
+    rgba(30, 30, 30, 0.12) var(--pct, 50%)
   );
   outline: none;
 }
@@ -93,9 +85,9 @@ input[type="range"].ctl::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--luz-acesa);
+  background: #ffffff;
   border: 2px solid var(--acento);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 4px rgba(30, 30, 30, 0.25);
   cursor: pointer;
   transition: transform 0.12s var(--easing);
 }
@@ -106,13 +98,13 @@ input[type="range"].ctl::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--luz-acesa);
+  background: #ffffff;
   border: 2px solid var(--acento);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 4px rgba(30, 30, 30, 0.25);
   cursor: pointer;
 }
 
-/* Rolagem discreta no painel */
+/* Rolagem discreta no painel branco */
 .rolagem::-webkit-scrollbar {
   width: 6px;
 }
@@ -120,10 +112,18 @@ input[type="range"].ctl::-moz-range-thumb {
   background: transparent;
 }
 .rolagem::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(30, 30, 30, 0.18);
   border-radius: 999px;
 }
 .rolagem {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  scrollbar-color: rgba(30, 30, 30, 0.18) transparent;
+}
+
+/* ——— Casca antiga (vidro escuro) — ainda usada nas telas de conta ——— */
+.vidro {
+  background: rgba(26, 24, 21, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

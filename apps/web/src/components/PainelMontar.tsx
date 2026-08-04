@@ -7,10 +7,15 @@ import {
   ESTRUTURAIS,
   LIMITES_CRIAR,
   MAX_ESTRUTURAIS,
-  PALETA,
   type ParametrosPlaca,
 } from "@per-parte/nucleo";
-import { Chips, PontosDeLuzCtl, Secao } from "./controles";
+import {
+  Chips,
+  PaletaFamilias,
+  PontosDeLuzCtl,
+  Secao,
+  SubRotulo,
+} from "./controles";
 import type { AlvoCor, CoresPartes } from "./Configurador";
 
 const ALVOS: { id: AlvoCor; rotulo: string }[] = [
@@ -40,10 +45,11 @@ interface Props {
   setSeparacaoMm: (v: number) => void;
   placa: ParametrosPlaca | null;
   setPlaca: (p: ParametrosPlaca | null) => void;
-  /** Quando presente, renderiza só a seção pedida (modo órbita). */
-  apenasSecao?: string;
+  luzAcesa: boolean;
+  setLuzAcesa: (v: boolean) => void;
 }
 
+/** Painel do modo Montar — seções colapsáveis num único scroll (§4.2). */
 export default function PainelMontar({
   iBase,
   iCorpo,
@@ -63,41 +69,46 @@ export default function PainelMontar({
   setSeparacaoMm,
   placa,
   setPlaca,
-  apenasSecao,
+  luzAcesa,
+  setLuzAcesa,
 }: Props) {
   const corSelecionada = alvoCor === "all" ? cores.corpo : cores[alvoCor];
-  const vis = (id: string) => !apenasSecao || apenasSecao === id;
 
   return (
     <div>
-      {vis("base") && (
-      <Secao titulo="Base">
+      <Secao id="base" titulo="Base">
         <Chips
           nomes={BASES.map((b) => b.nome)}
           selecionado={iBase}
           aoEscolher={escolherBase}
         />
       </Secao>
-      )}
-      {vis("pilha") && (
-      <Secao titulo="Empilhar — a luminária cresce por peças">
+
+      <Secao id="corpo" titulo="Corpo">
+        <Chips
+          nomes={CORPOS.map((c) => c.nome)}
+          selecionado={iCorpo}
+          aoEscolher={escolherCorpo}
+        />
+
+        <SubRotulo>Empilhar — a luminária cresce por peças</SubRotulo>
         {/* A pilha, de cima para baixo: difusor / corpo / estruturais / base. */}
         <div className="mb-3 space-y-1.5">
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
-            difusor · <b className="text-[#A69D8D]">{DIFUSORES[iDifusor].nome}</b>
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+            difusor · <b className="text-[#4A463D]">{DIFUSORES[iDifusor].nome}</b>
           </div>
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
-            corpo · <b className="text-[#A69D8D]">{CORPOS[iCorpo].nome}</b>
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+            corpo · <b className="text-[#4A463D]">{CORPOS[iCorpo].nome}</b>
           </div>
           {[...estruturais].reverse().map((ie, kInv) => {
             const k = estruturais.length - 1 - kInv;
             return (
               <div
                 key={`slot-${k}`}
-                className="rounded-xl border border-[#D3AC6C]/25 bg-[#D3AC6C]/[0.05] px-3.5 py-2.5"
+                className="rounded-xl border border-acento/40 bg-acento/[0.06] px-3.5 py-2.5"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-wider text-[#A69D8D]">
+                  <span className="text-[10px] uppercase tracking-wider text-[#6D675C]">
                     {ESTRUTURAIS[ie].tipo === "anel" ? "anel" : "haste"} ·{" "}
                     {(ESTRUTURAIS[ie].alturaMm / 10)
                       .toFixed(1)
@@ -108,7 +119,7 @@ export default function PainelMontar({
                     onClick={() =>
                       setEstruturais(estruturais.filter((_, j) => j !== k))
                     }
-                    className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-[#A69D8D] transition-colors hover:border-[#E06A55]/50 hover:text-[#E06A55]"
+                    className="rounded-full border border-black/10 px-2 py-0.5 text-[10px] text-[#6D675C] transition-colors hover:border-[#B23B28]/50 hover:text-[#B23B28]"
                   >
                     remover
                   </button>
@@ -123,51 +134,59 @@ export default function PainelMontar({
               </div>
             );
           })}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2 text-[11.5px] text-[#7d766a]">
-            base · <b className="text-[#A69D8D]">{BASES[iBase].nome}</b>
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+            base · <b className="text-[#4A463D]">{BASES[iBase].nome}</b>
           </div>
         </div>
         {estruturais.length < MAX_ESTRUTURAIS ? (
           <button
             onClick={() => setEstruturais([...estruturais, 0])}
-            className="w-full rounded-full border border-dashed border-white/20 py-2.5 text-[12.5px] text-[#A69D8D] transition-colors hover:border-[#D3AC6C]/60 hover:text-[#D3AC6C]"
+            className="w-full rounded-full border border-dashed border-black/20 py-2.5 text-[12.5px] text-[#6D675C] transition-colors hover:border-acento hover:text-[#8A5F10]"
           >
             + somar uma peça entre a base e o corpo
           </button>
         ) : (
-          <div className="text-center text-[10.5px] text-[#7d766a]">
+          <div className="text-center text-[10.5px] text-[#97907F]">
             pilha cheia — até {MAX_ESTRUTURAIS} peças entre a base e o corpo
           </div>
         )}
-        <div className="mt-2.5 text-[10px] leading-relaxed text-[#7d766a]">
+        <div className="mt-2.5 text-[10px] leading-relaxed text-[#97907F]">
           Os encaixes são os mesmos em toda peça (F5): tudo monta em tudo, em
           qualquer ordem. É assim que uma luminária de meio metro sai de uma
           impressora comum — em impressões separadas.
         </div>
       </Secao>
-      )}
 
-      {vis("corpo") && (
-      <Secao titulo="Corpo">
-        <Chips
-          nomes={CORPOS.map((c) => c.nome)}
-          selecionado={iCorpo}
-          aoEscolher={escolherCorpo}
-        />
-      </Secao>
-      )}
-      {vis("difusor") && (
-      <Secao titulo="Difusor">
+      <Secao id="difusor" titulo="Difusor">
         <Chips
           nomes={DIFUSORES.map((d) => d.nome)}
           selecionado={iDifusor}
           aoEscolher={escolherDifusor}
         />
       </Secao>
-      )}
 
-      {vis("luzes") && (
-      <Secao titulo="Pontos de luz">
+      <Secao id="cor" titulo="Cor & acabamento">
+        <div className="mb-3 flex gap-1.5">
+          {ALVOS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setAlvoCor(a.id)}
+              className={`flex-1 rounded-full py-1.5 text-[11.5px] transition-all ${
+                alvoCor === a.id
+                  ? "bg-palco-escuro font-semibold text-luz-acesa"
+                  : "border border-black/10 bg-black/[0.02] text-[#4A463D] hover:border-black/30"
+              }`}
+            >
+              {a.rotulo}
+            </button>
+          ))}
+        </div>
+        <PaletaFamilias selecionado={corSelecionada} aoEscolher={escolherCor} />
+        {/* Facetas/squircle são um controle do modo Inventar — aqui as peças
+            do catálogo já vêm com o acabamento delas. */}
+      </Secao>
+
+      <Secao id="luz" titulo="Luz">
         <PontosDeLuzCtl
           pontosDeLuz={pontosDeLuz}
           separacaoMm={separacaoMm}
@@ -179,62 +198,30 @@ export default function PainelMontar({
           placa={placa}
           aoMudarPlaca={setPlaca}
         />
+        <SubRotulo>Luz acesa</SubRotulo>
+        <Chips
+          nomes={["Acesa", "Apagada"]}
+          selecionado={luzAcesa ? 0 : 1}
+          aoEscolher={(i) => setLuzAcesa(i === 0)}
+        />
       </Secao>
-      )}
 
-      {vis("cor") && (
-      <Secao titulo="Cor — aplicar em">
-        <div className="mb-3 flex gap-1.5">
-          {ALVOS.map((a) => (
-            <button
-              key={a.id}
-              onClick={() => setAlvoCor(a.id)}
-              className={`flex-1 rounded-full py-1.5 text-[11.5px] transition-all ${
-                alvoCor === a.id
-                  ? "bg-white/[0.12] font-semibold text-[#F2EDE4]"
-                  : "border border-white/10 bg-white/[0.03] text-[#A69D8D] hover:border-white/25"
-              }`}
-            >
-              {a.rotulo}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          {PALETA.map((p, i) => (
-            <button
-              key={p.nome}
-              title={p.nome}
-              onClick={() => escolherCor(i)}
-              className={`h-[30px] w-[30px] rounded-full transition-transform hover:scale-110 ${
-                corSelecionada === i
-                  ? "ring-2 ring-[#F2EDE4] ring-offset-2 ring-offset-[#1a1815]"
-                  : "ring-1 ring-white/20"
-              }`}
-              style={{ background: p.hex }}
-            />
-          ))}
-        </div>
-      </Secao>
-      )}
-
-      {vis("regras") && (
-      <Secao titulo="Regras embutidas">
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+      <Secao id="regras" titulo="Regras">
+        <div className="rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-3">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Compatibilidade das partes</span>
-            <span className="font-semibold text-[#8FB07E]">garantida ✓</span>
+            <span className="font-semibold text-[#4F7A44]">garantida ✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Módulo elétrico certificado</span>
-            <span className="font-semibold text-[#8FB07E]">incluído ✓</span>
+            <span className="font-semibold text-[#4F7A44]">incluído ✓</span>
           </div>
-          <div className="mt-2 text-[10px] text-[#7d766a]">
+          <div className="mt-2 text-[10px] text-[#97907F]">
             No modo Montar não existe combinação inválida — os encaixes são
             padronizados por projeto.
           </div>
         </div>
       </Secao>
-      )}
     </div>
   );
 }

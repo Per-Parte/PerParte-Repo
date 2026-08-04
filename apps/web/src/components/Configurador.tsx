@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BASES,
   CORPOS,
   DIFUSORES,
-  ENCAIXES,
   ESTRUTURAIS,
   FACETAS,
   PALETA,
@@ -26,10 +26,10 @@ import {
   type ParametrosDifusor,
   type ParametrosPlaca,
 } from "@per-parte/nucleo";
-import Cena3D from "./Cena3D";
 import PainelMontar from "./PainelMontar";
 import PainelCriar from "./PainelCriar";
 import BotaoSalvar from "./BotaoSalvar";
+import { NumeroAnimado } from "./controles";
 import { codificarCriacao, decodificarCriacao } from "@/lib/criacao";
 
 export type ParteAlvo = "base" | "corpo" | "difusor";
@@ -44,31 +44,39 @@ export interface EstadoCriar {
 
 type Modo = "montar" | "criar";
 
-const oDiametroCm = (raioMm: number) =>
-  ((raioMm * 2) / 10).toFixed(1).replace(".", ",");
+/** Loading do palco (§4.5) enquanto o WebGL sobe. */
+function CarregandoCena() {
+  return (
+    <div className="flex h-full items-center justify-center">
+      <span className="text-[14px] font-medium text-[#6D675C] motion-safe:animate-pulse">
+        Dando forma…
+      </span>
+    </div>
+  );
+}
 
-/** Seções que orbitam a luminária no desktop. */
-const SECOES_MONTAR = [
-  { id: "base", rotulo: "Base" },
-  { id: "pilha", rotulo: "Empilhar" },
-  { id: "corpo", rotulo: "Corpo" },
-  { id: "difusor", rotulo: "Difusor" },
-  { id: "luzes", rotulo: "Luzes" },
-  { id: "cor", rotulo: "Cores" },
-  { id: "regras", rotulo: "Regras" },
+// A cena só existe no cliente (WebGL): o import dinâmico dá o "Dando forma…"
+// enquanto o estúdio claro (§4.4) e a scroll-driven camera (§4.3) sobem.
+const Cena3D = dynamic(() => import("./Cena3D"), {
+  ssr: false,
+  loading: CarregandoCena,
+});
+
+/**
+ * Os modos como o visitante lê (rótulo "Inventar" é só apresentação — o
+ * estado interno, o ?c= e o núcleo continuam falando "criar").
+ */
+const MODOS: [Modo, string][] = [
+  ["montar", "Montar"],
+  ["criar", "Inventar"],
 ];
-const SECOES_CRIAR = [
-  { id: "base", rotulo: "Base" },
-  { id: "corpo", rotulo: "Corpo" },
-  { id: "silhueta", rotulo: "Silhueta" },
-  { id: "curva", rotulo: "Curva S" },
-  { id: "berco", rotulo: "Berço" },
-  { id: "textura", rotulo: "Textura" },
-  { id: "difusor", rotulo: "Difusor" },
-  { id: "luzes", rotulo: "Luzes" },
-  { id: "regras", rotulo: "Regras" },
-  { id: "publicar", rotulo: "Publicar" },
-];
+
+/** Sombra suave e fosca dos elementos que flutuam sobre o palco (§2). */
+const SOMBRA_CARD = "shadow-[0_16px_44px_-20px_rgba(30,30,30,0.45)]";
+
+/** Pills discretas do bloco de produção (STL / kit F5). */
+const PILL_PRODUCAO =
+  "rounded-full border border-black/10 bg-black/[0.02] px-2.5 py-1 text-[#6D675C] transition-colors hover:border-black/30 hover:text-palco-escuro disabled:opacity-40";
 
 export default function Configurador() {
   const [modo, setModo] = useState<Modo>("montar");
@@ -90,12 +98,69 @@ export default function Configurador() {
   /** Refletor (PLACA) na segunda coluna — null = sem refletor. */
   const [placa, setPlaca] = useState<ParametrosPlaca | null>(null);
   const [remixDe, setRemixDe] = useState("");
-  const [secaoAtiva, setSecaoAtiva] = useState("corpo");
+  /** Nome da obra — só apresentação e conta; não entra no ?c=. */
+  const [nomeObra, setNomeObra] = useState("");
   const [criar, setCriar] = useState<EstadoCriar>({
     base: { ...BASES[0] },
     corpo: { ...CORPOS[0] },
     difusor: { ...DIFUSORES[0] },
   });
+  /** Estúdio aceso? false = "apagar a luz do ambiente" (§4.4). */
+  const [ambienteAceso, setAmbienteAceso] = useState(true);
+  /** Seção visível no scroll do painel — guia a câmera (§4.3). */
+  const [secaoAtiva, setSecaoAtiva] = useState("base");
+  const refRolagem = useRef<HTMLDivElement>(null);
+  /** Avança a cada scroll do painel; a cena lê para re-sincronizar a câmera. */
+  const refSinalRolagem = useRef(0);
+
+  // A seção ativa vem de um IntersectionObserver no contêiner de scroll do
+  // painel (root = o próprio contêiner): vence a seção que mais ocupa o
+  // terço de cima; com o painel todo rolado, vence a última (§4.3).
+  useEffect(() => {
+    const raiz = refRolagem.current;
+    if (!raiz) return;
+    const secoes = Array.from(
+      raiz.querySelectorAll<HTMLElement>("[data-secao]")
+    );
+    if (secoes.length === 0) return;
+    const visiveis = new Map<string, number>();
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          const id = (e.target as HTMLElement).dataset.secao;
+          if (id) {
+            visiveis.set(id, e.isIntersecting ? e.intersectionRect.height : 0);
+          }
+        }
+        const noFim =
+          raiz.scrollTop > 0 &&
+          raiz.scrollTop + raiz.clientHeight >= raiz.scrollHeight - 8;
+        let ativa: string | undefined;
+        if (noFim) {
+          ativa = secoes[secoes.length - 1].dataset.secao;
+        } else {
+          let maior = 0;
+          for (const s of secoes) {
+            const id = s.dataset.secao;
+            const v = id ? (visiveis.get(id) ?? 0) : 0;
+            if (v > maior) {
+              maior = v;
+              ativa = id;
+            }
+          }
+        }
+        if (ativa) setSecaoAtiva(ativa);
+      },
+      // A faixa de leitura é o terço de cima do painel.
+      {
+        root: raiz,
+        rootMargin: "0px 0px -70% 0px",
+        threshold: [0, 0.2, 0.4, 0.6, 0.8, 1],
+      }
+    );
+    secoes.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [modo]);
 
   // Carrega a criação do link (?c=...) uma única vez, ao abrir.
   useEffect(() => {
@@ -166,7 +231,7 @@ export default function Configurador() {
   async function copiarLink() {
     await navigator.clipboard.writeText(window.location.href);
     setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
+    setTimeout(() => setCopiado(false), 2500);
   }
 
   function trocarModo(m: Modo) {
@@ -178,7 +243,6 @@ export default function Configurador() {
       });
       setRemixDe(`${CORPOS[iCorpo].nome} + ${DIFUSORES[iDifusor].nome}`);
     }
-    setSecaoAtiva("corpo");
     setModo(m);
   }
 
@@ -280,6 +344,13 @@ export default function Configurador() {
     [estab, base.raioMm, gramas]
   );
 
+  // Quantas peças impressas chegam na caixa: a base + (corpo, difusor e
+  // pilha) por coluna de luz + o refletor. Só apresentação — o peso já vem
+  // do estimarPreco.
+  const colunasDeLuz = pontosDeLuz === 2 ? 2 : 1;
+  const numPartes =
+    1 + colunasDeLuz * (2 + pecasEstruturais.length) + (placa ? 1 : 0);
+
   const espinhaCorpo = useMemo(
     () => ({
       deslocamentoMm: corpo.deslocamentoMm,
@@ -345,8 +416,8 @@ export default function Configurador() {
   }
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-[#121110] text-[#F2EDE4]">
-      {/* Cena em tela cheia — o palco, com a luminária no centro da órbita */}
+    <div className="relative h-dvh overflow-hidden bg-palco-claro text-palco-escuro">
+      {/* Viewport 3D full-bleed — o palco ocupa a tela inteira, por trás (§4.1) */}
       <div className="absolute inset-0">
         <Cena3D
           perfis={perfis}
@@ -376,74 +447,135 @@ export default function Configurador() {
           difusorInclinado={
             difusor.junta ? { difusor, junta: difusor.junta } : undefined
           }
+          secaoAtiva={secaoAtiva}
+          ambienteAceso={ambienteAceso}
+          sinalRolagem={refSinalRolagem}
         />
       </div>
 
-      {/* Cabeçalho flutuante */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between p-5">
-        <Link href="/" className="pointer-events-auto block">
-          <div className="text-[19px] font-extrabold tracking-[0.16em]">
-            PER P
-            <span
-              style={{
-                color: "transparent",
-                WebkitTextStroke: "1.1px #F2EDE4",
-              }}
-            >
-              A
-            </span>
-            RTE
-          </div>
-          <div className="text-[11px] text-[#A69D8D]">
-            monte por partes. crie cada parte.
-          </div>
-        </Link>
-      </header>
+      {/* Topo esquerdo: wordmark (volta para a landing) */}
+      <Link
+        href="/"
+        className={`absolute left-3 top-4 z-10 rounded-full bg-white px-4 py-2 font-display text-[17px] leading-none text-palco-escuro transition-colors duration-300 ease-padrao hover:text-[#8A5F10] md:left-6 md:top-5 ${SOMBRA_CARD}`}
+      >
+        Per Parte
+      </Link>
 
-      {/* Rodapé informativo da cena */}
-      <div className="absolute bottom-5 left-5 z-10 hidden flex-col items-start gap-2 md:flex">
-        <div className="vidro rounded-full px-3.5 py-1.5 text-[11px] text-[#A69D8D]">
-          encaixes fixos{" "}
-          <b className="font-semibold text-[#F2EDE4]">
-            Ø{oDiametroCm(ENCAIXES.baseCorpo.raioMm)}
-          </b>{" "}
-          e{" "}
-          <b className="font-semibold text-[#F2EDE4]">
-            Ø{oDiametroCm(ENCAIXES.corpoDifusor.raioMm)} cm
-          </b>{" "}
-          · partes livres
+      {/* Topo direito do viewport: guardar + copiar link (§4.1/§4.5) */}
+      <div className="absolute right-3 top-4 z-10 flex flex-col items-end gap-2 md:right-[432px] md:top-5 md:flex-row md:items-center">
+        <BotaoSalvar nome={nomeObra} />
+        <button
+          onClick={copiarLink}
+          className={`rounded-full bg-white px-4 py-2 text-[12.5px] font-medium transition-colors duration-300 ease-padrao ${SOMBRA_CARD} ${
+            copiado
+              ? "text-[#4F7A44]"
+              : "text-palco-escuro hover:text-[#8A5F10]"
+          }`}
+        >
+          {copiado ? "Link da sua obra copiado." : "Copiar link"}
+        </button>
+      </div>
+
+      {/* Cards flutuantes: o preço evolutivo virando experiência (§4.1) */}
+      <div className="pointer-events-none absolute bottom-[calc(48dvh+10px)] left-3 z-10 md:bottom-6 md:left-6">
+        <div
+          className={`w-fit rounded-[var(--raio-painel)] bg-white px-5 py-4 ${SOMBRA_CARD}`}
+        >
+          <div className="font-display text-[34px] leading-none tabular-nums">
+            R$ <NumeroAnimado valor={precoBRL} />
+          </div>
+          <div className="mt-1.5 text-[11px] text-[#6D675C]">
+            evolui com a sua criação
+          </div>
         </div>
-        <div className="pl-1 text-[10.5px] text-[#7d766a]">
-          arraste para girar · role para aproximar
+        <div
+          className={`mt-2 w-fit rounded-full bg-white px-3.5 py-2 text-[11.5px] tabular-nums text-[#4A463D] ${SOMBRA_CARD}`}
+        >
+          {numPartes} partes · {Math.round(gramas)} g
         </div>
       </div>
 
-      {/* Mobile: cartela deslizante */}
-      <aside className="vidro absolute inset-x-3 bottom-3 top-[46dvh] z-10 flex flex-col overflow-hidden rounded-3xl shadow-2xl shadow-black/50 md:hidden">
-        <div className="px-4 pb-1 pt-4">
-          <div className="mx-auto flex w-full max-w-[280px] rounded-full bg-white/[0.06] p-1">
-            {(
-              [
-                ["montar", "Montar"],
-                ["criar", "Criar"],
-              ] as const
-            ).map(([id, titulo]) => (
+      {/* Interruptor do estúdio: apagar a luz do ambiente e ver a obra
+          brilhando no escuro — o momento-marca (§4.4) */}
+      <button
+        onClick={() => setAmbienteAceso((v) => !v)}
+        aria-pressed={!ambienteAceso}
+        aria-label={
+          ambienteAceso
+            ? "Apagar a luz do ambiente"
+            : "Acender a luz do ambiente"
+        }
+        title={
+          ambienteAceso
+            ? "Apagar a luz do ambiente"
+            : "Acender a luz do ambiente"
+        }
+        className={`absolute bottom-[calc(48dvh+10px)] right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-300 ease-padrao md:bottom-6 md:right-[432px] ${SOMBRA_CARD} ${
+          ambienteAceso
+            ? "bg-white text-palco-escuro hover:text-[#8A5F10]"
+            : "bg-palco-escuro text-luz-acesa"
+        }`}
+      >
+        {/* ícone de interruptor — a tecla desce quando o ambiente apaga */}
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
+          <rect
+            x="7"
+            y="3.5"
+            width="10"
+            height="17"
+            rx="5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <circle
+            cx="12"
+            cy={ambienteAceso ? 8.5 : 15.5}
+            r="2.4"
+            fill="currentColor"
+          />
+        </svg>
+      </button>
+
+      {/* Painel de ferramentas — coluna branca à direita (§4.1) */}
+      <aside
+        className={`absolute inset-x-3 bottom-3 top-[52dvh] z-20 flex flex-col overflow-hidden rounded-[var(--raio-painel)] bg-white md:inset-x-auto md:bottom-4 md:right-4 md:top-4 md:w-[400px] ${SOMBRA_CARD}`}
+      >
+        {/* Topo fixo do painel: switch de modo + nome da obra (§4.1) */}
+        <div className="border-b border-black/[0.06] px-5 pb-3.5 pt-4">
+          <div className="flex rounded-full bg-black/[0.05] p-1">
+            {MODOS.map(([id, rotulo]) => (
               <button
                 key={id}
                 onClick={() => trocarModo(id)}
-                className={`flex-1 rounded-full py-2 text-[13px] transition-all ${
+                className={`flex-1 rounded-full py-2 text-[13px] transition-all duration-300 ease-padrao ${
                   modo === id
-                    ? "bg-[#F2EDE4] font-semibold text-[#161412]"
-                    : "text-[#A69D8D] hover:text-[#E7E0D2]"
+                    ? "bg-palco-escuro font-semibold text-luz-acesa"
+                    : "text-[#6D675C] hover:text-palco-escuro"
                 }`}
               >
-                {titulo}
+                {rotulo}
               </button>
             ))}
           </div>
+          <input
+            type="text"
+            value={nomeObra}
+            onChange={(e) => setNomeObra(e.target.value)}
+            placeholder="Minha obra"
+            maxLength={60}
+            aria-label="Nome da obra"
+            className="mt-3 w-full border-b border-transparent bg-transparent pb-1 text-[15px] font-medium text-palco-escuro placeholder-[#97907F] outline-none transition-colors duration-200 ease-padrao focus:border-black/15"
+          />
         </div>
 
-        <div className="rolagem min-h-0 flex-1 overflow-y-auto">
+        {/* Um único scroll com todas as seções (data-secao) — é ele que guia a câmera (§4.3) */}
+        <div
+          ref={refRolagem}
+          onScroll={() => {
+            refSinalRolagem.current += 1;
+          }}
+          className="rolagem min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        >
           {modo === "montar" ? (
             <PainelMontar
               iBase={iBase}
@@ -464,6 +596,8 @@ export default function Configurador() {
               setSeparacaoMm={setSeparacaoMm}
               placa={placa}
               setPlaca={setPlaca}
+              luzAcesa={luzAcesa}
+              setLuzAcesa={setLuzAcesa}
             />
           ) : (
             <PainelCriar
@@ -474,294 +608,92 @@ export default function Configurador() {
               setIFaceta={setIFaceta}
               estab={estab}
               contrapesoG={contrapesoG}
+              cores={cores}
+              alvoCor={alvoCor}
+              setAlvoCor={setAlvoCor}
+              escolherCor={escolherCor}
               pontosDeLuz={pontosDeLuz}
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
               setSeparacaoMm={setSeparacaoMm}
               placa={placa}
               setPlaca={setPlaca}
+              luzAcesa={luzAcesa}
+              setLuzAcesa={setLuzAcesa}
             />
           )}
+
+          {/* Produção — STL por parte e kit de calibração (mesmo arquivo que imprime) */}
+          <div className="border-t border-black/[0.06] px-5 pb-6 pt-4">
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#6D675C]">
+              Produção
+            </div>
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[10px] text-[#97907F]">
+              <span>STL:</span>
+              {(["base", "corpo", "difusor"] as const).map((p) => {
+                const travadoPorVazado = p === "difusor" && !!difusor.vazado;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => baixarSTL(p)}
+                    disabled={gerandoSTL !== null || travadoPorVazado}
+                    title={
+                      travadoPorVazado
+                        ? "difusor vazado: preview pronto, produção em preparação — tire o vazado para gerar o STL"
+                        : undefined
+                    }
+                    className={PILL_PRODUCAO}
+                  >
+                    {gerandoSTL === p
+                      ? "gerando…"
+                      : travadoPorVazado
+                        ? "difusor ⚑"
+                        : p}
+                  </button>
+                );
+              })}
+              {pecasEstruturais.map((p, k) => (
+                <button
+                  key={`estrutural-${k}`}
+                  onClick={() => baixarSTL("estrutural", k)}
+                  disabled={gerandoSTL !== null}
+                  className={PILL_PRODUCAO}
+                >
+                  {gerandoSTL === `estrutural-${k}`
+                    ? "gerando…"
+                    : p.nome.toLowerCase()}
+                </button>
+              ))}
+              {placa && (
+                <button
+                  onClick={() => baixarSTL("placa")}
+                  disabled={gerandoSTL !== null}
+                  className={PILL_PRODUCAO}
+                >
+                  {gerandoSTL === "placa" ? "gerando…" : "refletor"}
+                </button>
+              )}
+              <span className="ml-1.5">kit F5:</span>
+              {[0.2, 0.3, 0.4].map((f) => (
+                <a
+                  key={f}
+                  href={`/api/calibracao?folgaMm=${f}`}
+                  className={PILL_PRODUCAO}
+                >
+                  {String(f).replace(".", ",")}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="border-t border-white/[0.08] px-5 pb-4 pt-3.5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex-1">
-              <div className="font-display text-[25px] font-medium leading-none tabular-nums">
-                R$ {precoBRL.toLocaleString("pt-BR")}
-              </div>
-              <div className="mt-1 text-[10px] text-[#7d766a]">
-                ~{Math.round(gramas)} g de PLA · módulo elétrico certificado
-              </div>
-            </div>
-            <button
-              onClick={() => setLuzAcesa(!luzAcesa)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] transition-all ${
-                luzAcesa
-                  ? "bg-[#D3AC6C] font-semibold text-[#1b1206]"
-                  : "border border-white/15 bg-white/[0.05] text-[#CFC7B8]"
-              }`}
-            >
-              {luzAcesa ? "luz acesa" : "luz apagada"}
-            </button>
-            <button className="rounded-full bg-[#F2EDE4] px-5 py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white">
-              Encomendar
-            </button>
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] text-[#7d766a]">
-            <span>STL:</span>
-            {(["base", "corpo", "difusor"] as const).map((p) => {
-              const travadoPorVazado = p === "difusor" && !!difusor.vazado;
-              return (
-                <button
-                  key={p}
-                  onClick={() => baixarSTL(p)}
-                  disabled={gerandoSTL !== null || travadoPorVazado}
-                  title={
-                    travadoPorVazado
-                      ? "difusor vazado: preview pronto, produção em preparação — tire o vazado para gerar o STL"
-                      : undefined
-                  }
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-                >
-                  {gerandoSTL === p ? "gerando…" : travadoPorVazado ? "difusor ⚑" : p}
-                </button>
-              );
-            })}
-            {pecasEstruturais.map((p, k) => (
-              <button
-                key={`estrutural-${k}`}
-                onClick={() => baixarSTL("estrutural", k)}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === `estrutural-${k}`
-                  ? "gerando…"
-                  : p.nome.toLowerCase()}
-              </button>
-            ))}
-            {placa && (
-              <button
-                onClick={() => baixarSTL("placa")}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === "placa" ? "gerando…" : "refletor"}
-              </button>
-            )}
-            <span className="ml-1.5">kit F5:</span>
-            {[0.2, 0.3, 0.4].map((f) => (
-              <a
-                key={f}
-                href={`/api/calibracao?folgaMm=${f}`}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
-              >
-                {String(f).replace(".", ",")}
-              </a>
-            ))}
-            <span className="ml-auto">
-              <BotaoSalvar />
-            </span>
-            <button
-              onClick={copiarLink}
-              className={`rounded-full border px-2.5 py-1 transition-colors ${
-                copiado
-                  ? "border-[#8FB07E]/40 text-[#8FB07E]"
-                  : "border-white/10 bg-white/[0.04] text-[#A69D8D] hover:border-white/25 hover:text-[#E7E0D2]"
-              }`}
-            >
-              {copiado ? "link copiado ✓" : "copiar link"}
-            </button>
-          </div>
+        {/* Rodapé do painel: o CTA da loja */}
+        <div className="border-t border-black/[0.06] px-4 py-3">
+          <button className="w-full rounded-full bg-palco-escuro py-3 text-[14px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento">
+            Encomendar
+          </button>
         </div>
       </aside>
-
-      {/* Desktop: órbita em volta da luminária */}
-      <div className="hidden md:block">
-        {/* Abas */}
-        <div className="vidro absolute left-1/2 top-5 z-20 flex w-[280px] -translate-x-1/2 rounded-full p-1">
-          {(
-            [
-              ["montar", "Montar"],
-              ["criar", "Criar"],
-            ] as const
-          ).map(([id, titulo]) => (
-            <button
-              key={id}
-              onClick={() => trocarModo(id)}
-              className={`flex-1 rounded-full py-2 text-[13px] transition-all ${
-                modo === id
-                  ? "bg-[#F2EDE4] font-semibold text-[#161412]"
-                  : "text-[#A69D8D] hover:text-[#E7E0D2]"
-              }`}
-            >
-              {titulo}
-            </button>
-          ))}
-        </div>
-
-        {/* Arco de seções */}
-        {(modo === "montar" ? SECOES_MONTAR : SECOES_CRIAR).map((s, i, arr) => {
-          const n = arr.length;
-          const max = n <= 6 ? 52 : 76;
-          const phi = ((-max + (i * 2 * max) / (n - 1)) * Math.PI) / 180;
-          const cos = Math.cos(phi).toFixed(4);
-          const sin = Math.sin(phi).toFixed(4);
-          return (
-            <button
-              key={s.id}
-              onClick={() => setSecaoAtiva(s.id)}
-              className={`absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full px-3.5 py-2 text-[12px] transition-all ${
-                secaoAtiva === s.id
-                  ? "bg-[#F2EDE4] font-semibold text-[#161412] shadow-lg shadow-black/40"
-                  : "vidro text-[#CFC7B8] hover:scale-105 hover:text-[#F2EDE4]"
-              }`}
-              style={{
-                left: `calc(50% + ${cos} * min(34vh, 23vw))`,
-                top: `calc(47% + ${sin} * min(34vh, 23vw))`,
-              }}
-            >
-              {s.rotulo}
-            </button>
-          );
-        })}
-
-        {/* Cartão da seção ativa */}
-        <div className="vidro rolagem absolute left-6 top-1/2 z-20 max-h-[calc(100dvh-190px)] w-[400px] -translate-y-1/2 overflow-y-auto rounded-3xl pb-2 pt-1 shadow-2xl shadow-black/50 xl:w-[440px]">
-          {modo === "montar" ? (
-            <PainelMontar
-              iBase={iBase}
-              iCorpo={iCorpo}
-              iDifusor={iDifusor}
-              escolherBase={setIBase}
-              escolherCorpo={setICorpo}
-              escolherDifusor={setIDifusor}
-              estruturais={estruturais}
-              setEstruturais={setEstruturais}
-              cores={cores}
-              alvoCor={alvoCor}
-              setAlvoCor={setAlvoCor}
-              escolherCor={escolherCor}
-              pontosDeLuz={pontosDeLuz}
-              separacaoMm={separacaoMm}
-              setPontosDeLuz={setPontosDeLuz}
-              setSeparacaoMm={setSeparacaoMm}
-              placa={placa}
-              setPlaca={setPlaca}
-              apenasSecao={secaoAtiva}
-            />
-          ) : (
-            <PainelCriar
-              criar={criar}
-              aoMudar={setCriar}
-              remixDe={remixDe}
-              iFaceta={iFaceta}
-              setIFaceta={setIFaceta}
-              estab={estab}
-              contrapesoG={contrapesoG}
-              pontosDeLuz={pontosDeLuz}
-              separacaoMm={separacaoMm}
-              setPontosDeLuz={setPontosDeLuz}
-              setSeparacaoMm={setSeparacaoMm}
-              placa={placa}
-              setPlaca={setPlaca}
-              apenasSecao={secaoAtiva}
-            />
-          )}
-        </div>
-
-        {/* Barra inferior central */}
-        <div className="vidro absolute bottom-5 left-1/2 z-20 -translate-x-1/2 rounded-3xl px-6 py-3 shadow-2xl shadow-black/50">
-          <div className="flex items-center gap-3">
-            <div className="pr-2">
-              <div className="font-display text-[22px] font-medium leading-none tabular-nums">
-                R$ {precoBRL.toLocaleString("pt-BR")}
-              </div>
-              <div className="mt-1 whitespace-nowrap text-[10px] text-[#7d766a]">
-                ~{Math.round(gramas)} g de PLA · módulo elétrico certificado
-              </div>
-            </div>
-            <button
-              onClick={() => setLuzAcesa(!luzAcesa)}
-              className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] transition-all ${
-                luzAcesa
-                  ? "bg-[#D3AC6C] font-semibold text-[#1b1206]"
-                  : "border border-white/15 bg-white/[0.05] text-[#CFC7B8]"
-              }`}
-            >
-              {luzAcesa ? "luz acesa" : "luz apagada"}
-            </button>
-            <button className="rounded-full bg-[#F2EDE4] px-5 py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white">
-              Encomendar
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-[#7d766a]">
-            <span>STL:</span>
-            {(["base", "corpo", "difusor"] as const).map((p) => {
-              const travadoPorVazado = p === "difusor" && !!difusor.vazado;
-              return (
-                <button
-                  key={p}
-                  onClick={() => baixarSTL(p)}
-                  disabled={gerandoSTL !== null || travadoPorVazado}
-                  title={
-                    travadoPorVazado
-                      ? "difusor vazado: preview pronto, produção em preparação — tire o vazado para gerar o STL"
-                      : undefined
-                  }
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-                >
-                  {gerandoSTL === p ? "gerando…" : travadoPorVazado ? "difusor ⚑" : p}
-                </button>
-              );
-            })}
-            {pecasEstruturais.map((p, k) => (
-              <button
-                key={`estrutural-${k}`}
-                onClick={() => baixarSTL("estrutural", k)}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === `estrutural-${k}`
-                  ? "gerando…"
-                  : p.nome.toLowerCase()}
-              </button>
-            ))}
-            {placa && (
-              <button
-                onClick={() => baixarSTL("placa")}
-                disabled={gerandoSTL !== null}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
-              >
-                {gerandoSTL === "placa" ? "gerando…" : "refletor"}
-              </button>
-            )}
-            <span className="ml-1.5">kit F5:</span>
-            {[0.2, 0.3, 0.4].map((f) => (
-              <a
-                key={f}
-                href={`/api/calibracao?folgaMm=${f}`}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
-              >
-                {String(f).replace(".", ",")}
-              </a>
-            ))}
-            <span className="ml-1.5">
-              <BotaoSalvar />
-            </span>
-            <button
-              onClick={copiarLink}
-              className={`ml-1.5 rounded-full border px-2.5 py-1 transition-colors ${
-                copiado
-                  ? "border-[#8FB07E]/40 text-[#8FB07E]"
-                  : "border-white/10 bg-white/[0.04] text-[#A69D8D] hover:border-white/25 hover:text-[#E7E0D2]"
-              }`}
-            >
-              {copiado ? "link copiado ✓" : "copiar link"}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

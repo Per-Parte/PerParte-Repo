@@ -24,9 +24,16 @@ import {
   type ParametrosPlaca,
   type ResultadoEstabilidade,
 } from "@per-parte/nucleo";
-import { Chips, PontosDeLuzCtl, Secao, SliderCtl } from "./controles";
+import {
+  Chips,
+  PaletaFamilias,
+  PontosDeLuzCtl,
+  Secao,
+  SliderCtl,
+  SubRotulo,
+} from "./controles";
 import EditorSilhueta from "./EditorSilhueta";
-import type { EstadoCriar } from "./Configurador";
+import type { AlvoCor, CoresPartes, EstadoCriar } from "./Configurador";
 
 const cm = (mm: number) => (mm / 10).toFixed(1).replace(".", ",");
 const fmtPos = (v: number) => (v < -0.15 ? "baixo" : v > 0.15 ? "alto" : "centro");
@@ -38,6 +45,13 @@ const CURVAS: { valor: CurvaBase; nome: string }[] = [
   { valor: "degrau", nome: "Degrau" },
 ];
 
+const ALVOS: { id: AlvoCor; rotulo: string }[] = [
+  { id: "all", rotulo: "tudo" },
+  { id: "base", rotulo: "base" },
+  { id: "corpo", rotulo: "corpo" },
+  { id: "difusor", rotulo: "difusor" },
+];
+
 interface Props {
   criar: EstadoCriar;
   aoMudar: (c: EstadoCriar) => void;
@@ -47,16 +61,21 @@ interface Props {
   estab: ResultadoEstabilidade;
   /** E3: gramas de inserto na base (0 = fica de pé sozinha). */
   contrapesoG: number;
+  cores: CoresPartes;
+  alvoCor: AlvoCor;
+  setAlvoCor: (a: AlvoCor) => void;
+  escolherCor: (i: number) => void;
   pontosDeLuz: number;
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
   setSeparacaoMm: (v: number) => void;
   placa: ParametrosPlaca | null;
   setPlaca: (p: ParametrosPlaca | null) => void;
-  /** Quando presente, renderiza só a seção pedida (modo órbita). */
-  apenasSecao?: string;
+  luzAcesa: boolean;
+  setLuzAcesa: (v: boolean) => void;
 }
 
+/** Painel do modo Criar (rótulo "Inventar") — seções num único scroll (§4.2). */
 export default function PainelCriar({
   criar,
   aoMudar,
@@ -65,17 +84,22 @@ export default function PainelCriar({
   setIFaceta,
   estab,
   contrapesoG,
+  cores,
+  alvoCor,
+  setAlvoCor,
+  escolherCor,
   pontosDeLuz,
   separacaoMm,
   setPontosDeLuz,
   setSeparacaoMm,
   placa,
   setPlaca,
-  apenasSecao,
+  luzAcesa,
+  setLuzAcesa,
 }: Props) {
-  const vis = (id: string) => !apenasSecao || apenasSecao === id;
   const [nomePeca, setNomePeca] = useState("");
   const [publicada, setPublicada] = useState<string | null>(null);
+  const corSelecionada = alvoCor === "all" ? cores.corpo : cores[alvoCor];
 
   const LB = LIMITES_CRIAR.base;
   const LC = LIMITES_CRIAR.corpo;
@@ -114,16 +138,13 @@ export default function PainelCriar({
 
   return (
     <div>
-      {!apenasSecao && (
-      <div className="mx-5 mt-3 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-3.5 py-2.5 text-[11.5px] text-[#A69D8D]">
+      <div className="mx-5 mt-3 rounded-xl border border-dashed border-black/15 bg-black/[0.02] px-3.5 py-2.5 text-[11.5px] text-[#6D675C]">
         Você está remixando{" "}
-        <b className="text-[#F2EDE4]">{remixDe}</b>. Os encaixes ficam travados
-        — o miolo é todo seu.
+        <b className="text-palco-escuro">{remixDe}</b>. Os encaixes ficam
+        travados — o miolo é todo seu.
       </div>
-      )}
 
-      {vis("base") && (
-      <Secao titulo="Base">
+      <Secao id="base" titulo="Base">
         <Chips
           nomes={CURVAS.map((c) => c.nome)}
           selecionado={Math.max(
@@ -158,10 +179,8 @@ export default function PainelCriar({
           />
         </div>
       </Secao>
-      )}
 
-      {vis("corpo") && (
-      <Secao titulo="Corpo">
+      <Secao id="corpo" titulo="Corpo">
         <SliderCtl
           rotulo="Altura"
           valorFmt={`${cm(criar.corpo.alturaMm)} cm`}
@@ -171,7 +190,7 @@ export default function PainelCriar({
           passo={LC.alturaMm.passo}
           aoMudar={(v) => mudarCorpo("alturaMm", v)}
           nota={`regra: ${LC.alturaMm.min / 10}–${LC.alturaMm.max / 10} cm — acima disso a peça não cabe na impressora`}
-          motivoMax={`A impressora vai até ${LC.alturaMm.max / 10} cm por peça. Quer mais alta? No modo Montar, some hastes na seção Empilhar — é assim que a luminária passa de meio metro.`}
+          motivoMax={`A impressora vai até ${LC.alturaMm.max / 10} cm por peça. Quer mais alta? No modo Montar, some hastes na seção Corpo — é assim que a luminária passa de meio metro.`}
         />
         {!modoLivre && (
         <>
@@ -218,11 +237,8 @@ export default function PainelCriar({
         />
         </>
         )}
-      </Secao>
-      )}
 
-      {vis("silhueta") && (
-      <Secao titulo="Silhueta livre (modo hard)">
+        <SubRotulo>Silhueta livre (modo hard)</SubRotulo>
         {!modoLivre ? (
           <button
             onClick={() =>
@@ -234,7 +250,7 @@ export default function PainelCriar({
                 },
               })
             }
-            className="w-full rounded-full border border-[#D3AC6C]/50 bg-[#D3AC6C]/10 py-2.5 text-[12.5px] font-semibold text-[#D3AC6C] transition-colors hover:bg-[#D3AC6C]/20"
+            className="w-full rounded-full border border-acento/60 bg-acento/10 py-2.5 text-[12.5px] font-semibold text-[#8A5F10] transition-colors hover:bg-acento/20"
           >
             Esculpir a silhueta — arrastar as arestas
           </button>
@@ -256,17 +272,14 @@ export default function PainelCriar({
                   corpo: { ...criar.corpo, perfilLivre: undefined },
                 })
               }
-              className="mt-2 w-full rounded-full border border-white/10 bg-white/[0.03] py-2 text-[12px] text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2]"
+              className="mt-2 w-full rounded-full border border-black/10 bg-black/[0.02] py-2 text-[12px] text-[#6D675C] transition-colors hover:border-black/30 hover:text-palco-escuro"
             >
               voltar aos controles simples
             </button>
           </div>
         )}
-      </Secao>
-      )}
 
-      {vis("curva") && (
-      <Secao titulo="Curvar o corpo (S)">
+        <SubRotulo>Curvar o corpo (S)</SubRotulo>
         <SliderCtl
           rotulo="Deslocamento do topo"
           valorFmt={`${criar.corpo.deslocamentoMm >= 0 ? "+" : ""}${cm(criar.corpo.deslocamentoMm)} cm`}
@@ -280,7 +293,7 @@ export default function PainelCriar({
           motivoMin="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
         />
         {comContrapeso && (
-          <div className="mt-2 text-[10px] text-[#E08A4A]">
+          <div className="mt-2 text-[10px] text-[#A85A1E]">
             debruçada assim, ela leva um contrapeso de ~{contrapesoG} g dentro
             da base — vai montado, você não vê
           </div>
@@ -294,11 +307,8 @@ export default function PainelCriar({
           passo={LC.posicaoDobra.passo}
           aoMudar={(v) => mudarCorpo("posicaoDobra", v)}
         />
-      </Secao>
-      )}
 
-      {vis("berco") && (
-      <Secao titulo="Berço no topo (gola)">
+        <SubRotulo>Berço no topo (gola)</SubRotulo>
         <Chips
           nomes={["Sem berço", "Com berço"]}
           selecionado={criar.corpo.gola ? 1 : 0}
@@ -357,9 +367,7 @@ export default function PainelCriar({
                 })
               }
             />
-            <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
-              Borda da gola
-            </div>
+            <SubRotulo>Borda da gola</SubRotulo>
             <Chips
               nomes={["Reta", ...TIPOS_CORTE_BORDA.map((t) => t.nome)]}
               selecionado={
@@ -436,10 +444,298 @@ export default function PainelCriar({
           </div>
         )}
       </Secao>
-      )}
 
-      {vis("textura") && (
-      <Secao titulo="Textura do corpo">
+      <Secao id="difusor" titulo="Difusor">
+        <Chips
+          nomes={DIFUSORES.map((d) => d.nome)}
+          selecionado={iForma}
+          aoEscolher={(i) => aoMudar({ ...criar, difusor: { ...DIFUSORES[i] } })}
+        />
+        <div className="mt-3">
+          <SliderCtl
+            rotulo="Altura do difusor"
+            valorFmt={`${cm(criar.difusor.alturaMm)} cm`}
+            valor={criar.difusor.alturaMm}
+            min={LD.alturaMm.min}
+            max={LD.alturaMm.max}
+            passo={LD.alturaMm.passo}
+            aoMudar={(v) => mudarDifusor("alturaMm", v)}
+          />
+          <SliderCtl
+            rotulo="Abertura / largura"
+            valorFmt={`Ø ${Math.round(criar.difusor.raioMm / 5)} cm`}
+            valor={criar.difusor.raioMm}
+            min={LD.raioMm.min}
+            max={LD.raioMm.max}
+            passo={LD.raioMm.passo}
+            aoMudar={(v) => mudarDifusor("raioMm", v)}
+            motivoMax="Mais aberto não cabe no prato da impressora."
+            motivoMin="Mais fechado que isso, o difusor encostaria na lâmpada — ela precisa de folga livre por segurança."
+          />
+          <SliderCtl
+            rotulo="Plissê (gomos)"
+            valorFmt={criar.difusor.gomos === 0 ? "liso" : `${criar.difusor.gomos} gomos`}
+            valor={criar.difusor.gomos}
+            min={LD.gomos.min}
+            max={LD.gomos.max}
+            passo={LD.gomos.passo}
+            aoMudar={(v) => mudarDifusor("gomos", v)}
+          />
+          <SliderCtl
+            rotulo="Profundidade do plissê"
+            valorFmt={`${criar.difusor.profundidadeGomosMm.toFixed(1).replace(".", ",")} mm`}
+            valor={criar.difusor.profundidadeGomosMm}
+            min={LD.profundidadeGomosMm.min}
+            max={LD.profundidadeGomosMm.max}
+            passo={LD.profundidadeGomosMm.passo}
+            aoMudar={(v) => mudarDifusor("profundidadeGomosMm", v)}
+            nota="com a luz acesa, o plissê vira desenho de sombra na parede"
+          />
+        </div>
+        <SubRotulo>Inclinar a cabeça</SubRotulo>
+        <Chips
+          nomes={["Reta", "Inclinada"]}
+          selecionado={criar.difusor.junta ? 1 : 0}
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                junta: i === 0 ? undefined : criar.difusor.junta ?? { ...JUNTA_PADRAO },
+                // A cabeça inclinada é lisa nesta versão. ⚑
+                ...(i === 1 ? { vazado: undefined, corte: undefined } : {}),
+              },
+            })
+          }
+        />
+        {criar.difusor.junta && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Inclinação"
+              valorFmt={`${criar.difusor.junta.inclinacaoGraus}°`}
+              valor={criar.difusor.junta.inclinacaoGraus}
+              min={LIMITES_JUNTA.inclinacaoGraus.min}
+              max={LIMITES_JUNTA.inclinacaoGraus.max}
+              passo={LIMITES_JUNTA.inclinacaoGraus.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    junta: { ...criar.difusor.junta!, inclinacaoGraus: v },
+                  },
+                })
+              }
+              nota="a cabeça inteira pende sobre a coluna — o gesto de task light"
+              motivoMax="Mais inclinada que isso, as paredes da cabeça pediriam suporte na impressão."
+            />
+            <SliderCtl
+              rotulo="Deslocar a cabeça"
+              valorFmt={`${cm(criar.difusor.junta.deslocamentoMm)} cm`}
+              valor={criar.difusor.junta.deslocamentoMm}
+              min={LIMITES_JUNTA.deslocamentoMm.min}
+              max={Math.min(
+                LIMITES_JUNTA.deslocamentoMm.max,
+                Math.max(0, criar.difusor.raioMm - 25)
+              )}
+              passo={LIMITES_JUNTA.deslocamentoMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    junta: { ...criar.difusor.junta!, deslocamentoMm: v },
+                  },
+                })
+              }
+              nota="o pescoço cresce sozinho o necessário — a borda nunca toca o encaixe"
+              motivoMax="Mais para o lado que isso, a cabeça sairia de cima do próprio pescoço."
+            />
+            <div className="mt-1 text-[10px] text-[#97907F]">
+              a cabeça inclinada é lisa nesta versão — textura, vazado e borda
+              cortada ficam para a cabeça reta ⚑
+            </div>
+          </div>
+        )}
+        {!criar.difusor.junta && (
+        <>
+        <SubRotulo>Borda de cima</SubRotulo>
+        <Chips
+          nomes={["Reta", ...TIPOS_CORTE_BORDA.map((t) => t.nome)]}
+          selecionado={
+            criar.difusor.corte
+              ? 1 +
+                TIPOS_CORTE_BORDA.findIndex(
+                  (t) => t.id === criar.difusor.corte?.tipo
+                )
+              : 0
+          }
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                corte:
+                  i === 0
+                    ? undefined
+                    : {
+                        tipo: TIPOS_CORTE_BORDA[i - 1].id,
+                        profundidadeMm:
+                          criar.difusor.corte?.profundidadeMm ?? 12,
+                        repeticao: criar.difusor.corte?.repeticao ?? 8,
+                      },
+              },
+            })
+          }
+        />
+        {criar.difusor.corte && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Profundidade do corte"
+              valorFmt={`${Math.round(criar.difusor.corte.profundidadeMm)} mm`}
+              valor={criar.difusor.corte.profundidadeMm}
+              min={LIMITES_CORTE_BORDA.profundidadeMm.min}
+              max={profundidadeMaximaCorteMm(criar.difusor.alturaMm)}
+              passo={LIMITES_CORTE_BORDA.profundidadeMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    corte: { ...criar.difusor.corte!, profundidadeMm: v },
+                  },
+                })
+              }
+              nota={
+                criar.difusor.corte.tipo === "obliquo"
+                  ? "a boca vira um plano inclinado — o corte cresce com a altura do difusor"
+                  : "coroa de dentes na borda — o corte cresce com a altura do difusor"
+              }
+              motivoMax="Mais fundo que isso o corte chegaria perto do encaixe — a borda de baixo é dele."
+            />
+            {criar.difusor.corte.tipo === "dentes" && (
+              <SliderCtl
+                rotulo="Dentes"
+                valorFmt={`${criar.difusor.corte.repeticao ?? 8} dentes`}
+                valor={criar.difusor.corte.repeticao ?? 8}
+                min={LIMITES_CORTE_BORDA.repeticao.min}
+                max={LIMITES_CORTE_BORDA.repeticao.max}
+                passo={LIMITES_CORTE_BORDA.repeticao.passo}
+                aoMudar={(v) =>
+                  aoMudar({
+                    ...criar,
+                    difusor: {
+                      ...criar.difusor,
+                      corte: { ...criar.difusor.corte!, repeticao: v },
+                    },
+                  })
+                }
+              />
+            )}
+          </div>
+        )}
+        <SubRotulo>Vazado</SubRotulo>
+        <Chips
+          nomes={["Nenhum", ...PADROES_VAZADO.map((p) => p.nome)]}
+          selecionado={
+            criar.difusor.vazado
+              ? 1 +
+                PADROES_VAZADO.findIndex(
+                  (p) => p.id === criar.difusor.vazado?.padrao
+                )
+              : 0
+          }
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                vazado:
+                  i === 0
+                    ? undefined
+                    : {
+                        padrao: PADROES_VAZADO[i - 1].id,
+                        densidade: criar.difusor.vazado?.densidade ?? 0.45,
+                        gradiente: criar.difusor.vazado?.gradiente ?? 0,
+                      },
+              },
+            })
+          }
+        />
+        {criar.difusor.vazado && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Vazios"
+              valorFmt={`${Math.round(criar.difusor.vazado.densidade * 100)}%`}
+              valor={criar.difusor.vazado.densidade}
+              min={LIMITES_VAZADO.densidade.min}
+              max={LIMITES_VAZADO.densidade.max}
+              passo={LIMITES_VAZADO.densidade.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    vazado: { ...criar.difusor.vazado!, densidade: v },
+                  },
+                })
+              }
+              motivoMax="Mais aberto que isso a peça perde estrutura — e a lâmpada ficaria exposta demais."
+            />
+            <SliderCtl
+              rotulo="Distribuição"
+              valorFmt={
+                Math.abs(criar.difusor.vazado.gradiente) < 0.06
+                  ? "igual em toda a altura"
+                  : criar.difusor.vazado.gradiente > 0
+                    ? "mais aberto em cima"
+                    : "mais aberto embaixo"
+              }
+              valor={criar.difusor.vazado.gradiente}
+              min={LIMITES_VAZADO.gradiente.min}
+              max={LIMITES_VAZADO.gradiente.max}
+              passo={LIMITES_VAZADO.gradiente.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    vazado: { ...criar.difusor.vazado!, gradiente: v },
+                  },
+                })
+              }
+            />
+            <div className="mt-1 rounded-lg border border-acento/40 bg-acento/[0.08] px-2.5 py-1.5 text-[10px] leading-relaxed text-[#4A463D]">
+              O vazado é o que desenha a sombra na parede — acenda a luz para
+              ver. <b className="text-[#8A5F10]">Produção em preparação ⚑</b>:
+              o STL deste difusor fica travado enquanto o vazado estiver
+              ligado.
+            </div>
+          </div>
+        )}
+        </>
+        )}
+      </Secao>
+
+      <Secao id="cor" titulo="Cor & acabamento">
+        <div className="mb-3 flex gap-1.5">
+          {ALVOS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setAlvoCor(a.id)}
+              className={`flex-1 rounded-full py-1.5 text-[11.5px] transition-all ${
+                alvoCor === a.id
+                  ? "bg-palco-escuro font-semibold text-luz-acesa"
+                  : "border border-black/10 bg-black/[0.02] text-[#4A463D] hover:border-black/30"
+              }`}
+            >
+              {a.rotulo}
+            </button>
+          ))}
+        </div>
+        <PaletaFamilias selecionado={corSelecionada} aoEscolher={escolherCor} />
+
+        <SubRotulo>Textura do corpo</SubRotulo>
         <Chips
           nomes={NOMES_FAMILIAS.map((f) => FAMILIAS_TEXTURA[f].nome)}
           selecionado={Math.max(
@@ -516,300 +812,20 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("torcaoGraus", v)}
           nota="gira a textura em espiral da base ao topo"
         />
-        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Acabamento</div>
+        <SubRotulo>Acabamento</SubRotulo>
         <Chips
           nomes={FACETAS.map((f) => f.nome)}
           selecionado={iFaceta}
           aoEscolher={setIFaceta}
         />
         {facetadoComGomos && (
-          <div className="mt-2 text-[10px] text-[#E08A4A]">
+          <div className="mt-2 text-[10px] text-[#A85A1E]">
             acabamento facetado desliga a textura — escolha Liso para vê-la
           </div>
         )}
       </Secao>
-      )}
 
-      {vis("difusor") && (
-      <Secao titulo="Difusor">
-        <Chips
-          nomes={DIFUSORES.map((d) => d.nome)}
-          selecionado={iForma}
-          aoEscolher={(i) => aoMudar({ ...criar, difusor: { ...DIFUSORES[i] } })}
-        />
-        <div className="mt-3">
-          <SliderCtl
-            rotulo="Altura do difusor"
-            valorFmt={`${cm(criar.difusor.alturaMm)} cm`}
-            valor={criar.difusor.alturaMm}
-            min={LD.alturaMm.min}
-            max={LD.alturaMm.max}
-            passo={LD.alturaMm.passo}
-            aoMudar={(v) => mudarDifusor("alturaMm", v)}
-          />
-          <SliderCtl
-            rotulo="Abertura / largura"
-            valorFmt={`Ø ${Math.round(criar.difusor.raioMm / 5)} cm`}
-            valor={criar.difusor.raioMm}
-            min={LD.raioMm.min}
-            max={LD.raioMm.max}
-            passo={LD.raioMm.passo}
-            aoMudar={(v) => mudarDifusor("raioMm", v)}
-            motivoMax="Mais aberto não cabe no prato da impressora."
-            motivoMin="Mais fechado que isso, o difusor encostaria na lâmpada — ela precisa de folga livre por segurança."
-          />
-          <SliderCtl
-            rotulo="Plissê (gomos)"
-            valorFmt={criar.difusor.gomos === 0 ? "liso" : `${criar.difusor.gomos} gomos`}
-            valor={criar.difusor.gomos}
-            min={LD.gomos.min}
-            max={LD.gomos.max}
-            passo={LD.gomos.passo}
-            aoMudar={(v) => mudarDifusor("gomos", v)}
-          />
-          <SliderCtl
-            rotulo="Profundidade do plissê"
-            valorFmt={`${criar.difusor.profundidadeGomosMm.toFixed(1).replace(".", ",")} mm`}
-            valor={criar.difusor.profundidadeGomosMm}
-            min={LD.profundidadeGomosMm.min}
-            max={LD.profundidadeGomosMm.max}
-            passo={LD.profundidadeGomosMm.passo}
-            aoMudar={(v) => mudarDifusor("profundidadeGomosMm", v)}
-            nota="com a luz acesa, o plissê vira desenho de sombra na parede"
-          />
-        </div>
-        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
-          Inclinar a cabeça
-        </div>
-        <Chips
-          nomes={["Reta", "Inclinada"]}
-          selecionado={criar.difusor.junta ? 1 : 0}
-          aoEscolher={(i) =>
-            aoMudar({
-              ...criar,
-              difusor: {
-                ...criar.difusor,
-                junta: i === 0 ? undefined : criar.difusor.junta ?? { ...JUNTA_PADRAO },
-                // A cabeça inclinada é lisa nesta versão. ⚑
-                ...(i === 1 ? { vazado: undefined, corte: undefined } : {}),
-              },
-            })
-          }
-        />
-        {criar.difusor.junta && (
-          <div className="mt-3">
-            <SliderCtl
-              rotulo="Inclinação"
-              valorFmt={`${criar.difusor.junta.inclinacaoGraus}°`}
-              valor={criar.difusor.junta.inclinacaoGraus}
-              min={LIMITES_JUNTA.inclinacaoGraus.min}
-              max={LIMITES_JUNTA.inclinacaoGraus.max}
-              passo={LIMITES_JUNTA.inclinacaoGraus.passo}
-              aoMudar={(v) =>
-                aoMudar({
-                  ...criar,
-                  difusor: {
-                    ...criar.difusor,
-                    junta: { ...criar.difusor.junta!, inclinacaoGraus: v },
-                  },
-                })
-              }
-              nota="a cabeça inteira pende sobre a coluna — o gesto de task light"
-              motivoMax="Mais inclinada que isso, as paredes da cabeça pediriam suporte na impressão."
-            />
-            <SliderCtl
-              rotulo="Deslocar a cabeça"
-              valorFmt={`${cm(criar.difusor.junta.deslocamentoMm)} cm`}
-              valor={criar.difusor.junta.deslocamentoMm}
-              min={LIMITES_JUNTA.deslocamentoMm.min}
-              max={Math.min(
-                LIMITES_JUNTA.deslocamentoMm.max,
-                Math.max(0, criar.difusor.raioMm - 25)
-              )}
-              passo={LIMITES_JUNTA.deslocamentoMm.passo}
-              aoMudar={(v) =>
-                aoMudar({
-                  ...criar,
-                  difusor: {
-                    ...criar.difusor,
-                    junta: { ...criar.difusor.junta!, deslocamentoMm: v },
-                  },
-                })
-              }
-              nota="o pescoço cresce sozinho o necessário — a borda nunca toca o encaixe"
-              motivoMax="Mais para o lado que isso, a cabeça sairia de cima do próprio pescoço."
-            />
-            <div className="mt-1 text-[10px] text-[#7d766a]">
-              a cabeça inclinada é lisa nesta versão — textura, vazado e borda
-              cortada ficam para a cabeça reta ⚑
-            </div>
-          </div>
-        )}
-        {!criar.difusor.junta && (
-        <>
-        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
-          Borda de cima
-        </div>
-        <Chips
-          nomes={["Reta", ...TIPOS_CORTE_BORDA.map((t) => t.nome)]}
-          selecionado={
-            criar.difusor.corte
-              ? 1 +
-                TIPOS_CORTE_BORDA.findIndex(
-                  (t) => t.id === criar.difusor.corte?.tipo
-                )
-              : 0
-          }
-          aoEscolher={(i) =>
-            aoMudar({
-              ...criar,
-              difusor: {
-                ...criar.difusor,
-                corte:
-                  i === 0
-                    ? undefined
-                    : {
-                        tipo: TIPOS_CORTE_BORDA[i - 1].id,
-                        profundidadeMm:
-                          criar.difusor.corte?.profundidadeMm ?? 12,
-                        repeticao: criar.difusor.corte?.repeticao ?? 8,
-                      },
-              },
-            })
-          }
-        />
-        {criar.difusor.corte && (
-          <div className="mt-3">
-            <SliderCtl
-              rotulo="Profundidade do corte"
-              valorFmt={`${Math.round(criar.difusor.corte.profundidadeMm)} mm`}
-              valor={criar.difusor.corte.profundidadeMm}
-              min={LIMITES_CORTE_BORDA.profundidadeMm.min}
-              max={profundidadeMaximaCorteMm(criar.difusor.alturaMm)}
-              passo={LIMITES_CORTE_BORDA.profundidadeMm.passo}
-              aoMudar={(v) =>
-                aoMudar({
-                  ...criar,
-                  difusor: {
-                    ...criar.difusor,
-                    corte: { ...criar.difusor.corte!, profundidadeMm: v },
-                  },
-                })
-              }
-              nota={
-                criar.difusor.corte.tipo === "obliquo"
-                  ? "a boca vira um plano inclinado — o corte cresce com a altura do difusor"
-                  : "coroa de dentes na borda — o corte cresce com a altura do difusor"
-              }
-              motivoMax="Mais fundo que isso o corte chegaria perto do encaixe — a borda de baixo é dele."
-            />
-            {criar.difusor.corte.tipo === "dentes" && (
-              <SliderCtl
-                rotulo="Dentes"
-                valorFmt={`${criar.difusor.corte.repeticao ?? 8} dentes`}
-                valor={criar.difusor.corte.repeticao ?? 8}
-                min={LIMITES_CORTE_BORDA.repeticao.min}
-                max={LIMITES_CORTE_BORDA.repeticao.max}
-                passo={LIMITES_CORTE_BORDA.repeticao.passo}
-                aoMudar={(v) =>
-                  aoMudar({
-                    ...criar,
-                    difusor: {
-                      ...criar.difusor,
-                      corte: { ...criar.difusor.corte!, repeticao: v },
-                    },
-                  })
-                }
-              />
-            )}
-          </div>
-        )}
-        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Vazado</div>
-        <Chips
-          nomes={["Nenhum", ...PADROES_VAZADO.map((p) => p.nome)]}
-          selecionado={
-            criar.difusor.vazado
-              ? 1 +
-                PADROES_VAZADO.findIndex(
-                  (p) => p.id === criar.difusor.vazado?.padrao
-                )
-              : 0
-          }
-          aoEscolher={(i) =>
-            aoMudar({
-              ...criar,
-              difusor: {
-                ...criar.difusor,
-                vazado:
-                  i === 0
-                    ? undefined
-                    : {
-                        padrao: PADROES_VAZADO[i - 1].id,
-                        densidade: criar.difusor.vazado?.densidade ?? 0.45,
-                        gradiente: criar.difusor.vazado?.gradiente ?? 0,
-                      },
-              },
-            })
-          }
-        />
-        {criar.difusor.vazado && (
-          <div className="mt-3">
-            <SliderCtl
-              rotulo="Vazios"
-              valorFmt={`${Math.round(criar.difusor.vazado.densidade * 100)}%`}
-              valor={criar.difusor.vazado.densidade}
-              min={LIMITES_VAZADO.densidade.min}
-              max={LIMITES_VAZADO.densidade.max}
-              passo={LIMITES_VAZADO.densidade.passo}
-              aoMudar={(v) =>
-                aoMudar({
-                  ...criar,
-                  difusor: {
-                    ...criar.difusor,
-                    vazado: { ...criar.difusor.vazado!, densidade: v },
-                  },
-                })
-              }
-              motivoMax="Mais aberto que isso a peça perde estrutura — e a lâmpada ficaria exposta demais."
-            />
-            <SliderCtl
-              rotulo="Distribuição"
-              valorFmt={
-                Math.abs(criar.difusor.vazado.gradiente) < 0.06
-                  ? "igual em toda a altura"
-                  : criar.difusor.vazado.gradiente > 0
-                    ? "mais aberto em cima"
-                    : "mais aberto embaixo"
-              }
-              valor={criar.difusor.vazado.gradiente}
-              min={LIMITES_VAZADO.gradiente.min}
-              max={LIMITES_VAZADO.gradiente.max}
-              passo={LIMITES_VAZADO.gradiente.passo}
-              aoMudar={(v) =>
-                aoMudar({
-                  ...criar,
-                  difusor: {
-                    ...criar.difusor,
-                    vazado: { ...criar.difusor.vazado!, gradiente: v },
-                  },
-                })
-              }
-            />
-            <div className="mt-1 rounded-lg border border-[#D3AC6C]/25 bg-[#D3AC6C]/[0.06] px-2.5 py-1.5 text-[10px] leading-relaxed text-[#CFC7B8]">
-              O vazado é o que desenha a sombra na parede — acenda a luz para
-              ver. <b className="text-[#D3AC6C]">Produção em preparação ⚑</b>:
-              o STL deste difusor fica travado enquanto o vazado estiver
-              ligado.
-            </div>
-          </div>
-        )}
-        </>
-        )}
-      </Secao>
-      )}
-
-      {vis("luzes") && (
-      <Secao titulo="Pontos de luz">
+      <Secao id="luz" titulo="Luz">
         <PontosDeLuzCtl
           pontosDeLuz={pontosDeLuz}
           separacaoMm={separacaoMm}
@@ -821,42 +837,46 @@ export default function PainelCriar({
           placa={placa}
           aoMudarPlaca={setPlaca}
         />
+        <SubRotulo>Luz acesa</SubRotulo>
+        <Chips
+          nomes={["Acesa", "Apagada"]}
+          selecionado={luzAcesa ? 0 : 1}
+          aoEscolher={(i) => setLuzAcesa(i === 0)}
+        />
       </Secao>
-      )}
 
-      {vis("regras") && (
-      <Secao titulo="Regras embutidas">
+      <Secao id="regras" titulo="Regras">
         <div
           className={`rounded-2xl border px-4 py-3 ${
             tombaMesmo
-              ? "border-[#E06A55]/40 bg-[#E06A55]/[0.08]"
-              : "border-white/[0.08] bg-white/[0.03]"
+              ? "border-[#B23B28]/40 bg-[#B23B28]/[0.06]"
+              : "border-black/[0.08] bg-black/[0.02]"
           }`}
         >
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>
               Parede mínima ({String(REGRAS.F.paredeDifusorMm.min).replace(".", ",")}–
               {String(REGRAS.F.paredeEstruturalMm.max).replace(".", ",")} mm)
             </span>
-            <span className="font-semibold text-[#8FB07E]">✓</span>
+            <span className="font-semibold text-[#4F7A44]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Balanço ≤ {REGRAS.F.balancoMaximoGraus}°</span>
-            <span className="font-semibold text-[#8FB07E]">✓</span>
+            <span className="font-semibold text-[#4F7A44]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Distância do miolo elétrico</span>
-            <span className="font-semibold text-[#8FB07E]">✓</span>
+            <span className="font-semibold text-[#4F7A44]">✓</span>
           </div>
-          <div className="flex justify-between py-1 text-xs text-[#A69D8D]">
+          <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Estabilidade</span>
             <span
               className={`font-semibold ${
                 tombaMesmo
-                  ? "text-[#E06A55]"
+                  ? "text-[#B23B28]"
                   : comContrapeso || estab.pertoDoLimite
-                    ? "text-[#E08A4A]"
-                    : "text-[#8FB07E]"
+                    ? "text-[#A85A1E]"
+                    : "text-[#4F7A44]"
               }`}
             >
               {tombaMesmo
@@ -870,7 +890,7 @@ export default function PainelCriar({
           </div>
           <div
             className={`mt-2 text-[10.5px] ${
-              tombaMesmo ? "text-[#E06A55]" : "text-[#7d766a]"
+              tombaMesmo ? "text-[#B23B28]" : "text-[#97907F]"
             }`}
           >
             {tombaMesmo
@@ -883,36 +903,33 @@ export default function PainelCriar({
           </div>
         </div>
       </Secao>
-      )}
 
-      {vis("publicar") && (
-      <Secao titulo="Publicar no catálogo">
+      <Secao id="publicar" titulo="Publicar no catálogo">
         <div>
           <input
             type="text"
             value={nomePeca}
             onChange={(e) => setNomePeca(e.target.value)}
             placeholder="dê um nome à sua peça (ex.: Duna)"
-            className="mb-2 w-full rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-[13px] text-[#F2EDE4] placeholder-[#7d766a] outline-none transition-colors focus:border-[#D3AC6C]/60"
+            className="mb-2 w-full rounded-full border border-black/10 bg-black/[0.02] px-4 py-2.5 text-[13px] text-palco-escuro placeholder-[#97907F] outline-none transition-colors focus:border-acento"
           />
           <button
             onClick={() => setPublicada(nomePeca.trim() || "Sem nome")}
-            className="w-full rounded-full bg-[#F2EDE4] py-2.5 text-[13px] font-semibold text-[#161412] transition-colors hover:bg-white"
+            className="w-full rounded-full bg-palco-escuro py-2.5 text-[13px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento"
           >
             Publicar minha parte
           </button>
           {publicada && (
-            <div className="mt-2.5 rounded-2xl border border-[#D3AC6C]/30 bg-[#D3AC6C]/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-[#CFC7B8]">
-              <b className="text-[#D3AC6C]">“{publicada}”</b> entrou na fila de
+            <div className="mt-2.5 rounded-2xl border border-acento/40 bg-acento/[0.08] px-3.5 py-2.5 text-xs leading-relaxed text-[#4A463D]">
+              <b className="text-[#8A5F10]">“{publicada}”</b> entrou na fila de
               curadoria. Quando aprovada, sua parte fica disponível para
               qualquer pessoa usar nas montagens dela — e você recebe{" "}
-              <b className="text-[#F2EDE4]">royalty por parte</b> a cada
+              <b className="text-palco-escuro">royalty por parte</b> a cada
               luminária vendida que usar uma criação sua.
             </div>
           )}
         </div>
       </Secao>
-      )}
     </div>
   );
 }
