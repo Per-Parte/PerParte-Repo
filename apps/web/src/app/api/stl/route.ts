@@ -127,6 +127,8 @@ export async function POST(req: Request) {
         profundidadeMm: corpo.profundidadeGomosMm,
         torcaoGraus: corpo.torcaoGraus,
         alturaMm: corpo.alturaMm,
+        familia: corpo.familiaTextura,
+        repeticao: corpo.repeticaoTextura,
       };
       espinha = {
         deslocamentoMm: corpo.deslocamentoMm,
@@ -142,10 +144,15 @@ export async function POST(req: Request) {
         alturaMm: difusor.alturaMm,
       };
     }
-    const comGomos = textura.gomos > 0 && textura.profundidadeMm > 0;
+    const comTextura =
+      textura.profundidadeMm > 0 &&
+      (textura.gomos > 0 ||
+        (!!textura.familia &&
+          textura.familia !== "gomos" &&
+          (textura.repeticao ?? 0) > 0));
     const segmentosParte =
       segmentos === 40
-        ? comGomos
+        ? comTextura
           ? SEGMENTOS_PRODUCAO_GOMOS
           : SEGMENTOS_PRODUCAO_LISO
         : segmentos;

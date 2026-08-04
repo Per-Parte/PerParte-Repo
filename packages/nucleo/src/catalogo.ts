@@ -137,6 +137,8 @@ export const LIMITES_CRIAR = {
     gomos: { min: 0, max: 24, passo: 2 },
     profundidadeGomosMm: { min: 0, max: 4, passo: 0.5 },
     torcaoGraus: { min: -90, max: 90, passo: 5 },
+    /** Repetição das famílias de textura que não são gomos. */
+    repeticaoTextura: { min: 3, max: 24, passo: 1 },
     /** Teto absoluto; o teto real depende da altura (deslocamentoMaximoMm). */
     deslocamentoMm: { min: -80, max: 80, passo: 5 },
     posicaoDobra: { min: -1, max: 1, passo: 0.1 },

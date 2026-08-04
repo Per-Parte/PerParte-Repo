@@ -7,6 +7,7 @@
  */
 
 import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
+import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
 import {
   deslocamentoMaximoMm,
   TS_PERFIL_LIVRE,
@@ -57,6 +58,13 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
           grampear(r, L.perfilLivreRaioMm, L.perfilLivreRaioMm.min)
         )
       : undefined;
+  // Família de textura só entra se for conhecida; "gomos" é o padrão e
+  // dispensa os campos extras.
+  const familiaTextura =
+    NOMES_FAMILIAS.includes(p.familiaTextura as FamiliaTextura) &&
+    p.familiaTextura !== "gomos"
+      ? (p.familiaTextura as FamiliaTextura)
+      : undefined;
   return {
     alturaMm,
     volumeBojoMm: grampear(p.volumeBojoMm, L.volumeBojoMm, 0),
@@ -77,6 +85,14 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
     ),
     posicaoDobra: grampear(p.posicaoDobra, L.posicaoDobra, 0),
     ...(perfilLivre ? { perfilLivre } : {}),
+    ...(familiaTextura
+      ? {
+          familiaTextura,
+          repeticaoTextura: Math.round(
+            grampear(p.repeticaoTextura, L.repeticaoTextura, 12)
+          ),
+        }
+      : {}),
   };
 }
 

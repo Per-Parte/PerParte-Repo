@@ -12,6 +12,7 @@
  */
 
 import { ENCAIXES, RAIO_LIVRE_MIOLO_MM, REGRAS } from "./regras";
+import { reservaTanTextura, type FamiliaTextura } from "./texturas";
 
 export interface Ponto2D {
   /** Raio (distância ao eixo de revolução), em mm. */
@@ -49,6 +50,14 @@ export interface ParametrosCorpo {
   deslocamentoMm: number;
   /** Espinha: onde a dobra acontece, -1 (baixo) a +1 (alto). */
   posicaoDobra: number;
+  /**
+   * Família da textura (ausente = "gomos", o comportamento original).
+   * As famílias que variam com a altura pagam o próprio balanço:
+   * o perfil desconta esse custo do orçamento F4 (ver texturas.ts).
+   */
+  familiaTextura?: FamiliaTextura;
+  /** Repetição das famílias que não são gomos. */
+  repeticaoTextura?: number;
   /**
    * Silhueta livre (modo avançado): 5 raios de controle em
    * t = 0,1 / 0,3 / 0,5 / 0,7 / 0,9. Quando presente, substitui
@@ -250,15 +259,24 @@ export function perfilCorpo(
   }
 
   // Cascata de clamps (na ordem: piso físico, depois inclinação F4).
+  // A textura paga o próprio balanço aqui: o perfil aplaina o que ela gasta.
   const dY = h / n;
   const dNorm = Math.min(
     Math.abs(p.deslocamentoMm ?? 0),
     deslocamentoMaximoMm(h)
   );
+  const reservaTextura = reservaTanTextura({
+    familia: p.familiaTextura,
+    gomos: p.gomos,
+    profundidadeMm: p.profundidadeGomosMm,
+    repeticao: p.repeticaoTextura,
+    alturaMm: h,
+  });
   const tanMax = Math.max(
     0.25,
     Math.tan((REGRAS.F.balancoMaximoGraus * Math.PI) / 180) -
-      (1.5 * dNorm) / (0.7 * h)
+      (1.5 * dNorm) / (0.7 * h) -
+      reservaTextura
   );
   for (let i = 0; i <= n; i++) {
     raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);

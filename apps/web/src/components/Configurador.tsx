@@ -186,6 +186,8 @@ export default function Configurador() {
         profundidadeMm: corpo.profundidadeGomosMm,
         torcaoGraus: corpo.torcaoGraus,
         alturaMm: corpo.alturaMm,
+        familia: corpo.familiaTextura,
+        repeticao: corpo.repeticaoTextura,
       },
       difusor: {
         gomos: difusor.gomos,

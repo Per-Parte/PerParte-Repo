@@ -6,9 +6,12 @@ import {
   deslocamentoMaximoMm,
   DIFUSORES,
   FACETAS,
+  FAMILIAS_TEXTURA,
   LIMITES_CRIAR,
+  NOMES_FAMILIAS,
   REGRAS,
   type CurvaBase,
+  type FamiliaTextura,
   type ResultadoEstabilidade,
 } from "@per-parte/nucleo";
 import { Chips, PontosDeLuzCtl, Secao, SliderCtl } from "./controles";
@@ -74,7 +77,10 @@ export default function PainelCriar({
 
   const iForma = DIFUSORES.findIndex((d) => d.forma === criar.difusor.forma);
   const facetadoComGomos =
-    iFaceta > 0 && (criar.corpo.gomos > 0 || criar.difusor.gomos > 0);
+    iFaceta > 0 &&
+    (criar.corpo.gomos > 0 ||
+      !!criar.corpo.familiaTextura ||
+      criar.difusor.gomos > 0);
   const modoLivre = !!criar.corpo.perfilLivre;
   const dMax = deslocamentoMaximoMm(criar.corpo.alturaMm);
 
@@ -251,24 +257,69 @@ export default function PainelCriar({
 
       {vis("textura") && (
       <Secao titulo="Textura do corpo">
-        <SliderCtl
-          rotulo="Gomos"
-          valorFmt={criar.corpo.gomos === 0 ? "liso" : `${criar.corpo.gomos} gomos`}
-          valor={criar.corpo.gomos}
-          min={LC.gomos.min}
-          max={LC.gomos.max}
-          passo={LC.gomos.passo}
-          aoMudar={(v) => mudarCorpo("gomos", v)}
+        <Chips
+          nomes={NOMES_FAMILIAS.map((f) => FAMILIAS_TEXTURA[f].nome)}
+          selecionado={Math.max(
+            0,
+            NOMES_FAMILIAS.indexOf(criar.corpo.familiaTextura ?? "gomos")
+          )}
+          aoEscolher={(i) => {
+            const f: FamiliaTextura = NOMES_FAMILIAS[i];
+            aoMudar({
+              ...criar,
+              corpo: {
+                ...criar.corpo,
+                familiaTextura: f === "gomos" ? undefined : f,
+                repeticaoTextura:
+                  f === "gomos" ? undefined : (criar.corpo.repeticaoTextura ?? 12),
+                // Ao entrar numa família, a textura já aparece.
+                gomos:
+                  f === "gomos" && criar.corpo.gomos === 0
+                    ? 12
+                    : criar.corpo.gomos,
+                profundidadeGomosMm:
+                  criar.corpo.profundidadeGomosMm === 0
+                    ? 2
+                    : criar.corpo.profundidadeGomosMm,
+              },
+            });
+          }}
         />
+        <div className="mt-3" />
+        {!criar.corpo.familiaTextura ? (
+          <SliderCtl
+            rotulo="Gomos"
+            valorFmt={criar.corpo.gomos === 0 ? "liso" : `${criar.corpo.gomos} gomos`}
+            valor={criar.corpo.gomos}
+            min={LC.gomos.min}
+            max={LC.gomos.max}
+            passo={LC.gomos.passo}
+            aoMudar={(v) => mudarCorpo("gomos", v)}
+          />
+        ) : (
+          <SliderCtl
+            rotulo="Repetição"
+            valorFmt={`${criar.corpo.repeticaoTextura ?? 12}×`}
+            valor={criar.corpo.repeticaoTextura ?? 12}
+            min={LC.repeticaoTextura.min}
+            max={LC.repeticaoTextura.max}
+            passo={LC.repeticaoTextura.passo}
+            aoMudar={(v) => mudarCorpo("repeticaoTextura", v)}
+          />
+        )}
         <SliderCtl
-          rotulo="Profundidade dos gomos"
+          rotulo="Profundidade"
           valorFmt={`${criar.corpo.profundidadeGomosMm.toFixed(1).replace(".", ",")} mm`}
           valor={criar.corpo.profundidadeGomosMm}
           min={LC.profundidadeGomosMm.min}
           max={LC.profundidadeGomosMm.max}
           passo={LC.profundidadeGomosMm.passo}
           aoMudar={(v) => mudarCorpo("profundidadeGomosMm", v)}
-          nota="gomos esculpem para dentro — sulcos verticais imprimem limpos"
+          nota={
+            criar.corpo.familiaTextura
+              ? "a textura só esculpe para dentro; se ela variar com a altura, paga o próprio balanço e o perfil aplaina sozinho (F4)"
+              : "gomos esculpem para dentro — sulcos verticais imprimem limpos"
+          }
         />
         <SliderCtl
           rotulo="Torção"
@@ -278,7 +329,7 @@ export default function PainelCriar({
           max={LC.torcaoGraus.max}
           passo={LC.torcaoGraus.passo}
           aoMudar={(v) => mudarCorpo("torcaoGraus", v)}
-          nota="gira os gomos em espiral da base ao topo"
+          nota="gira a textura em espiral da base ao topo"
         />
         <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">Acabamento</div>
         <Chips
@@ -288,7 +339,7 @@ export default function PainelCriar({
         />
         {facetadoComGomos && (
           <div className="mt-2 text-[10px] text-[#E08A4A]">
-            acabamento facetado desliga os gomos — escolha Liso para vê-los
+            acabamento facetado desliga a textura — escolha Liso para vê-la
           </div>
         )}
       </Secao>

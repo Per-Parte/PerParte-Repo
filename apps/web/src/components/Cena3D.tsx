@@ -47,8 +47,14 @@ function Parte({
   luzAcesa = false,
 }: ParteProps) {
   const geometria = useMemo(() => {
-    const comGomos = !!textura && textura.gomos > 0 && segmentos >= 32;
-    const seg = comGomos ? 96 : segmentos;
+    const comTextura =
+      !!textura &&
+      textura.profundidadeMm > 0 &&
+      segmentos >= 32 &&
+      (textura.familia && textura.familia !== "gomos"
+        ? (textura.repeticao ?? 0) > 0
+        : textura.gomos > 0);
+    const seg = comTextura ? 96 : segmentos;
     const m = malhaRevolucao(perfil, seg, textura, espinha);
     const pos = new Float32Array(m.posicoes.length);
     for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;

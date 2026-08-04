@@ -1,4 +1,5 @@
 export * from "./regras";
+export * from "./texturas";
 export * from "./geometria";
 export * from "./estabilidade";
 export * from "./preco";

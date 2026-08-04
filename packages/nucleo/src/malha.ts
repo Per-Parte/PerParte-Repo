@@ -12,6 +12,11 @@ import {
   type EspinhaLateral,
   type Ponto2D,
 } from "./geometria";
+import {
+  profundidadeEfetivaTexturaMm,
+  valorTextura,
+  type FamiliaTextura,
+} from "./texturas";
 
 export interface Malha {
   /** x, y, z por vértice, em mm. Z é a vertical de impressão. */
@@ -35,6 +40,10 @@ export interface TexturaRevolucao {
   torcaoGraus: number;
   /** Altura útil da parte, em mm (para a janela e a torção). */
   alturaMm: number;
+  /** Família da textura (ausente = "gomos", o comportamento original). */
+  familia?: FamiliaTextura;
+  /** Repetição das famílias que não são gomos. */
+  repeticao?: number;
 }
 
 /**
@@ -56,14 +65,21 @@ export function malhaRevolucao(
   const nVertices = nAneis * segmentos + 2;
   const posicoes = new Float32Array(nVertices * 3);
 
-  // Gomos pedem malha fina; acabamentos facetados (poucos segmentos) são um
-  // estilo próprio e desligam a textura — regra como ferramenta, sem erro.
+  // Texturas pedem malha fina; acabamentos facetados (poucos segmentos) são
+  // um estilo próprio e desligam a textura — regra como ferramenta, sem erro.
+  const familia: FamiliaTextura = textura?.familia ?? "gomos";
+  const repeticao =
+    familia === "gomos" ? (textura?.gomos ?? 0) : (textura?.repeticao ?? 0);
   const comTextura =
     !!textura &&
-    textura.gomos > 0 &&
+    repeticao > 0 &&
     textura.profundidadeMm > 0 &&
     textura.alturaMm > 0 &&
     segmentos >= 32;
+  // Profundidade que respeita o orçamento de balanço da textura (F4).
+  const profundidadeMm = comTextura
+    ? profundidadeEfetivaTexturaMm(textura)
+    : 0;
   const torcaoRad = comTextura
     ? (textura.torcaoGraus * Math.PI) / 180
     : 0;
@@ -78,12 +94,15 @@ export function malhaRevolucao(
         const t = perfil[j].y / textura.alturaMm;
         const w = janelaTextura(t);
         if (w > 0) {
+          // A torção gira a fase; o valor [-1,1] vira [-1,0]: a textura só
+          // esculpe para dentro — a silhueta continua sendo o envelope.
           const fase = torcaoRad * t;
+          const u = (th + fase) / (Math.PI * 2);
           r +=
-            textura.profundidadeMm *
+            profundidadeMm *
             w *
             0.5 *
-            (Math.cos(textura.gomos * (th + fase)) - 1);
+            (valorTextura(familia, u, t, repeticao) - 1);
         }
       }
       const o = (j * segmentos + i) * 3;
