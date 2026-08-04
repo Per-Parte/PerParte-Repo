@@ -247,6 +247,8 @@ export interface Cena3DProps {
   expoente?: number;
   /** Corte da borda livre do difusor (oblíquo/dentes). */
   corteDifusor?: CorteBorda;
+  /** Corte da borda da GOLA do corpo (o berço do Weight). */
+  corteCorpo?: CorteBorda;
   /** Refletor (PLACA) na segunda coluna — o gesto do eclipse. */
   placa?: ParametrosPlaca | null;
 }
@@ -264,6 +266,7 @@ export default function Cena3D({
   vazadoDifusor,
   expoente,
   corteDifusor,
+  corteCorpo,
   placa,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
@@ -416,6 +419,7 @@ export default function Cena3D({
           textura={texturas?.corpo}
           espinha={espinhaCorpo}
           facetas={facetasCorpo}
+          corte={corteCorpo}
         />
       ))}
       {colunas.map((c, i) => (

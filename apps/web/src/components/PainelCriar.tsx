@@ -5,6 +5,8 @@ import {
   amostrarRaiosCorpo,
   deslocamentoMaximoMm,
   DIFUSORES,
+  golaMaximaMm,
+  perfilDifusor,
   FACETAS,
   FAMILIAS_TEXTURA,
   LIMITES_CORTE_BORDA,
@@ -96,6 +98,12 @@ export default function PainelCriar({
       criar.difusor.gomos > 0);
   const modoLivre = !!criar.corpo.perfilLivre;
   const dMax = deslocamentoMaximoMm(criar.corpo.alturaMm);
+  // Teto da gola vem do difusor escolhido: a parede nunca encosta nele.
+  const tetoGolaMm = criar.corpo.gola
+    ? Math.floor(
+        golaMaximaMm(perfilDifusor(criar.difusor), criar.corpo.gola.raioMm)
+      )
+    : LIMITES_CRIAR.corpo.golaAlturaMm.max;
   // E3: a escada da estabilidade — base alarga, contrapeso entra, e só
   // depois disso o aviso de tombamento é honesto.
   const comContrapeso =
@@ -284,6 +292,147 @@ export default function PainelCriar({
           passo={LC.posicaoDobra.passo}
           aoMudar={(v) => mudarCorpo("posicaoDobra", v)}
         />
+      </Secao>
+      )}
+
+      {vis("berco") && (
+      <Secao titulo="Berço no topo (gola)">
+        <Chips
+          nomes={["Sem berço", "Com berço"]}
+          selecionado={criar.corpo.gola ? 1 : 0}
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              corpo: {
+                ...criar.corpo,
+                gola:
+                  i === 0
+                    ? undefined
+                    : criar.corpo.gola ?? { alturaMm: 30, raioMm: 50 },
+                corte: i === 0 ? undefined : criar.corpo.corte,
+              },
+            })
+          }
+        />
+        {criar.corpo.gola && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Altura da gola"
+              valorFmt={`${cm(criar.corpo.gola.alturaMm)} cm`}
+              valor={criar.corpo.gola.alturaMm}
+              min={LC.golaAlturaMm.min}
+              max={Math.max(
+                LC.golaAlturaMm.min,
+                Math.min(LC.golaAlturaMm.max, tetoGolaMm)
+              )}
+              passo={LC.golaAlturaMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  corpo: {
+                    ...criar.corpo,
+                    gola: { ...criar.corpo.gola!, alturaMm: v },
+                  },
+                })
+              }
+              nota="a parede sobe acima do encaixe e abraça o difusor — o berço do gesto Weight"
+              motivoMax="Mais alto que isso a gola encostaria no difusor — alargue a boca ou escolha um difusor mais fechado."
+            />
+            <SliderCtl
+              rotulo="Boca da gola"
+              valorFmt={`Ø ${cm(criar.corpo.gola.raioMm * 2)} cm`}
+              valor={criar.corpo.gola.raioMm}
+              min={LC.golaRaioMm.min}
+              max={LC.golaRaioMm.max}
+              passo={LC.golaRaioMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  corpo: {
+                    ...criar.corpo,
+                    gola: { ...criar.corpo.gola!, raioMm: v },
+                  },
+                })
+              }
+            />
+            <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
+              Borda da gola
+            </div>
+            <Chips
+              nomes={["Reta", ...TIPOS_CORTE_BORDA.map((t) => t.nome)]}
+              selecionado={
+                criar.corpo.corte
+                  ? 1 +
+                    TIPOS_CORTE_BORDA.findIndex(
+                      (t) => t.id === criar.corpo.corte?.tipo
+                    )
+                  : 0
+              }
+              aoEscolher={(i) =>
+                aoMudar({
+                  ...criar,
+                  corpo: {
+                    ...criar.corpo,
+                    corte:
+                      i === 0
+                        ? undefined
+                        : {
+                            tipo: TIPOS_CORTE_BORDA[i - 1].id,
+                            profundidadeMm:
+                              criar.corpo.corte?.profundidadeMm ?? 14,
+                            repeticao: criar.corpo.corte?.repeticao ?? 8,
+                          },
+                  },
+                })
+              }
+            />
+            {criar.corpo.corte && (
+              <div className="mt-3">
+                <SliderCtl
+                  rotulo="Profundidade do corte"
+                  valorFmt={`${Math.round(criar.corpo.corte.profundidadeMm)} mm`}
+                  valor={criar.corpo.corte.profundidadeMm}
+                  min={LIMITES_CORTE_BORDA.profundidadeMm.min}
+                  max={Math.max(
+                    LIMITES_CORTE_BORDA.profundidadeMm.min,
+                    criar.corpo.gola.alturaMm - 8
+                  )}
+                  passo={LIMITES_CORTE_BORDA.profundidadeMm.passo}
+                  aoMudar={(v) =>
+                    aoMudar({
+                      ...criar,
+                      corpo: {
+                        ...criar.corpo,
+                        corte: { ...criar.corpo.corte!, profundidadeMm: v },
+                      },
+                    })
+                  }
+                  nota="oblíqua + esfera dentro = o gesto do Weight"
+                  motivoMax="Mais fundo que isso o corte alcançaria o assento do encaixe, que fica rebaixado dentro da gola."
+                />
+                {criar.corpo.corte.tipo === "dentes" && (
+                  <SliderCtl
+                    rotulo="Dentes"
+                    valorFmt={`${criar.corpo.corte.repeticao ?? 8} dentes`}
+                    valor={criar.corpo.corte.repeticao ?? 8}
+                    min={LIMITES_CORTE_BORDA.repeticao.min}
+                    max={LIMITES_CORTE_BORDA.repeticao.max}
+                    passo={LIMITES_CORTE_BORDA.repeticao.passo}
+                    aoMudar={(v) =>
+                      aoMudar({
+                        ...criar,
+                        corpo: {
+                          ...criar.corpo,
+                          corte: { ...criar.corpo.corte!, repeticao: v },
+                        },
+                      })
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </Secao>
       )}
 

@@ -12,9 +12,12 @@ import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
 import { grampearVazado } from "./vazados";
 import {
   deslocamentoMaximoMm,
+  golaMaximaMm,
+  perfilDifusor,
   TS_PERFIL_LIVRE,
   type CurvaBase,
   type FormaDifusor,
+  type GolaCorpo,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -67,6 +70,25 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
     p.familiaTextura !== "gomos"
       ? (p.familiaTextura as FamiliaTextura)
       : undefined;
+  // Berço (gola) + corte da borda dela. O corte nunca alcança o assento
+  // do macho: profundidade ≤ altura da gola − 8.
+  const golaBruta = p.gola as Partial<GolaCorpo> | undefined;
+  const gola: GolaCorpo | undefined =
+    golaBruta && Number(golaBruta.alturaMm) > 0
+      ? {
+          alturaMm: grampear(golaBruta.alturaMm, L.golaAlturaMm, 30),
+          raioMm: grampear(golaBruta.raioMm, L.golaRaioMm, 50),
+        }
+      : undefined;
+  const corteGola = gola
+    ? grampearCorteBorda(p.corte, gola.alturaMm)
+    : undefined;
+  const corte =
+    corteGola && corteGola.profundidadeMm <= gola!.alturaMm - 8
+      ? corteGola
+      : corteGola
+        ? { ...corteGola, profundidadeMm: Math.max(0, gola!.alturaMm - 8) }
+        : undefined;
   return {
     alturaMm,
     volumeBojoMm: grampear(p.volumeBojoMm, L.volumeBojoMm, 0),
@@ -87,6 +109,8 @@ export function grampearCorpo(p: Partial<ParametrosCorpo>): ParametrosCorpo {
     ),
     posicaoDobra: grampear(p.posicaoDobra, L.posicaoDobra, 0),
     ...(perfilLivre ? { perfilLivre } : {}),
+    ...(gola ? { gola } : {}),
+    ...(corte && corte.profundidadeMm > 0 ? { corte } : {}),
     ...(familiaTextura
       ? {
           familiaTextura,
@@ -168,6 +192,38 @@ const SEGMENTOS_VALIDOS = [4, 6, 8, 12, 16, 40];
 export function grampearSegmentos(s: unknown): number {
   const n = Math.round(numero(s, 40));
   return SEGMENTOS_VALIDOS.includes(n) ? n : 40;
+}
+
+/**
+ * Interferência gola × difusor: a gola só sobe enquanto o difusor couber
+ * dentro dela (folga radial de 2 mm). Ajuste determinístico — preview e
+ * produção chamam a MESMA função, então o que se vê é o que se imprime.
+ * Se nem a altura mínima couber, a gola sai (difusor largo demais na boca).
+ */
+export function ajustarGolaAoDifusor(
+  corpo: ParametrosCorpo,
+  difusor: ParametrosDifusor
+): ParametrosCorpo {
+  if (!corpo.gola) return corpo;
+  const L = LIMITES_CRIAR.corpo;
+  const teto = golaMaximaMm(perfilDifusor(difusor), corpo.gola.raioMm);
+  if (teto < L.golaAlturaMm.min) {
+    const semGola = { ...corpo };
+    delete semGola.gola;
+    delete semGola.corte;
+    return semGola;
+  }
+  if (corpo.gola.alturaMm <= teto) return corpo;
+  const gola = { ...corpo.gola, alturaMm: teto };
+  const corte =
+    corpo.corte && corpo.corte.profundidadeMm > gola.alturaMm - 8
+      ? { ...corpo.corte, profundidadeMm: Math.max(0, gola.alturaMm - 8) }
+      : corpo.corte;
+  return {
+    ...corpo,
+    gola,
+    ...(corte && corte.profundidadeMm > 0 ? { corte } : { corte: undefined }),
+  };
 }
 
 /**

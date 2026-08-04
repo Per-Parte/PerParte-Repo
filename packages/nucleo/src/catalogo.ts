@@ -149,6 +149,9 @@ export const LIMITES_CRIAR = {
     posicaoDobra: { min: -1, max: 1, passo: 0.1 },
     /** Faixa dos raios de controle da silhueta livre. */
     perfilLivreRaioMm: { min: 16, max: 60, passo: 0.5 },
+    /** Berço (gola): teto real da altura depende do difusor (golaMaximaMm). */
+    golaAlturaMm: { min: 12, max: 60, passo: 2 },
+    golaRaioMm: { min: 40, max: 60, passo: 1 },
   },
   difusor: {
     alturaMm: { min: 60, max: 130, passo: 5 },

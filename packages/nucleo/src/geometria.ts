@@ -64,7 +64,29 @@ export interface ParametrosCorpo {
    * bojo/posição/ondulação; gomos e espinha continuam valendo.
    */
   perfilLivre?: number[];
+  /**
+   * Berço (gola): parede que sobe ACIMA do plano do encaixe, com o macho
+   * F5 rebaixado dentro — o difusor assenta no encaixe e a gola o abraça
+   * (o gesto do Weight: cilindro de boca oblíqua com a esfera dentro).
+   * O perfil não exige altura monótona, então é só polilinha.
+   */
+  gola?: GolaCorpo;
+  /**
+   * Corte da borda da GOLA (oblíquo/dentes) — só vale com gola presente:
+   * sem ela, o topo do corpo é o macho F5 e não é terminação livre.
+   */
+  corte?: import("./terminacao").CorteBorda;
 }
+
+export interface GolaCorpo {
+  /** Quanto a gola sobe acima do plano do encaixe, em mm. */
+  alturaMm: number;
+  /** Raio INTERNO da boca, em mm — o difusor precisa caber dentro. */
+  raioMm: number;
+}
+
+/** Parede da gola, em mm (constante da v1). */
+export const ESPESSURA_GOLA_MM = 2.4;
 
 export interface ParametrosDifusor {
   forma: FormaDifusor;
@@ -307,9 +329,18 @@ export function perfilCorpo(
       (1.5 * dNorm) / (0.7 * h) -
       reservaTextura
   );
+  // Com gola, o topo da lateral precisa chegar na parede externa dela —
+  // mesmo mecanismo do pé da fêmea, só que na outra ponta.
+  const gola = p.gola;
+  const raioGolaExtMm = gola ? gola.raioMm + ESPESSURA_GOLA_MM : 0;
+  const pisoDe = (i: number) => {
+    let r = RAIO_LIVRE_MIOLO_MM;
+    if (i * dY < alturaFemea + 1) r = Math.max(r, raioPeMm);
+    if (gola && i * dY > h - 6) r = Math.max(r, raioGolaExtMm);
+    return r;
+  };
   for (let i = 0; i <= n; i++) {
-    raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
-    if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
+    raios[i] = Math.max(raios[i], pisoDe(i));
   }
   for (let i = 1; i <= n; i++) {
     raios[i] = Math.min(
@@ -322,14 +353,40 @@ export function perfilCorpo(
       Math.max(raios[i], raios[i + 1] - tanMax * dY),
       raios[i + 1] + tanMax * dY
     );
-    raios[i] = Math.max(raios[i], RAIO_LIVRE_MIOLO_MM);
-    if (i * dY < alturaFemea + 1) raios[i] = Math.max(raios[i], raioPeMm);
+    raios[i] = Math.max(raios[i], pisoDe(i));
   }
 
   const pontos = pontosFemea(anelBase, folgaMm);
   for (let i = 0; i <= n; i++) pontos.push({ x: raios[i], y: i * dY });
+  if (gola) {
+    // A gola sobe acima do plano do encaixe e desce por dentro até a
+    // prateleira; o macho fica rebaixado no fundo. Parede interna
+    // vertical: imprime limpa, e o corte z(θ) da borda só a alcança
+    // acima do assento do macho.
+    pontos.push({ x: raioGolaExtMm, y: h + gola.alturaMm });
+    pontos.push({ x: gola.raioMm, y: h + gola.alturaMm });
+    pontos.push({ x: gola.raioMm, y: h + 1 });
+  }
   pontos.push(...pontosMacho(ENCAIXES.corpoDifusor.anel, h));
   return pontos;
+}
+
+/**
+ * Altura máxima da gola para um dado difusor: a parede interna nunca
+ * encosta na peça que assenta dentro dela (folga radial de 2 mm). O
+ * difusor alarga subindo, então a gola só pode subir enquanto couber.
+ */
+export function golaMaximaMm(
+  perfilDoDifusor: Ponto2D[],
+  raioGolaMm: number
+): number {
+  let teto = Infinity;
+  for (const q of perfilDoDifusor) {
+    if (q.y > 0 && q.x + 2 > raioGolaMm) {
+      teto = Math.min(teto, q.y - 1);
+    }
+  }
+  return Math.max(0, Math.min(teto, 60));
 }
 
 export type TipoEstrutural = "haste" | "anel";

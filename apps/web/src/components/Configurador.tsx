@@ -10,6 +10,7 @@ import {
   ESTRUTURAIS,
   FACETAS,
   PALETA,
+  ajustarGolaAoDifusor,
   contrapesoNecessarioG,
   estabilidade,
   estimarPreco,
@@ -60,6 +61,7 @@ const SECOES_CRIAR = [
   { id: "corpo", rotulo: "Corpo" },
   { id: "silhueta", rotulo: "Silhueta" },
   { id: "curva", rotulo: "Curva S" },
+  { id: "berco", rotulo: "Berço" },
   { id: "textura", rotulo: "Textura" },
   { id: "difusor", rotulo: "Difusor" },
   { id: "luzes", rotulo: "Luzes" },
@@ -185,8 +187,17 @@ export default function Configurador() {
   }
 
   const base = modo === "montar" ? BASES[iBase] : criar.base;
-  const corpo = modo === "montar" ? CORPOS[iCorpo] : criar.corpo;
   const difusor = modo === "montar" ? DIFUSORES[iDifusor] : criar.difusor;
+  // Gola × difusor: a gola só sobe enquanto o difusor couber dentro dela —
+  // mesma função determinística que o backend usa (preview = produção).
+  const corpo = useMemo(
+    () =>
+      ajustarGolaAoDifusor(
+        modo === "montar" ? CORPOS[iCorpo] : criar.corpo,
+        difusor
+      ),
+    [modo, iCorpo, criar.corpo, difusor]
+  );
 
   const texturas = useMemo(
     () => ({
@@ -353,6 +364,7 @@ export default function Configurador() {
           separacaoMm={separacaoEfetivaMm}
           vazadoDifusor={difusor.vazado}
           corteDifusor={difusor.corte}
+          corteCorpo={corpo.gola ? corpo.corte : undefined}
           placa={placa}
         />
       </div>

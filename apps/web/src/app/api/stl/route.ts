@@ -1,4 +1,5 @@
 import {
+  ajustarGolaAoDifusor,
   ENCAIXES,
   estabilidade,
   facetasParaBase,
@@ -48,8 +49,9 @@ export async function POST(req: Request) {
 
   // Backend não confia na Ferramenta: grampeia tudo de novo (regra mestra).
   const base = grampearBase(dados.base ?? {});
-  const corpo = grampearCorpo(dados.corpo ?? {});
   const difusor = grampearDifusor(dados.difusor ?? {});
+  // Gola × difusor: a mesma verificação de interferência do preview.
+  const corpo = ajustarGolaAoDifusor(grampearCorpo(dados.corpo ?? {}), difusor);
   const estruturais = grampearEstruturais(dados.estruturais);
   const segmentos = grampearSegmentos(dados.segmentos);
   const luminaria = grampearLuminaria(dados);
@@ -213,15 +215,16 @@ export async function POST(req: Request) {
       : comTextura
         ? SEGMENTOS_PRODUCAO_GOMOS
         : SEGMENTOS_PRODUCAO_LISO;
-    // Corte de borda (z(θ)) é malha pura e SAI em produção — só no difusor,
-    // cuja terminação de cima é livre (o topo do corpo carrega o macho F5).
+    // Corte de borda (z(θ)) é malha pura e SAI em produção — no difusor
+    // (topo livre) e na GOLA do corpo (o macho fica rebaixado, fora do
+    // alcance do corte por grampeamento).
     malha = malhaRevolucao(
       perfil,
       segmentosParte,
       comTheta ? undefined : textura,
       espinha,
       facetas,
-      parte === "difusor" ? difusor.corte : undefined
+      parte === "difusor" ? difusor.corte : corpo.gola ? corpo.corte : undefined
     );
   }
 
