@@ -8,6 +8,7 @@ export * from "./preco";
 export * from "./catalogo";
 export * from "./malha";
 export * from "./placa";
+export * from "./junta";
 export * from "./stl";
 export * from "./validacao";
 export * from "./calibracao";

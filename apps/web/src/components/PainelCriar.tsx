@@ -6,6 +6,8 @@ import {
   deslocamentoMaximoMm,
   DIFUSORES,
   golaMaximaMm,
+  JUNTA_PADRAO,
+  LIMITES_JUNTA,
   perfilDifusor,
   FACETAS,
   FAMILIAS_TEXTURA,
@@ -577,6 +579,75 @@ export default function PainelCriar({
           />
         </div>
         <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
+          Inclinar a cabeça
+        </div>
+        <Chips
+          nomes={["Reta", "Inclinada"]}
+          selecionado={criar.difusor.junta ? 1 : 0}
+          aoEscolher={(i) =>
+            aoMudar({
+              ...criar,
+              difusor: {
+                ...criar.difusor,
+                junta: i === 0 ? undefined : criar.difusor.junta ?? { ...JUNTA_PADRAO },
+                // A cabeça inclinada é lisa nesta versão. ⚑
+                ...(i === 1 ? { vazado: undefined, corte: undefined } : {}),
+              },
+            })
+          }
+        />
+        {criar.difusor.junta && (
+          <div className="mt-3">
+            <SliderCtl
+              rotulo="Inclinação"
+              valorFmt={`${criar.difusor.junta.inclinacaoGraus}°`}
+              valor={criar.difusor.junta.inclinacaoGraus}
+              min={LIMITES_JUNTA.inclinacaoGraus.min}
+              max={LIMITES_JUNTA.inclinacaoGraus.max}
+              passo={LIMITES_JUNTA.inclinacaoGraus.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    junta: { ...criar.difusor.junta!, inclinacaoGraus: v },
+                  },
+                })
+              }
+              nota="a cabeça inteira pende sobre a coluna — o gesto de task light"
+              motivoMax="Mais inclinada que isso, as paredes da cabeça pediriam suporte na impressão."
+            />
+            <SliderCtl
+              rotulo="Deslocar a cabeça"
+              valorFmt={`${cm(criar.difusor.junta.deslocamentoMm)} cm`}
+              valor={criar.difusor.junta.deslocamentoMm}
+              min={LIMITES_JUNTA.deslocamentoMm.min}
+              max={Math.min(
+                LIMITES_JUNTA.deslocamentoMm.max,
+                Math.max(0, criar.difusor.raioMm - 25)
+              )}
+              passo={LIMITES_JUNTA.deslocamentoMm.passo}
+              aoMudar={(v) =>
+                aoMudar({
+                  ...criar,
+                  difusor: {
+                    ...criar.difusor,
+                    junta: { ...criar.difusor.junta!, deslocamentoMm: v },
+                  },
+                })
+              }
+              nota="o pescoço cresce sozinho o necessário — a borda nunca toca o encaixe"
+              motivoMax="Mais para o lado que isso, a cabeça sairia de cima do próprio pescoço."
+            />
+            <div className="mt-1 text-[10px] text-[#7d766a]">
+              a cabeça inclinada é lisa nesta versão — textura, vazado e borda
+              cortada ficam para a cabeça reta ⚑
+            </div>
+          </div>
+        )}
+        {!criar.difusor.junta && (
+        <>
+        <div className="mb-2 mt-1 text-[13px] text-[#E7E0D2]">
           Borda de cima
         </div>
         <Chips
@@ -731,6 +802,8 @@ export default function PainelCriar({
               ligado.
             </div>
           </div>
+        )}
+        </>
         )}
       </Secao>
       )}

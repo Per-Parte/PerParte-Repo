@@ -106,6 +106,12 @@ export interface ParametrosDifusor {
    * Diferente do vazado, é malha pura e SAI em produção.
    */
   corte?: import("./terminacao").CorteBorda;
+  /**
+   * Junta inclinada (o gesto do Gio Task): a cabeça inteira gira e
+   * desloca sobre um pescoço vertical que carrega a fêmea F5. Quando
+   * presente, textura/vazado/facetas/corte não se aplicam à cabeça. ⚑
+   */
+  junta?: import("./junta").JuntaInclinada;
 }
 
 export interface AnelEncaixe {
@@ -650,13 +656,20 @@ export function amostrarRaiosCorpo(p: ParametrosCorpo): number[] {
   });
 }
 
-/** Perfil do difusor. Fêmea embaixo (encaixa no topo do corpo). */
+/**
+ * Perfil do difusor. Fêmea embaixo (encaixa no topo do corpo);
+ * `comFemea = false` gera só a CABEÇA, com face de baixo plana — é o que
+ * a junta inclinada gira (a fêmea fica no pescoço vertical).
+ */
 export function perfilDifusor(
   p: ParametrosDifusor,
-  folgaMm = ENCAIXES.folgaPadraoMm
+  folgaMm = ENCAIXES.folgaPadraoMm,
+  comFemea = true
 ): Ponto2D[] {
   const { forma, alturaMm: dh, raioMm: dr } = p;
-  const pontos = pontosFemea(ENCAIXES.corpoDifusor.anel, folgaMm);
+  const pontos = comFemea
+    ? pontosFemea(ENCAIXES.corpoDifusor.anel, folgaMm)
+    : [{ x: RAIO_EIXO_MM, y: 0 }];
   const n = 34;
   for (let i = 0; i <= n; i++) {
     const u = i / n;

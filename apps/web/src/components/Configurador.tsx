@@ -12,6 +12,7 @@ import {
   PALETA,
   ajustarGolaAoDifusor,
   contrapesoNecessarioG,
+  desvioCabecaMm,
   estabilidade,
   estimarPreco,
   perfilBase,
@@ -242,7 +243,13 @@ export default function Configurador() {
   // o desvio para trás da placa inclinada ainda não entra no CG ⚑).
   const estab = useMemo(
     () =>
-      estabilidade(base, corpoParaFisica, difusor, placa ? 2 : pontosDeLuz),
+      estabilidade(
+        base,
+        corpoParaFisica,
+        difusor,
+        placa ? 2 : pontosDeLuz,
+        desvioCabecaMm(difusor, difusor.junta)
+      ),
     [base, corpoParaFisica, difusor, pontosDeLuz, placa]
   );
   const perfis = useMemo(
@@ -366,6 +373,9 @@ export default function Configurador() {
           corteDifusor={difusor.corte}
           corteCorpo={corpo.gola ? corpo.corte : undefined}
           placa={placa}
+          difusorInclinado={
+            difusor.junta ? { difusor, junta: difusor.junta } : undefined
+          }
         />
       </div>
 

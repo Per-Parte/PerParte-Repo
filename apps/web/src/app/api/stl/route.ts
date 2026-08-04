@@ -15,6 +15,7 @@ import {
   grampearLuminaria,
   grampearPlaca,
   grampearSegmentos,
+  malhaCabecaInclinada,
   malhaPlaca,
   malhaRevolucao,
   perfilBase,
@@ -179,6 +180,22 @@ export async function POST(req: Request) {
         alturaMm: corpo.alturaMm,
       };
     } else {
+      // Cabeça inclinada (junta do Gio Task): malha própria do núcleo —
+      // pescoço vertical com a fêmea + cabeça girada/deslocada. Lisa. ⚑
+      if (difusor.junta) {
+        const malhaCabeca = malhaCabecaInclinada(
+          difusor,
+          difusor.junta,
+          SEGMENTOS_PRODUCAO_LISO
+        );
+        const stlCabeca = gerarSTLBinario(malhaCabeca, "difusor");
+        return new Response(new Blob([stlCabeca.buffer as ArrayBuffer]), {
+          headers: {
+            "Content-Type": "model/stl",
+            "Content-Disposition": `attachment; filename="per-parte-difusor.stl"`,
+          },
+        });
+      }
       // Difusor vazado: preview existe, produção aguarda booleanos no
       // núcleo (manifold) — bloquear aqui é o backend não confiando na UI.
       if (difusor.vazado) {

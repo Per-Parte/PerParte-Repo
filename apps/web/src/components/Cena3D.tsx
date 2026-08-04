@@ -11,6 +11,7 @@ import {
   facetasParaCorpo,
   facetasParaDifusor,
   facetasParaEstrutural,
+  malhaCabecaInclinada,
   malhaPlaca,
   malhaRevolucao,
   mascaraVazado,
@@ -19,6 +20,8 @@ import {
   type CorteBorda,
   type EspinhaLateral,
   type FacetasRevolucao,
+  type JuntaInclinada,
+  type ParametrosDifusor,
   type ParametrosPlaca,
   type ParametrosVazado,
   type Ponto2D,
@@ -215,6 +218,54 @@ function PartePlaca({
   );
 }
 
+/**
+ * A cabeça inclinada (junta do Gio Task): pescoço com a fêmea + difusor
+ * girado e deslocado — malha inteira do núcleo, a mesma do STL.
+ */
+function ParteCabecaInclinada({
+  difusor,
+  junta,
+  xMm,
+  yMm,
+  cor,
+  luzAcesa,
+}: {
+  difusor: ParametrosDifusor;
+  junta: JuntaInclinada;
+  xMm: number;
+  yMm: number;
+  cor: string;
+  luzAcesa: boolean;
+}) {
+  const geometria = useMemo(() => {
+    const m = malhaCabecaInclinada(difusor, junta, 96);
+    const pos = new Float32Array(m.posicoes.length);
+    for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+    g.computeVertexNormals();
+    return g;
+  }, [difusor, junta]);
+  useEffect(() => () => geometria.dispose(), [geometria]);
+  return (
+    <group position={[xMm / MM, yMm / MM, 0]}>
+      <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial
+          color={cor}
+          roughness={0.5}
+          transparent
+          opacity={luzAcesa ? 0.95 : 0.68}
+          side={THREE.DoubleSide}
+          emissive="#F3B65B"
+          emissiveIntensity={luzAcesa ? 0.85 : 0}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 export interface Cena3DProps {
   perfis: {
     base: Ponto2D[];
@@ -251,6 +302,8 @@ export interface Cena3DProps {
   corteCorpo?: CorteBorda;
   /** Refletor (PLACA) na segunda coluna — o gesto do eclipse. */
   placa?: ParametrosPlaca | null;
+  /** Cabeça inclinada (junta do Gio Task): substitui o difusor reto. */
+  difusorInclinado?: { difusor: ParametrosDifusor; junta: JuntaInclinada };
 }
 
 export default function Cena3D({
@@ -268,6 +321,7 @@ export default function Cena3D({
   corteDifusor,
   corteCorpo,
   placa,
+  difusorInclinado,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
   // tudo que está acima dela.
@@ -355,7 +409,11 @@ export default function Cena3D({
         colunas.map((c, i) => (
           <pointLight
             key={`luz-${i}`}
-            position={[c.xTopo / MM, lampadaY, 0]}
+            position={[
+              (c.xTopo + (difusorInclinado?.junta.deslocamentoMm ?? 0)) / MM,
+              lampadaY,
+              0,
+            ]}
             color="#FFC478"
             intensity={9}
             distance={9}
@@ -422,22 +480,34 @@ export default function Cena3D({
           corte={corteCorpo}
         />
       ))}
-      {colunas.map((c, i) => (
-        <Parte
-          key={`difusor-${i}`}
-          perfil={perfis.difusor}
-          yMm={yCorpoMm + alturasMm.corpo}
-          xMm={c.xTopo}
-          cor={coresHex.difusor}
-          segmentos={segmentos}
-          textura={texturas?.difusor}
-          difusor
-          luzAcesa={luzAcesa}
-          vazado={vazadoDifusor}
-          facetas={facetasDifusor}
-          corte={corteDifusor}
-        />
-      ))}
+      {colunas.map((c, i) =>
+        difusorInclinado ? (
+          <ParteCabecaInclinada
+            key={`difusor-${i}`}
+            difusor={difusorInclinado.difusor}
+            junta={difusorInclinado.junta}
+            xMm={c.xTopo}
+            yMm={yCorpoMm + alturasMm.corpo}
+            cor={coresHex.difusor}
+            luzAcesa={luzAcesa}
+          />
+        ) : (
+          <Parte
+            key={`difusor-${i}`}
+            perfil={perfis.difusor}
+            yMm={yCorpoMm + alturasMm.corpo}
+            xMm={c.xTopo}
+            cor={coresHex.difusor}
+            segmentos={segmentos}
+            textura={texturas?.difusor}
+            difusor
+            luzAcesa={luzAcesa}
+            vazado={vazadoDifusor}
+            facetas={facetasDifusor}
+            corte={corteDifusor}
+          />
+        )
+      )}
 
       <ContactShadows opacity={0.5} scale={6} blur={2.8} far={2.5} color="#000000" />
       <OrbitControls

@@ -7,6 +7,7 @@
  */
 
 import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
+import { grampearJunta } from "./junta";
 import { grampearCorteBorda } from "./terminacao";
 import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
 import { grampearVazado } from "./vazados";
@@ -144,15 +145,18 @@ export function grampearDifusor(
   p: Partial<ParametrosDifusor>
 ): ParametrosDifusor {
   const L = LIMITES_CRIAR.difusor;
-  const vazado = grampearVazado(p.vazado);
   const alturaMm = grampear(p.alturaMm, L.alturaMm, 100);
-  const corte = grampearCorteBorda(p.corte, alturaMm);
+  const raioMm = grampear(p.raioMm, L.raioMm, 65);
+  // Junta inclinada: a cabeça é lisa nesta versão — vazado e corte saem. ⚑
+  const junta = grampearJunta(p.junta, raioMm);
+  const vazado = junta ? undefined : grampearVazado(p.vazado);
+  const corte = junta ? undefined : grampearCorteBorda(p.corte, alturaMm);
   return {
     forma: FORMAS.includes(p.forma as FormaDifusor)
       ? (p.forma as FormaDifusor)
       : "globo",
     alturaMm,
-    raioMm: grampear(p.raioMm, L.raioMm, 65),
+    raioMm,
     gomos: Math.round(grampear(p.gomos, L.gomos, 0)),
     profundidadeGomosMm: grampear(
       p.profundidadeGomosMm,
@@ -161,6 +165,7 @@ export function grampearDifusor(
     ),
     ...(vazado ? { vazado } : {}),
     ...(corte ? { corte } : {}),
+    ...(junta ? { junta } : {}),
   };
 }
 

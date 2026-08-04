@@ -40,7 +40,9 @@ export function estabilidade(
   base: ParametrosBase,
   corpo: ParametrosCorpo,
   difusor: ParametrosDifusor,
-  pontosDeLuz = 1
+  pontosDeLuz = 1,
+  /** Desvio lateral extra da CABEÇA (junta inclinada), em mm. */
+  desvioCabecaMm = 0
 ): ResultadoEstabilidade {
   const bh = base.alturaMm / 10;
   const br = base.raioMm / 10;
@@ -57,6 +59,8 @@ export function estabilidade(
   const raioVertical = 0.34 * cg + 0.5 * Math.max(vol, 0);
 
   // Desvio lateral do CG (só no ponto de luz único — o duo é simétrico).
+  // A cabeça inclinada (junta) soma o próprio desvio ao termo do topo:
+  // a escada E2→E3→aviso passa a cobri-la sem código novo.
   const dEfetivo =
     pontosDeLuz === 2
       ? 0
@@ -65,8 +69,10 @@ export function estabilidade(
           Math.abs(corpo.deslocamentoMm || 0),
           deslocamentoMaximoMm(corpo.alturaMm)
         );
+  const dCabeca = pontosDeLuz === 2 ? 0 : desvioCabecaMm;
   const xCgMm =
-    (0.45 * dEfetivo * 1 + dEfetivo * cargaTopo) / (1.4 + cargaTopo);
+    (0.45 * dEfetivo * 1 + (dEfetivo + dCabeca) * cargaTopo) /
+    (1.4 + cargaTopo);
 
   // E1: a projeção do CG cai no terço central do raio da base.
   const raioLateral =
