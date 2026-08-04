@@ -20,7 +20,8 @@ export function estimarPreco(
   perfilCorpo: Ponto2D[],
   perfilDifusor: Ponto2D[],
   pontosDeLuz = 1,
-  perfisEstruturais: Ponto2D[][] = []
+  perfisEstruturais: Ponto2D[][] = [],
+  perfisPlaca: Ponto2D[][] = []
 ): Estimativa {
   const aBase = areaLateralMm2(perfilBase) / 100;
   const aCorpo = areaLateralMm2(perfilCorpo) / 100;
@@ -30,11 +31,15 @@ export function estimarPreco(
     (s, p) => s + areaLateralMm2(p) / 100,
     0
   );
+  // A placa (disco + pescoço) pesa como casca de base (imprime com infill).
+  const aPlaca = perfisPlaca.reduce((s, p) => s + areaLateralMm2(p) / 100, 0);
 
   // Dois pontos de luz: corpo, difusor e módulo elétrico em dobro.
   const n = pontosDeLuz === 2 ? 2 : 1;
   const gramas =
-    (aBase * 0.24 + (aCorpo * 0.2 + aDifusor * 0.12 + aEstruturais * 0.2) * n) *
+    (aBase * 0.24 +
+      aPlaca * 0.24 +
+      (aCorpo * 0.2 + aDifusor * 0.12 + aEstruturais * 0.2) * n) *
       1.24 +
     70 * n;
   const precoBRL = Math.round((189 + gramas * 0.62) / 10) * 10 - 1;

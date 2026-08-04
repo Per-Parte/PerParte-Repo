@@ -8,6 +8,7 @@ import {
   LIMITES_CRIAR,
   MAX_ESTRUTURAIS,
   PALETA,
+  type ParametrosPlaca,
 } from "@per-parte/nucleo";
 import { Chips, PontosDeLuzCtl, Secao } from "./controles";
 import type { AlvoCor, CoresPartes } from "./Configurador";
@@ -37,6 +38,8 @@ interface Props {
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
   setSeparacaoMm: (v: number) => void;
+  placa: ParametrosPlaca | null;
+  setPlaca: (p: ParametrosPlaca | null) => void;
   /** Quando presente, renderiza só a seção pedida (modo órbita). */
   apenasSecao?: string;
 }
@@ -58,6 +61,8 @@ export default function PainelMontar({
   separacaoMm,
   setPontosDeLuz,
   setSeparacaoMm,
+  placa,
+  setPlaca,
   apenasSecao,
 }: Props) {
   const corSelecionada = alvoCor === "all" ? cores.corpo : cores[alvoCor];
@@ -171,6 +176,8 @@ export default function PainelMontar({
           sepPasso={LIMITES_CRIAR.luminaria.separacaoMm.passo}
           aoMudarPontos={setPontosDeLuz}
           aoMudarSep={setSeparacaoMm}
+          placa={placa}
+          aoMudarPlaca={setPlaca}
         />
       </Secao>
       )}

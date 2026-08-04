@@ -225,6 +225,24 @@ export function transladarMalha(
   return { posicoes, indices: m.indices };
 }
 
+/**
+ * Gira a malha em torno do eixo Y (horizontal), em radianos — é o que
+ * "deita" um sólido de revolução (a PLACA nasce vertical e tomba de lado).
+ */
+export function rotacionarMalhaEmY(m: Malha, rad: number): Malha {
+  const posicoes = new Float32Array(m.posicoes.length);
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  for (let i = 0; i < posicoes.length; i += 3) {
+    const x = m.posicoes[i];
+    const z = m.posicoes[i + 2];
+    posicoes[i] = x * c + z * s;
+    posicoes[i + 1] = m.posicoes[i + 1];
+    posicoes[i + 2] = -x * s + z * c;
+  }
+  return { posicoes, indices: m.indices };
+}
+
 /** Une malhas independentes num único arquivo (sólidos separados na mesa). */
 export function unirMalhas(...malhas: Malha[]): Malha {
   let nV = 0;

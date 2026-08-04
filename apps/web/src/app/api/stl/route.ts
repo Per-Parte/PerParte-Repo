@@ -12,7 +12,9 @@ import {
   grampearEstruturais,
   grampearExpoente,
   grampearLuminaria,
+  grampearPlaca,
   grampearSegmentos,
+  malhaPlaca,
   malhaRevolucao,
   perfilBase,
   perfilCorpo,
@@ -26,7 +28,7 @@ import {
   type TexturaRevolucao,
 } from "@per-parte/nucleo";
 
-const PARTES = ["base", "corpo", "difusor", "estrutural"] as const;
+const PARTES = ["base", "corpo", "difusor", "estrutural", "placa"] as const;
 type Parte = (typeof PARTES)[number];
 
 /** Acabamento "Liso" sobe para resolução de produção; facetas são design e ficam exatas. */
@@ -73,6 +75,19 @@ export async function POST(req: Request) {
   const lados = segmentos <= 16 ? segmentos : 0;
   const expoente = grampearExpoente(dados.expoente);
   const comTheta = lados > 0 || !!expoente;
+  // Refletor (PLACA): presença no request = composição luz + refletor.
+  const comPlaca = dados.placa != null;
+
+  if (parte === "placa") {
+    const malhaRefletor = malhaPlaca(grampearPlaca(dados.placa), 128);
+    const stlPlaca = gerarSTLBinario(malhaRefletor, "placa");
+    return new Response(new Blob([stlPlaca.buffer as ArrayBuffer]), {
+      headers: {
+        "Content-Type": "model/stl",
+        "Content-Disposition": `attachment; filename="per-parte-refletor.stl"`,
+      },
+    });
+  }
 
   if (parte === "estrutural") {
     const indice = Math.min(
@@ -108,7 +123,7 @@ export async function POST(req: Request) {
 
   let malha;
   if (parte === "base") {
-    if (luminaria.pontosDeLuz === 2) {
+    if (luminaria.pontosDeLuz === 2 || comPlaca) {
       // Base dupla: prato sem o anel central + uma pastilha de encaixe por
       // coluna, afundada 1 mm na face (os sólidos se unem no fatiamento).
       const meiaSep =

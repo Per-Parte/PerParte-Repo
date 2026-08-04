@@ -18,9 +18,11 @@ import {
   grampearCorpo,
   grampearDifusor,
   grampearLuminaria,
+  grampearPlaca,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
+  type ParametrosPlaca,
 } from "@per-parte/nucleo";
 
 export interface CriacaoV1 {
@@ -36,6 +38,8 @@ export interface CriacaoV1 {
   luzAcesa: boolean;
   pontosDeLuz: 1 | 2;
   separacaoMm: number;
+  /** Refletor (PLACA) na segunda coluna — null = sem refletor. */
+  placa: ParametrosPlaca | null;
   criar: {
     base: ParametrosBase;
     corpo: ParametrosCorpo;
@@ -79,6 +83,7 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
       iFaceta: indice(bruto.iFaceta, FACETAS.length),
       luzAcesa: bruto.luzAcesa !== false,
       ...grampearLuminaria(bruto),
+      placa: bruto.placa ? grampearPlaca(bruto.placa) : null,
       criar: {
         base: grampearBase(bruto.criar?.base ?? {}),
         corpo: grampearCorpo(bruto.criar?.corpo ?? {}),

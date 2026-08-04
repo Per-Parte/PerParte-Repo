@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  LIMITES_PLACA,
+  PLACA_PADRAO,
+  type ParametrosPlaca,
+} from "@per-parte/nucleo";
 
 export function Secao({
   titulo,
@@ -135,6 +140,8 @@ export function PontosDeLuzCtl({
   sepPasso,
   aoMudarPontos,
   aoMudarSep,
+  placa,
+  aoMudarPlaca,
 }: {
   pontosDeLuz: number;
   separacaoMm: number;
@@ -143,15 +150,22 @@ export function PontosDeLuzCtl({
   sepPasso: number;
   aoMudarPontos: (n: 1 | 2) => void;
   aoMudarSep: (v: number) => void;
+  /** Refletor (PLACA) na segunda coluna — null = sem refletor. */
+  placa: ParametrosPlaca | null;
+  aoMudarPlaca: (p: ParametrosPlaca | null) => void;
 }) {
+  const duo = pontosDeLuz === 2 || !!placa;
   return (
     <div>
       <Chips
-        nomes={["1 luz", "2 luzes"]}
-        selecionado={pontosDeLuz === 2 ? 1 : 0}
-        aoEscolher={(i) => aoMudarPontos(i === 1 ? 2 : 1)}
+        nomes={["1 luz", "2 luzes", "Luz + refletor"]}
+        selecionado={placa ? 2 : pontosDeLuz === 2 ? 1 : 0}
+        aoEscolher={(i) => {
+          aoMudarPontos(i === 1 ? 2 : 1);
+          aoMudarPlaca(i === 2 ? { ...PLACA_PADRAO } : null);
+        }}
       />
-      {pontosDeLuz === 2 && (
+      {duo && (
         <div className="mt-4">
           <SliderCtl
             rotulo="Separação das colunas"
@@ -161,7 +175,59 @@ export function PontosDeLuzCtl({
             max={sepMax}
             passo={sepPasso}
             aoMudar={aoMudarSep}
-            nota="o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
+            nota={
+              placa
+                ? "a luz na frente, o disco refletor atrás — o eclipse acende na parede"
+                : "o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
+            }
+          />
+        </div>
+      )}
+      {placa && (
+        <div className="mt-1">
+          <SliderCtl
+            rotulo="Tamanho do disco"
+            valorFmt={`Ø ${((placa.raioMm * 2) / 10).toFixed(0)} cm`}
+            valor={placa.raioMm}
+            min={LIMITES_PLACA.raioMm.min}
+            max={LIMITES_PLACA.raioMm.max}
+            passo={LIMITES_PLACA.raioMm.passo}
+            aoMudar={(v) => aoMudarPlaca({ ...placa, raioMm: v })}
+            motivoMax="Maior que isso o disco não cabe deitado na impressora (F1)."
+          />
+          <SliderCtl
+            rotulo="Inclinação"
+            valorFmt={`${placa.inclinacaoGraus}°`}
+            valor={placa.inclinacaoGraus}
+            min={LIMITES_PLACA.inclinacaoGraus.min}
+            max={LIMITES_PLACA.inclinacaoGraus.max}
+            passo={LIMITES_PLACA.inclinacaoGraus.passo}
+            aoMudar={(v) => aoMudarPlaca({ ...placa, inclinacaoGraus: v })}
+            nota="o disco pende para trás, como um eclipse"
+            motivoMax="Mais deitado que isso o peso do disco sai de cima da base."
+          />
+          <SliderCtl
+            rotulo="Concavidade"
+            valorFmt={
+              placa.concavidadeMm === 0
+                ? "plano"
+                : `${placa.concavidadeMm.toFixed(1).replace(".", ",")} mm`
+            }
+            valor={placa.concavidadeMm}
+            min={LIMITES_PLACA.concavidadeMm.min}
+            max={LIMITES_PLACA.concavidadeMm.max}
+            passo={LIMITES_PLACA.concavidadeMm.passo}
+            aoMudar={(v) => aoMudarPlaca({ ...placa, concavidadeMm: v })}
+            nota="prato raso voltado para a luz — concentra o brilho refletido"
+          />
+          <SliderCtl
+            rotulo="Altura do pescoço"
+            valorFmt={`${(placa.pescocoMm / 10).toFixed(1).replace(".", ",")} cm`}
+            valor={placa.pescocoMm}
+            min={LIMITES_PLACA.pescocoMm.min}
+            max={LIMITES_PLACA.pescocoMm.max}
+            passo={LIMITES_PLACA.pescocoMm.passo}
+            aoMudar={(v) => aoMudarPlaca({ ...placa, pescocoMm: v })}
           />
         </div>
       )}

@@ -17,6 +17,7 @@ import {
   TIPOS_CORTE_BORDA,
   type CurvaBase,
   type FamiliaTextura,
+  type ParametrosPlaca,
   type ResultadoEstabilidade,
 } from "@per-parte/nucleo";
 import { Chips, PontosDeLuzCtl, Secao, SliderCtl } from "./controles";
@@ -46,6 +47,8 @@ interface Props {
   separacaoMm: number;
   setPontosDeLuz: (n: 1 | 2) => void;
   setSeparacaoMm: (v: number) => void;
+  placa: ParametrosPlaca | null;
+  setPlaca: (p: ParametrosPlaca | null) => void;
   /** Quando presente, renderiza só a seção pedida (modo órbita). */
   apenasSecao?: string;
 }
@@ -62,6 +65,8 @@ export default function PainelCriar({
   separacaoMm,
   setPontosDeLuz,
   setSeparacaoMm,
+  placa,
+  setPlaca,
   apenasSecao,
 }: Props) {
   const vis = (id: string) => !apenasSecao || apenasSecao === id;
@@ -591,6 +596,8 @@ export default function PainelCriar({
           sepPasso={LIMITES_CRIAR.luminaria.separacaoMm.passo}
           aoMudarPontos={setPontosDeLuz}
           aoMudarSep={setSeparacaoMm}
+          placa={placa}
+          aoMudarPlaca={setPlaca}
         />
       </Secao>
       )}

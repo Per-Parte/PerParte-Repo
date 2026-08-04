@@ -11,6 +11,7 @@ import {
   facetasParaCorpo,
   facetasParaDifusor,
   facetasParaEstrutural,
+  malhaPlaca,
   malhaRevolucao,
   mascaraVazado,
   modulaPorTheta,
@@ -18,6 +19,7 @@ import {
   type CorteBorda,
   type EspinhaLateral,
   type FacetasRevolucao,
+  type ParametrosPlaca,
   type ParametrosVazado,
   type Ponto2D,
   type TexturaRevolucao,
@@ -178,6 +180,41 @@ function Parte({
   );
 }
 
+/**
+ * O refletor (PLACA): disco de revolução deitado + pescoço, malha vinda
+ * inteira do núcleo — a mesma que vira STL.
+ */
+function PartePlaca({
+  placa,
+  xMm,
+  yMm,
+  cor,
+}: {
+  placa: ParametrosPlaca;
+  xMm: number;
+  yMm: number;
+  cor: string;
+}) {
+  const geometria = useMemo(() => {
+    const m = malhaPlaca(placa, 96);
+    const pos = new Float32Array(m.posicoes.length);
+    for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+    g.computeVertexNormals();
+    return g;
+  }, [placa]);
+  useEffect(() => () => geometria.dispose(), [geometria]);
+  return (
+    <group position={[xMm / MM, yMm / MM, 0]}>
+      <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+        <meshStandardMaterial color={cor} roughness={0.55} />
+      </mesh>
+    </group>
+  );
+}
+
 export interface Cena3DProps {
   perfis: {
     base: Ponto2D[];
@@ -210,6 +247,8 @@ export interface Cena3DProps {
   expoente?: number;
   /** Corte da borda livre do difusor (oblíquo/dentes). */
   corteDifusor?: CorteBorda;
+  /** Refletor (PLACA) na segunda coluna — o gesto do eclipse. */
+  placa?: ParametrosPlaca | null;
 }
 
 export default function Cena3D({
@@ -225,6 +264,7 @@ export default function Cena3D({
   vazadoDifusor,
   expoente,
   corteDifusor,
+  placa,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
   // tudo que está acima dela.
@@ -239,7 +279,9 @@ export default function Cena3D({
   const dxTopoMm = espinhaCorpo
     ? deslocamentoEspinhaMm(alturasMm.corpo, espinhaCorpo)
     : 0;
-  const duo = pontosDeLuz === 2;
+  // Duas colunas: 2 luzes OU luz + refletor (a placa ocupa a segunda).
+  const comPlaca = !!placa;
+  const duo = pontosDeLuz === 2 || comPlaca;
   const meiaSepMm = duo ? separacaoMm / 2 : 0;
 
   const perfilPastilha = useMemo(
@@ -283,13 +325,17 @@ export default function Cena3D({
     [comTheta, lados, chaveEstruturais, expoente]
   );
 
-  // Posições X dos corpos e dos topos (difusor + lâmpada), em mm.
-  const colunas = duo
-    ? [
-        { xCorpo: -meiaSepMm, giro: Math.PI, xTopo: -meiaSepMm - dxTopoMm },
-        { xCorpo: meiaSepMm, giro: 0, xTopo: meiaSepMm + dxTopoMm },
-      ]
-    : [{ xCorpo: 0, giro: 0, xTopo: dxTopoMm }];
+  // Posições X das colunas DE LUZ (corpo + difusor + lâmpada), em mm.
+  // Com refletor, a coluna de luz fica na frente (+X) e a placa atrás (−X).
+  const colunas =
+    pontosDeLuz === 2
+      ? [
+          { xCorpo: -meiaSepMm, giro: Math.PI, xTopo: -meiaSepMm - dxTopoMm },
+          { xCorpo: meiaSepMm, giro: 0, xTopo: meiaSepMm + dxTopoMm },
+        ]
+      : comPlaca
+        ? [{ xCorpo: meiaSepMm, giro: 0, xTopo: meiaSepMm + dxTopoMm }]
+        : [{ xCorpo: 0, giro: 0, xTopo: dxTopoMm }];
 
   return (
     <Canvas camera={{ position: [3.4, 2.6, 4.4], fov: 38 }}>
@@ -322,16 +368,24 @@ export default function Cena3D({
       />
       {duo &&
         perfilPastilha &&
-        colunas.map((c, i) => (
+        [-meiaSepMm, meiaSepMm].map((x, i) => (
           <Parte
             key={`pastilha-${i}`}
             perfil={perfilPastilha}
             yMm={alturasMm.base - 1}
-            xMm={c.xCorpo}
+            xMm={x}
             cor={coresHex.base}
             segmentos={40}
           />
         ))}
+      {comPlaca && placa && (
+        <PartePlaca
+          placa={placa}
+          xMm={-meiaSepMm}
+          yMm={alturasMm.base}
+          cor={coresHex.base}
+        />
+      )}
       {(perfis.estruturais ?? []).map((perfil, k) => {
         // Altura acumulada das estruturais abaixo desta.
         const yK =

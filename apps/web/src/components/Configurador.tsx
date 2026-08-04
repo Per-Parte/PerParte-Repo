@@ -17,10 +17,12 @@ import {
   perfilCorpo,
   perfilDifusor,
   perfilEstrutural,
+  perfisPlacaParaPeso,
   separacaoMaximaMm,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
+  type ParametrosPlaca,
 } from "@per-parte/nucleo";
 import Cena3D from "./Cena3D";
 import PainelMontar from "./PainelMontar";
@@ -82,6 +84,8 @@ export default function Configurador() {
   const [luzAcesa, setLuzAcesa] = useState(true);
   const [pontosDeLuz, setPontosDeLuz] = useState<1 | 2>(1);
   const [separacaoMm, setSeparacaoMm] = useState(100);
+  /** Refletor (PLACA) na segunda coluna — null = sem refletor. */
+  const [placa, setPlaca] = useState<ParametrosPlaca | null>(null);
   const [remixDe, setRemixDe] = useState("");
   const [secaoAtiva, setSecaoAtiva] = useState("corpo");
   const [criar, setCriar] = useState<EstadoCriar>({
@@ -109,6 +113,7 @@ export default function Configurador() {
     setLuzAcesa(c.luzAcesa);
     setPontosDeLuz(c.pontosDeLuz);
     setSeparacaoMm(c.separacaoMm);
+    setPlaca(c.placa);
     setCriar(c.criar);
     setRemixDe(
       c.remixDe || `${CORPOS[c.iCorpo].nome} + ${DIFUSORES[c.iDifusor].nome}`
@@ -131,6 +136,7 @@ export default function Configurador() {
         luzAcesa,
         pontosDeLuz,
         separacaoMm,
+        placa,
         criar,
         remixDe,
       });
@@ -148,6 +154,7 @@ export default function Configurador() {
     luzAcesa,
     pontosDeLuz,
     separacaoMm,
+    placa,
     criar,
     remixDe,
   ]);
@@ -219,18 +226,22 @@ export default function Configurador() {
     [corpo, alturaEstruturaisMm]
   );
 
+  // Com refletor a base é dupla: a estabilidade roda no modo de duas
+  // colunas (conservador — a placa é mais leve que uma coluna de luz;
+  // o desvio para trás da placa inclinada ainda não entra no CG ⚑).
   const estab = useMemo(
-    () => estabilidade(base, corpoParaFisica, difusor, pontosDeLuz),
-    [base, corpoParaFisica, difusor, pontosDeLuz]
+    () =>
+      estabilidade(base, corpoParaFisica, difusor, placa ? 2 : pontosDeLuz),
+    [base, corpoParaFisica, difusor, pontosDeLuz, placa]
   );
   const perfis = useMemo(
     () => ({
-      base: perfilBase(base, estab.escala, pontosDeLuz === 1),
+      base: perfilBase(base, estab.escala, pontosDeLuz === 1 && !placa),
       corpo: perfilCorpo(corpo),
       difusor: perfilDifusor(difusor),
       estruturais: pecasEstruturais.map((p) => perfilEstrutural(p)),
     }),
-    [base, corpo, difusor, estab.escala, pontosDeLuz, pecasEstruturais]
+    [base, corpo, difusor, estab.escala, pontosDeLuz, placa, pecasEstruturais]
   );
   const { gramas, precoBRL } = useMemo(
     () =>
@@ -239,9 +250,10 @@ export default function Configurador() {
         perfis.corpo,
         perfis.difusor,
         pontosDeLuz,
-        perfis.estruturais
+        perfis.estruturais,
+        placa ? perfisPlacaParaPeso(placa) : []
       ),
-    [perfis, pontosDeLuz]
+    [perfis, pontosDeLuz, placa]
   );
   // E3: corpo debruçado além do que a base alargada segura pede um inserto
   // de peso na base — item de produção, o STL não muda.
@@ -274,7 +286,10 @@ export default function Configurador() {
   );
 
   const [gerandoSTL, setGerandoSTL] = useState<string | null>(null);
-  async function baixarSTL(parte: ParteAlvo | "estrutural", indice = 0) {
+  async function baixarSTL(
+    parte: ParteAlvo | "estrutural" | "placa",
+    indice = 0
+  ) {
     const chave = parte === "estrutural" ? `estrutural-${indice}` : parte;
     setGerandoSTL(chave);
     try {
@@ -292,6 +307,7 @@ export default function Configurador() {
           expoente,
           pontosDeLuz,
           separacaoMm,
+          placa,
         }),
       });
       if (!resp.ok) return;
@@ -337,6 +353,7 @@ export default function Configurador() {
           separacaoMm={separacaoEfetivaMm}
           vazadoDifusor={difusor.vazado}
           corteDifusor={difusor.corte}
+          placa={placa}
         />
       </div>
 
@@ -423,6 +440,8 @@ export default function Configurador() {
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
               setSeparacaoMm={setSeparacaoMm}
+              placa={placa}
+              setPlaca={setPlaca}
             />
           ) : (
             <PainelCriar
@@ -437,6 +456,8 @@ export default function Configurador() {
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
               setSeparacaoMm={setSeparacaoMm}
+              placa={placa}
+              setPlaca={setPlaca}
             />
           )}
         </div>
@@ -497,6 +518,15 @@ export default function Configurador() {
                   : p.nome.toLowerCase()}
               </button>
             ))}
+            {placa && (
+              <button
+                onClick={() => baixarSTL("placa")}
+                disabled={gerandoSTL !== null}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+              >
+                {gerandoSTL === "placa" ? "gerando…" : "refletor"}
+              </button>
+            )}
             <span className="ml-1.5">kit F5:</span>
             {[0.2, 0.3, 0.4].map((f) => (
               <a
@@ -594,6 +624,8 @@ export default function Configurador() {
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
               setSeparacaoMm={setSeparacaoMm}
+              placa={placa}
+              setPlaca={setPlaca}
               apenasSecao={secaoAtiva}
             />
           ) : (
@@ -609,6 +641,8 @@ export default function Configurador() {
               separacaoMm={separacaoMm}
               setPontosDeLuz={setPontosDeLuz}
               setSeparacaoMm={setSeparacaoMm}
+              placa={placa}
+              setPlaca={setPlaca}
               apenasSecao={secaoAtiva}
             />
           )}
@@ -671,6 +705,15 @@ export default function Configurador() {
                   : p.nome.toLowerCase()}
               </button>
             ))}
+            {placa && (
+              <button
+                onClick={() => baixarSTL("placa")}
+                disabled={gerandoSTL !== null}
+                className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[#A69D8D] transition-colors hover:border-white/25 hover:text-[#E7E0D2] disabled:opacity-40"
+              >
+                {gerandoSTL === "placa" ? "gerando…" : "refletor"}
+              </button>
+            )}
             <span className="ml-1.5">kit F5:</span>
             {[0.2, 0.3, 0.4].map((f) => (
               <a
