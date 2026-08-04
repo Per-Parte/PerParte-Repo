@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 export function Secao({
   titulo,
   children,
@@ -54,6 +56,8 @@ export function SliderCtl({
   passo,
   aoMudar,
   nota,
+  motivoMin,
+  motivoMax,
 }: {
   rotulo: string;
   valorFmt: string;
@@ -63,8 +67,29 @@ export function SliderCtl({
   passo: number;
   aoMudar: (v: number) => void;
   nota?: string;
+  /** Por que o controle não desce mais — aparece quando o dedo encosta no piso. */
+  motivoMin?: string;
+  /** Por que o controle não sobe mais — aparece quando o dedo encosta no teto. */
+  motivoMax?: string;
 }) {
   const pct = max > min ? ((valor - min) / (max - min)) * 100 : 0;
+
+  // O motivo do limite: nada de mensagem de erro — uma explicação humana,
+  // que aparece quando o arraste encosta no fim do curso e some sozinha.
+  const [motivo, setMotivo] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+  function explicar(v: number) {
+    const texto =
+      v >= max && motivoMax ? motivoMax : v <= min && motivoMin ? motivoMin : null;
+    if (!texto) return;
+    setMotivo(texto);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setMotivo(null), 4000);
+  }
+
   return (
     <div className="mb-4 last:mb-0">
       <div className="mb-1.5 flex items-baseline justify-between">
@@ -81,9 +106,19 @@ export function SliderCtl({
         max={max}
         step={passo}
         value={valor}
-        onChange={(e) => aoMudar(Number(e.target.value))}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          aoMudar(v);
+          explicar(v);
+        }}
       />
-      {nota && (
+      {motivo && (
+        <div className="mt-1.5 flex items-start gap-1.5 rounded-lg border border-[#D3AC6C]/30 bg-[#D3AC6C]/[0.08] px-2.5 py-1.5 text-[10.5px] leading-relaxed text-[#E8CE9E]">
+          <span className="font-bold text-[#D3AC6C]">!</span>
+          <span>{motivo}</span>
+        </div>
+      )}
+      {nota && !motivo && (
         <div className="mt-1.5 text-[10px] leading-relaxed text-[#7d766a]">
           {nota}
         </div>

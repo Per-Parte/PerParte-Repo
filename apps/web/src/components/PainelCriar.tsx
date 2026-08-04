@@ -125,6 +125,8 @@ export default function PainelCriar({
             passo={LB.raioMm.passo}
             aoMudar={(v) => mudarBase("raioMm", v)}
             nota="se a criação ficar pesada no topo, a base alarga sozinha (E2)"
+            motivoMax="Mais larga não cabe no prato da impressora."
+            motivoMin="Menor que isso a base não segura o conjunto em pé — e o encaixe precisa caber nela."
           />
         </div>
       </Secao>
@@ -141,6 +143,7 @@ export default function PainelCriar({
           passo={LC.alturaMm.passo}
           aoMudar={(v) => mudarCorpo("alturaMm", v)}
           nota={`regra: ${LC.alturaMm.min / 10}–${LC.alturaMm.max / 10} cm — acima disso a peça não cabe na impressora`}
+          motivoMax={`A impressora vai até ${LC.alturaMm.max / 10} cm por peça. Quer mais alta? No modo Montar, some hastes na seção Empilhar — é assim que a luminária passa de meio metro.`}
         />
         {!modoLivre && (
         <>
@@ -153,6 +156,8 @@ export default function PainelCriar({
           passo={LC.volumeBojoMm.passo}
           aoMudar={(v) => mudarCorpo("volumeBojoMm", v)}
           nota="regra: parede mínima e distância do miolo elétrico preservadas"
+          motivoMax="Mais volume inclinaria a parede além do que imprime sem suporte — e suporte estraga o acabamento."
+          motivoMin="Afinar mais encostaria no miolo elétrico, que precisa de folga livre por segurança."
         />
         <SliderCtl
           rotulo="Posição do bojo"
@@ -181,6 +186,7 @@ export default function PainelCriar({
           passo={LC.amplitudeOndaMm.passo}
           aoMudar={(v) => mudarCorpo("amplitudeOndaMm", v)}
           nota={`regra: até ${LC.amplitudeOndaMm.max} mm — mais que isso vira balanço > ${REGRAS.F.balancoMaximoGraus}° e não imprime limpo`}
+          motivoMax={`Onda mais profunda inclinaria a parede além de ${REGRAS.F.balancoMaximoGraus}° e a peça pediria suporte, que estraga o acabamento.`}
         />
         </>
         )}
@@ -242,6 +248,8 @@ export default function PainelCriar({
           passo={LC.deslocamentoMm.passo}
           aoMudar={(v) => mudarCorpo("deslocamentoMm", v)}
           nota={`o difusor vai junto para o lado; limite de ±${cm(dMax)} cm vem de F4 e cresce com a altura`}
+          motivoMax="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
+          motivoMin="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
         />
         <SliderCtl
           rotulo="Altura da dobra"
@@ -305,6 +313,7 @@ export default function PainelCriar({
             max={LC.repeticaoTextura.max}
             passo={LC.repeticaoTextura.passo}
             aoMudar={(v) => mudarCorpo("repeticaoTextura", v)}
+            motivoMax="Mais fino que isso a impressora não desenha limpo — o traço dela tem largura fixa. E repetir mais também inclinaria a parede."
           />
         )}
         <SliderCtl
@@ -320,6 +329,7 @@ export default function PainelCriar({
               ? "a textura só esculpe para dentro; se ela variar com a altura, paga o próprio balanço e o perfil aplaina sozinho (F4)"
               : "gomos esculpem para dentro — sulcos verticais imprimem limpos"
           }
+          motivoMax="Mais fundo furaria a parede — o vale da textura precisa deixar material — ou pediria suporte."
         />
         <SliderCtl
           rotulo="Torção"
@@ -370,6 +380,8 @@ export default function PainelCriar({
             max={LD.raioMm.max}
             passo={LD.raioMm.passo}
             aoMudar={(v) => mudarDifusor("raioMm", v)}
+            motivoMax="Mais aberto não cabe no prato da impressora."
+            motivoMin="Mais fechado que isso, o difusor encostaria na lâmpada — ela precisa de folga livre por segurança."
           />
           <SliderCtl
             rotulo="Plissê (gomos)"
