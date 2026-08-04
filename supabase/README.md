@@ -22,15 +22,16 @@ As migrações vivem em `supabase/migrations/`, numeradas. Para aplicar:
 
 Aplicadas até agora:
 
-- [ ] `0001_criacoes.sql` — tabela de criações salvas + políticas RLS de dono
+- [x] `0001_criacoes.sql` — tabela de criações salvas + políticas RLS de dono ✓ 03/08/2026
 
 ## Configuração do painel (uma vez)
 
-- [ ] **Authentication → URL Configuration**: Site URL = `https://per-parte-web.vercel.app`;
-      adicionar `http://localhost:3000/**` em Redirect URLs (para testar local)
-- [ ] **Vercel → Settings → Environment Variables** (Production/Preview/Development):
-      `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-      (mesmos valores do `.env.local`; ver `.env.example`)
+- [x] **Authentication → URL Configuration**: Site URL = `https://per-parte-web.vercel.app`;
+      `http://localhost:3000/**` em Redirect URLs ✓ 03/08/2026
+- [x] **Vercel → Settings → Environment Variables** (Production/Preview/Development):
+      `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ✓ 03/08/2026
+      — atenção: mudou variável → **Redeploy sem "Use existing Build Cache"**,
+      senão o valor não entra no build
 - Local: copiar `apps/web/.env.example` para `apps/web/.env.local` e preencher
 
 ## Higiene de chaves
