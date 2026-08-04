@@ -409,8 +409,15 @@ export function perfilEstrutural(
  * meio da face mergulhe além do piso físico (miolo elétrico, no corpo).
  */
 export interface FacetasRevolucao {
-  /** Número de faces planas (4 = caixa/pirâmide). */
+  /** Número de faces planas (4 = caixa/pirâmide; 0 quando superelipse). */
   lados: number;
+  /**
+   * Expoente da superelipse (squircle) — quando presente, substitui a
+   * equação do polígono: mesma máquina r(θ), outra função. n = 4 é o
+   * squircle clássico; a curva é inscrita como o polígono (as diagonais
+   * tocam o raio do perfil, as faces mergulham para dentro).
+   */
+  expoente?: number;
   /** Início da zona facetada, em mm (abaixo disso: redondo). */
   yMinMm: number;
   /** Fim da zona facetada, em mm (acima disso: redondo). */
@@ -421,14 +428,21 @@ export interface FacetasRevolucao {
   pisoMm?: number;
 }
 
+/** A parte tem modulação lateral por θ (polígono OU superelipse)? */
+export function modulaPorTheta(f?: FacetasRevolucao): boolean {
+  return !!f && (f.lados >= 3 || (f.expoente ?? 0) > 2);
+}
+
 /** Janela de facetas do corpo: poupa a fêmea de baixo e o assento do macho. */
 export function facetasParaCorpo(
   lados: number,
-  alturaMm: number
+  alturaMm: number,
+  expoente?: number
 ): FacetasRevolucao {
   const anelBase = ENCAIXES.baseCorpo.anel;
   return {
     lados,
+    ...(expoente ? { expoente } : {}),
     yMinMm: anelBase.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
     yMaxMm: alturaMm - ENCAIXES.corpoDifusor.anel.alturaMm - 2,
     transicaoMm: 8,
@@ -466,11 +480,13 @@ const RAIO_PISO_JUNTA_MM =
  */
 function facetasComPescocoRedondo(
   lados: number,
-  alturaTotalMm: number
+  alturaTotalMm: number,
+  expoente?: number
 ): FacetasRevolucao {
   const transicaoMm = 8;
   return {
     lados,
+    ...(expoente ? { expoente } : {}),
     yMinMm: -transicaoMm,
     yMaxMm: alturaTotalMm + transicaoMm,
     transicaoMm,
@@ -484,11 +500,13 @@ function facetasComPescocoRedondo(
  */
 export function facetasParaBase(
   lados: number,
-  alturaMm: number
+  alturaMm: number,
+  expoente?: number
 ): FacetasRevolucao {
   return facetasComPescocoRedondo(
     lados,
-    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm
+    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm,
+    expoente
   );
 }
 
@@ -499,38 +517,53 @@ export function facetasParaBase(
  */
 export function facetasParaEstrutural(
   lados: number,
-  alturaMm: number
+  alturaMm: number,
+  expoente?: number
 ): FacetasRevolucao {
   return facetasComPescocoRedondo(
     lados,
-    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm
+    alturaMm + ENCAIXES.baseCorpo.anel.alturaMm,
+    expoente
   );
+}
+
+/**
+ * Quanto o MEIO DA FACE mergulha em relação ao raio do perfil (fator ≤ 1):
+ * cos(π/N) no polígono; 2^-((n-2)/(2n)) na superelipse inscrita.
+ */
+export function fatorMeioDaFace(lados = 0, expoente?: number): number {
+  if (expoente && expoente > 2) {
+    return Math.pow(2, -(expoente - 2) / (2 * expoente));
+  }
+  return lados >= 3 ? Math.cos(Math.PI / lados) : 1;
 }
 
 /**
  * Separação máxima entre as duas colunas da base dupla, em mm. A pastilha de
  * encaixe (mais margem) precisa caber INTEIRA sobre a face da base — e numa
- * base facetada o raio útil, no meio da face, cai para r·cos(π/N). Limite de
- * controle, não erro: o slider encolhe junto com o número de faces.
+ * base facetada o raio útil, no meio da face, cai para r·fatorMeioDaFace.
+ * Limite de controle, não erro: o slider encolhe junto com o acabamento.
  */
 export function separacaoMaximaMm(
   raioBaseMm: number,
   escala = 1,
-  lados = 0
+  lados = 0,
+  expoente?: number
 ): number {
-  const raioUtil =
-    (lados >= 3 ? Math.cos(Math.PI / lados) : 1) * raioBaseMm * escala;
+  const raioUtil = fatorMeioDaFace(lados, expoente) * raioBaseMm * escala;
   return Math.max(70, 2 * (raioUtil - 34));
 }
 
 /** Janela de facetas do difusor: poupa a fêmea; o topo é livre até o ápice. */
 export function facetasParaDifusor(
   lados: number,
-  alturaMm: number
+  alturaMm: number,
+  expoente?: number
 ): FacetasRevolucao {
   const anel = ENCAIXES.corpoDifusor.anel;
   return {
     lados,
+    ...(expoente ? { expoente } : {}),
     yMinMm: anel.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
     yMaxMm: alturaMm + 8,
     transicaoMm: 8,

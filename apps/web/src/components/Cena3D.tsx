@@ -13,6 +13,7 @@ import {
   facetasParaEstrutural,
   malhaRevolucao,
   mascaraVazado,
+  modulaPorTheta,
   perfilPastilhaMacho,
   type EspinhaLateral,
   type FacetasRevolucao,
@@ -60,9 +61,9 @@ function Parte({
   facetas,
 }: ParteProps) {
   const geometria = useMemo(() => {
-    // Facetado é um estilo próprio e desliga a textura (regra existente);
-    // a malha fica fina para as faces saírem planas e o encaixe redondo.
-    const comFacetas = !!facetas && facetas.lados >= 3;
+    // Facetado/squircle é um estilo próprio e desliga a textura (regra
+    // existente); a malha fica fina para o encaixe sair redondo.
+    const comFacetas = modulaPorTheta(facetas);
     const comTextura =
       !comFacetas &&
       !!textura &&
@@ -138,6 +139,7 @@ function Parte({
 
   useEffect(() => () => mapaVazado?.dispose(), [mapaVazado]);
 
+  // Sombreamento chapado só nas faces planas — a superelipse é suave.
   const facetado = segmentos <= 16 || (!!facetas && facetas.lados >= 3);
 
   return (
@@ -199,6 +201,8 @@ export interface Cena3DProps {
   separacaoMm?: number;
   /** Vazado do difusor (preview). */
   vazadoDifusor?: ParametrosVazado;
+  /** Superelipse (squircle): expoente do acabamento, quando escolhido. */
+  expoente?: number;
 }
 
 export default function Cena3D({
@@ -212,6 +216,7 @@ export default function Cena3D({
   pontosDeLuz = 1,
   separacaoMm = 0,
   vazadoDifusor,
+  expoente,
 }: Cena3DProps) {
   // A pilha de estruturais vive entre a base e o corpo — soma altura a
   // tudo que está acima dela.
@@ -234,32 +239,40 @@ export default function Cena3D({
     [duo]
   );
 
-  // Acabamento facetado (≤16 segmentos): a lateral vira prisma de N faces
-  // com os encaixes redondos — a janela vem do núcleo. A base e a pilha
-  // facetam JUNTO (fase 2 do EXT): "faceta o corpo mas não a base" é
-  // meio-estado que o cliente lê como defeito.
+  // Acabamento por θ (facetas ≤16 segmentos OU squircle): a lateral vira
+  // prisma/superelipse com os encaixes redondos — a janela vem do núcleo.
+  // A base e a pilha modulam JUNTO (fase 2 do EXT): "modula o corpo mas
+  // não a base" é meio-estado que o cliente lê como defeito.
   const lados = segmentos <= 16 ? segmentos : 0;
+  const comTheta = lados > 0 || (expoente ?? 0) > 2;
   const facetasCorpo = useMemo(
-    () => (lados ? facetasParaCorpo(lados, alturasMm.corpo) : undefined),
-    [lados, alturasMm.corpo]
+    () =>
+      comTheta
+        ? facetasParaCorpo(lados, alturasMm.corpo, expoente)
+        : undefined,
+    [comTheta, lados, alturasMm.corpo, expoente]
   );
   const facetasDifusor = useMemo(
-    () => (lados ? facetasParaDifusor(lados, alturasMm.difusor) : undefined),
-    [lados, alturasMm.difusor]
+    () =>
+      comTheta
+        ? facetasParaDifusor(lados, alturasMm.difusor, expoente)
+        : undefined,
+    [comTheta, lados, alturasMm.difusor, expoente]
   );
   const facetasBase = useMemo(
-    () => (lados ? facetasParaBase(lados, alturasMm.base) : undefined),
-    [lados, alturasMm.base]
+    () =>
+      comTheta ? facetasParaBase(lados, alturasMm.base, expoente) : undefined,
+    [comTheta, lados, alturasMm.base, expoente]
   );
   const chaveEstruturais = altEstruturais.join(",");
   const facetasEstruturais = useMemo(
     () =>
-      lados && chaveEstruturais
+      comTheta && chaveEstruturais
         ? chaveEstruturais
             .split(",")
-            .map((h) => facetasParaEstrutural(lados, Number(h)))
+            .map((h) => facetasParaEstrutural(lados, Number(h), expoente))
         : undefined,
-    [lados, chaveEstruturais]
+    [comTheta, lados, chaveEstruturais, expoente]
   );
 
   // Posições X dos corpos e dos topos (difusor + lâmpada), em mm.

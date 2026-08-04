@@ -298,6 +298,58 @@ describe("EXT — facetas com junta redonda", () => {
     }
   });
 
+  it("superelipse: mesma máquina r(θ) — encaixes redondos, lateral squircle", () => {
+    const f = facetasParaCorpo(0, CORPO.alturaMm, 4);
+    const m = malhaRevolucao(perfilCorpo(CORPO), 192, undefined, undefined, f);
+    const aneis = aneisDa(m, 192);
+    // Mergulho esperado no meio da face: r·(1 − 2^-((n-2)/2n)) ≈ 0,159·r.
+    const mergulho = 1 - Math.pow(2, -(4 - 2) / (2 * 4));
+    let viuSquircle = false;
+    for (const a of aneis) {
+      if (a.y <= f.yMinMm || a.y >= f.yMaxMm) {
+        expect(a.rMax - a.rMin, `y=${a.y.toFixed(1)}`).toBeLessThan(1e-3);
+      } else if (
+        a.y > f.yMinMm + (f.transicaoMm ?? 8) &&
+        a.y < f.yMaxMm - (f.transicaoMm ?? 8)
+      ) {
+        const esperado = a.rMax * mergulho;
+        if (a.rMax - a.rMin > esperado * 0.8) viuSquircle = true;
+        // Piso do miolo continua valendo dentro da janela.
+        expect(a.rMin).toBeGreaterThanOrEqual(RAIO_LIVRE_MIOLO_MM - 1e-4);
+      }
+    }
+    expect(viuSquircle).toBe(true);
+  });
+
+  it("superelipse nunca sai do envelope e o sólido continua estanque", () => {
+    const perfil = perfilCorpo(CORPO);
+    const liso = malhaRevolucao(perfil, 96);
+    const squircle = malhaRevolucao(
+      perfil,
+      96,
+      undefined,
+      undefined,
+      facetasParaCorpo(0, CORPO.alturaMm, 4)
+    );
+    const rMaxLiso = Math.max(...aneisDa(liso, 96).map((a) => a.rMax));
+    const rMaxSquircle = Math.max(...aneisDa(squircle, 96).map((a) => a.rMax));
+    expect(rMaxSquircle).toBeLessThanOrEqual(rMaxLiso + 1e-4);
+    const r = verificarEstanque(squircle);
+    expect(r.ok, r.problema ?? "").toBe(true);
+    expect(volumeAssinadoMm3(squircle)).toBeGreaterThan(0);
+
+    // Base squircle: junta redonda pelo piso, como no polígono.
+    const mb = malhaRevolucao(
+      perfilBase(BASE),
+      96,
+      undefined,
+      undefined,
+      facetasParaBase(0, BASE.alturaMm, 4)
+    );
+    const rb = verificarEstanque(mb);
+    expect(rb.ok, rb.problema ?? "").toBe(true);
+  });
+
   it("sem facetas, a malha sai idêntica à de antes", () => {
     const perfil = perfilCorpo(CORPO);
     const a = malhaRevolucao(perfil, 128);

@@ -10,6 +10,7 @@ import {
   grampearCorpo,
   grampearDifusor,
   grampearEstruturais,
+  grampearExpoente,
   grampearLuminaria,
   grampearSegmentos,
   malhaRevolucao,
@@ -65,10 +66,13 @@ export async function POST(req: Request) {
     luminaria.pontosDeLuz
   );
 
-  // Acabamento facetado (≤16): vale para a LUMINÁRIA inteira — base e pilha
-  // facetam junto com corpo e difusor (fase 2 do EXT). 192 é múltiplo de
-  // 4/6/8/12/16, então as arestas caem exatamente nos vértices do polígono.
+  // Acabamento por θ (facetas ≤16 OU squircle): vale para a LUMINÁRIA
+  // inteira — base e pilha modulam junto com corpo e difusor (fase 2 do
+  // EXT). 192 é múltiplo de 4/6/8/12/16, então as arestas caem exatamente
+  // nos vértices do polígono; a superelipse é suave e só pede malha fina.
   const lados = segmentos <= 16 ? segmentos : 0;
+  const expoente = grampearExpoente(dados.expoente);
+  const comTheta = lados > 0 || !!expoente;
 
   if (parte === "estrutural") {
     const indice = Math.min(
@@ -83,11 +87,11 @@ export async function POST(req: Request) {
     }
     const malhaEstrutural = malhaRevolucao(
       perfilEstrutural(estruturais[indice]),
-      lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+      comTheta ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
       undefined,
       undefined,
-      lados
-        ? facetasParaEstrutural(lados, estruturais[indice].alturaMm)
+      comTheta
+        ? facetasParaEstrutural(lados, estruturais[indice].alturaMm, expoente)
         : undefined
     );
     const stlEstrutural = gerarSTLBinario(
@@ -110,15 +114,15 @@ export async function POST(req: Request) {
       const meiaSep =
         Math.min(
           luminaria.separacaoMm,
-          separacaoMaximaMm(base.raioMm, est.escala, lados)
+          separacaoMaximaMm(base.raioMm, est.escala, lados, expoente)
         ) / 2;
-      // O prato faceta; as pastilhas são encaixe puro e ficam sempre redondas.
+      // O prato modula; as pastilhas são encaixe puro e ficam sempre redondas.
       const prato = malhaRevolucao(
         perfilBase(base, est.escala, false),
-        lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+        comTheta ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
         undefined,
         undefined,
-        lados ? facetasParaBase(lados, base.alturaMm) : undefined
+        comTheta ? facetasParaBase(lados, base.alturaMm, expoente) : undefined
       );
       const pastilha = malhaRevolucao(
         perfilPastilhaMacho(ENCAIXES.baseCorpo.anel),
@@ -132,10 +136,10 @@ export async function POST(req: Request) {
     } else {
       malha = malhaRevolucao(
         perfilBase(base, est.escala),
-        lados ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
+        comTheta ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
         undefined,
         undefined,
-        lados ? facetasParaBase(lados, base.alturaMm) : undefined
+        comTheta ? facetasParaBase(lados, base.alturaMm, expoente) : undefined
       );
     }
   } else {
@@ -182,14 +186,14 @@ export async function POST(req: Request) {
         (!!textura.familia &&
           textura.familia !== "gomos" &&
           (textura.repeticao ?? 0) > 0));
-    // Facetado: a lateral vira prisma de N faces com encaixes REDONDOS —
-    // o ajuste F5 não depende do número de faces.
-    const facetas = lados
+    // Modulado por θ: a lateral vira prisma/superelipse com encaixes
+    // REDONDOS — o ajuste F5 não depende do acabamento.
+    const facetas = comTheta
       ? parte === "corpo"
-        ? facetasParaCorpo(lados, corpo.alturaMm)
-        : facetasParaDifusor(lados, difusor.alturaMm)
+        ? facetasParaCorpo(lados, corpo.alturaMm, expoente)
+        : facetasParaDifusor(lados, difusor.alturaMm, expoente)
       : undefined;
-    const segmentosParte = lados
+    const segmentosParte = comTheta
       ? SEGMENTOS_PRODUCAO_GOMOS
       : comTextura
         ? SEGMENTOS_PRODUCAO_GOMOS
@@ -197,7 +201,7 @@ export async function POST(req: Request) {
     malha = malhaRevolucao(
       perfil,
       segmentosParte,
-      lados ? undefined : textura,
+      comTheta ? undefined : textura,
       espinha,
       facetas
     );

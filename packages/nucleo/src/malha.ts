@@ -9,6 +9,7 @@
 
 import {
   deslocamentoEspinhaMm,
+  modulaPorTheta,
   type EspinhaLateral,
   type FacetasRevolucao,
   type Ponto2D,
@@ -114,19 +115,39 @@ export function malhaRevolucao(
             (valorTextura(familia, u, t, repeticao) - 1);
         }
       }
-      // Facetas: modula o raio pela equação do polígono regular (vértices
-      // no raio do perfil, faces para dentro), só na janela da lateral —
-      // as zonas de encaixe ficam redondas. Exige `segmentos` múltiplo de
-      // `lados` para as arestas caírem exatamente nos vértices.
-      if (facetas && facetas.lados >= 3) {
-        const wf = pesoFacetas(perfil[j].y, facetas);
+      // Modulação por θ: o raio vira função do ângulo, só na janela da
+      // lateral — as zonas de encaixe ficam redondas. Duas funções no mesmo
+      // slot: o polígono regular (vértices no raio do perfil, faces para
+      // dentro; exige `segmentos` múltiplo de `lados` para as arestas
+      // caírem nos vértices) e a superelipse inscrita (squircle — suave,
+      // sem exigência de alinhamento). Ambas ≤ r e 1-Lipschitz em r: a
+      // silhueta continua o envelope e o balanço nunca piora.
+      if (modulaPorTheta(facetas)) {
+        const f = facetas!;
+        const wf = pesoFacetas(perfil[j].y, f);
         if (wf > 0) {
-          const setor = Math.PI / facetas.lados;
-          const dth = ((th % (2 * setor)) + 2 * setor) % (2 * setor) - setor;
-          const rPoly = (r * Math.cos(setor)) / Math.cos(dth);
-          let rf = r + (rPoly - r) * wf;
-          if (facetas.pisoMm != null) {
-            rf = Math.max(rf, Math.min(r, facetas.pisoMm));
+          let rMod: number;
+          if (f.expoente && f.expoente > 2) {
+            const nExp = f.expoente;
+            const co = Math.abs(Math.cos(th));
+            const se = Math.abs(Math.sin(th));
+            // Raio da superelipse |x|ⁿ+|y|ⁿ=rⁿ, normalizado para inscrever
+            // (a diagonal toca r; o meio da face mergulha 2^-((n-2)/2n)).
+            const bruto = Math.pow(
+              Math.pow(co, nExp) + Math.pow(se, nExp),
+              -1 / nExp
+            );
+            const norma = Math.pow(2, (nExp - 2) / (2 * nExp));
+            rMod = (r * bruto) / norma;
+          } else {
+            const setor = Math.PI / f.lados;
+            const dth =
+              ((th % (2 * setor)) + 2 * setor) % (2 * setor) - setor;
+            rMod = (r * Math.cos(setor)) / Math.cos(dth);
+          }
+          let rf = r + (rMod - r) * wf;
+          if (f.pisoMm != null) {
+            rf = Math.max(rf, Math.min(r, f.pisoMm));
           }
           r = rf;
         }

@@ -105,6 +105,8 @@ export const DIFUSORES: DifusorOficial[] = [
 export interface Faceta {
   nome: string;
   segmentos: number;
+  /** Superelipse (squircle): expoente da curva; a malha fica fina. */
+  expoente?: number;
 }
 
 export const FACETAS: Faceta[] = [
@@ -113,8 +115,9 @@ export const FACETAS: Faceta[] = [
   { nome: "8 facetas", segmentos: 8 },
   { nome: "12 facetas", segmentos: 12 },
   { nome: "16 facetas", segmentos: 16 },
-  // No fim para não mudar o significado dos links ?c= antigos (iFaceta).
+  // Novos no fim para não mudar o significado dos links ?c= antigos (iFaceta).
   { nome: "4 facetas", segmentos: 4 },
+  { nome: "Squircle", segmentos: 40, expoente: 4 },
 ];
 
 /**

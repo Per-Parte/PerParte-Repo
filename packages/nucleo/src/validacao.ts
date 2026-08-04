@@ -165,3 +165,14 @@ export function grampearSegmentos(s: unknown): number {
   const n = Math.round(numero(s, 40));
   return SEGMENTOS_VALIDOS.includes(n) ? n : 40;
 }
+
+/**
+ * Expoente da superelipse vindo de fora: ausente/inválido = sem squircle;
+ * presente, fica na faixa em que a curva é squircle de verdade (n > 2 é
+ * onde ela deixa de ser círculo; acima de 8 é visualmente um quadrado).
+ */
+export function grampearExpoente(v: unknown): number | undefined {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 2) return undefined;
+  return Math.min(8, Math.max(3, n));
+}

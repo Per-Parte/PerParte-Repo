@@ -259,15 +259,17 @@ export default function Configurador() {
     [corpo]
   );
   const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
+  const expoente = modo === "montar" ? undefined : FACETAS[iFaceta].expoente;
 
   // As colunas precisam caber sobre a base (pastilha de encaixe inteira) —
-  // e numa base facetada o raio útil cai para o do meio da face.
+  // e numa base facetada/squircle o raio útil cai para o do meio da face.
   const separacaoEfetivaMm = Math.min(
     separacaoMm,
     separacaoMaximaMm(
       base.raioMm,
       estab.escala,
-      segmentos <= 16 ? segmentos : 0
+      segmentos <= 16 ? segmentos : 0,
+      expoente
     )
   );
 
@@ -287,6 +289,7 @@ export default function Configurador() {
           difusor,
           estruturais: pecasEstruturais,
           segmentos,
+          expoente,
           pontosDeLuz,
           separacaoMm,
         }),
@@ -326,6 +329,7 @@ export default function Configurador() {
             estruturais: pecasEstruturais.map(() => PALETA[cores.corpo].hex),
           }}
           segmentos={segmentos}
+          expoente={expoente}
           luzAcesa={luzAcesa}
           texturas={texturas}
           espinhaCorpo={espinhaCorpo}
