@@ -498,6 +498,8 @@ export interface Cena3DProps {
   placa?: ParametrosPlaca | null;
   /** Cabeça inclinada (junta do Gio Task): substitui o difusor reto. */
   difusorInclinado?: { difusor: ParametrosDifusor; junta: JuntaInclinada };
+  /** Assento real das pastilhas: y da superfície da base no raio delas. */
+  superficieBaseMm?: number;
   /** Seção ativa do painel (data-secao) — define a pose da câmera (§4.3). */
   secaoAtiva?: string;
   /** Estúdio aceso? false = "apagar a luz do ambiente" (§4.4). */
@@ -523,6 +525,7 @@ export default function Cena3D({
   corteCorpo,
   placa,
   difusorInclinado,
+  superficieBaseMm,
   secaoAtiva,
   ambienteAceso = true,
   sinalRolagem,
@@ -542,7 +545,10 @@ export default function Cena3D({
   const assentoMm = duo ? ASSENTO_PASTILHA_MM : 0;
   const altEstruturais = alturasMm.estruturais ?? [];
   const totalEstrMm = altEstruturais.reduce((s, h) => s + h, 0);
-  const yColunaMm = alturasMm.base + assentoMm;
+  // Onde a coluna assenta: a SUPERFICIE real da base no raio das
+  // pastilhas (no ombro/cone o topo nominal fica acima dela) + a laje.
+  const ySuperficieMm = superficieBaseMm ?? alturasMm.base;
+  const yColunaMm = (duo ? ySuperficieMm : alturasMm.base) + assentoMm;
   const yCorpoMm = yColunaMm + totalEstrMm;
   const totalMm = yCorpoMm + alturasMm.corpo + alturasMm.difusor;
   // Com refletor, o topo do disco pode passar da coluna de luz — "obra
@@ -711,7 +717,7 @@ export default function Cena3D({
           <Parte
             key={`pastilha-${i}`}
             perfil={perfilPastilha}
-            yMm={alturasMm.base - 1}
+            yMm={ySuperficieMm - 1}
             xMm={x}
             cor={coresHex.base}
             segmentos={40}

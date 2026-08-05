@@ -53,6 +53,8 @@ interface Props {
   setPlaca: (p: ParametrosPlaca | null) => void;
   /** Separação efetiva aplicada na cena (a regra pode subi-la). */
   separacaoEfetivaMm: number;
+  /** A base escolhida afinava para o pico e virou prato (composição dupla). */
+  baseVirouPrato?: boolean;
   luzAcesa: boolean;
   setLuzAcesa: (v: boolean) => void;
 }
@@ -82,6 +84,7 @@ export default function PainelMontar({
   placa,
   setPlaca,
   separacaoEfetivaMm,
+  baseVirouPrato,
   luzAcesa,
   setLuzAcesa,
 }: Props) {
@@ -95,6 +98,12 @@ export default function PainelMontar({
           selecionado={iBase}
           aoEscolher={escolherBase}
         />
+        {baseVirouPrato && (
+          <div className="mt-2 text-[10px] leading-relaxed text-[#A85A1E]">
+            no modo de duas colunas a base precisa de prato — bases que
+            afinam para o pico (Cone, Prato) assentam aqui como disco reto
+          </div>
+        )}
       </Secao>
 
       <Secao id="corpo" titulo="Corpo">

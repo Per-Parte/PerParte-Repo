@@ -1,6 +1,7 @@
 import {
   ajustarComposicaoDupla,
   ajustarGolaAoDifusor,
+  alturaSuperficieBaseMm,
   ENCAIXES,
   estabilidade,
   facetasParaBase,
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
   const parte: Parte = dados.parte;
 
   // Backend não confia na Ferramenta: grampeia tudo de novo (regra mestra).
-  const base = grampearBase(dados.base ?? {});
+  const baseBruta = grampearBase(dados.base ?? {});
   const difusorBruto = grampearDifusor(dados.difusor ?? {});
   // Gola × difusor: a mesma verificação de interferência do preview.
   const corpoBruto = ajustarGolaAoDifusor(
@@ -81,12 +82,19 @@ export async function POST(req: Request) {
   // raseia, curva S para dentro para) — auditoria A2–A4.
   const dupla = luminaria.pontosDeLuz === 2 || comPlaca;
   const comp = dupla
-    ? ajustarComposicaoDupla(corpoBruto, difusorBruto, estruturais, {
+    ? ajustarComposicaoDupla(baseBruta, corpoBruto, difusorBruto, estruturais, {
         comPlaca,
         separacaoPedidaMm: luminaria.separacaoMm,
-        separacaoTetoMm: separacaoMaximaMm(base.raioMm, 1, lados, expoente),
+        separacaoTetoMm: separacaoMaximaMm(
+          baseBruta.raioMm,
+          1,
+          lados,
+          expoente
+        ),
       })
     : null;
+  // A base pode ter virado prato (cone/côncava não assentam duas colunas).
+  const base = comp?.base ?? baseBruta;
   const corpo = comp?.corpo ?? corpoBruto;
   const difusor = comp?.difusor ?? difusorBruto;
   const separacaoEfetivaMm = comp?.separacaoMm ?? luminaria.separacaoMm;
@@ -168,10 +176,13 @@ export async function POST(req: Request) {
         perfilPastilhaMacho(ENCAIXES.baseCorpo.anel),
         SEGMENTOS_PRODUCAO_LISO
       );
+      // As pastilhas assentam onde a SUPERFÍCIE realmente está no raio
+      // delas (no ombro da base o topo nominal fica acima da superfície).
+      const ySuperficie = alturaSuperficieBaseMm(base, est.escala, meiaSep);
       malha = unirMalhas(
         prato,
-        transladarMalha(pastilha, -meiaSep, 0, base.alturaMm - 1),
-        transladarMalha(pastilha, meiaSep, 0, base.alturaMm - 1)
+        transladarMalha(pastilha, -meiaSep, 0, ySuperficie - 1),
+        transladarMalha(pastilha, meiaSep, 0, ySuperficie - 1)
       );
     } else {
       malha = malhaRevolucao(

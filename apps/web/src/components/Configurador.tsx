@@ -20,6 +20,7 @@ import {
   PALETA,
   ajustarComposicaoDupla,
   ajustarGolaAoDifusor,
+  alturaSuperficieBaseMm,
   contrapesoNecessarioG,
   desvioCabecaMm,
   estabilidade,
@@ -400,19 +401,27 @@ export default function Configurador() {
   const comp = useMemo(
     () =>
       dupla
-        ? ajustarComposicaoDupla(corpoBruto, difusorBruto, pecasEstruturais, {
-            comPlaca: !!placa,
-            separacaoPedidaMm: separacaoMm,
-            separacaoTetoMm: separacaoMaximaMm(
-              base.raioMm,
-              1,
-              segmentos <= 16 ? segmentos : 0,
-              expoente
-            ),
-          })
+        ? ajustarComposicaoDupla(
+            base,
+            corpoBruto,
+            difusorBruto,
+            pecasEstruturais,
+            {
+              comPlaca: !!placa,
+              separacaoPedidaMm: separacaoMm,
+              separacaoTetoMm: separacaoMaximaMm(
+                base.raioMm,
+                1,
+                segmentos <= 16 ? segmentos : 0,
+                expoente
+              ),
+            }
+          )
         : null,
-    [dupla, corpoBruto, difusorBruto, pecasEstruturais, placa, separacaoMm, base.raioMm, segmentos, expoente]
+    [dupla, base, corpoBruto, difusorBruto, pecasEstruturais, placa, separacaoMm, segmentos, expoente]
   );
+  // A base pode ter virado prato (cone/côncava não assentam duas colunas).
+  const baseFinal = comp?.base ?? base;
   const corpo = comp?.corpo ?? corpoBruto;
   const difusor = comp?.difusor ?? difusorBruto;
   const separacaoEfetivaMm = comp?.separacaoMm ?? separacaoMm;
@@ -460,23 +469,23 @@ export default function Configurador() {
     () =>
       estabilidade(
         proporcaoEfetiva
-          ? { ...base, raioMm: base.raioMm * proporcaoEfetiva }
-          : base,
+          ? { ...baseFinal, raioMm: baseFinal.raioMm * proporcaoEfetiva }
+          : baseFinal,
         corpoParaFisica,
         difusor,
         placa ? 2 : pontosDeLuz,
         desvioCabecaMm(difusor, difusor.junta)
       ),
-    [base, corpoParaFisica, difusor, pontosDeLuz, placa, proporcaoEfetiva]
+    [baseFinal, corpoParaFisica, difusor, pontosDeLuz, placa, proporcaoEfetiva]
   );
   const perfis = useMemo(
     () => ({
-      base: perfilBase(base, estab.escala, pontosDeLuz === 1 && !placa),
+      base: perfilBase(baseFinal, estab.escala, pontosDeLuz === 1 && !placa),
       corpo: perfilCorpo(corpo),
       difusor: perfilDifusor(difusor),
       estruturais: pecasEstruturais.map((p) => perfilEstrutural(p)),
     }),
-    [base, corpo, difusor, estab.escala, pontosDeLuz, placa, pecasEstruturais]
+    [baseFinal, corpo, difusor, estab.escala, pontosDeLuz, placa, pecasEstruturais]
   );
   const { gramas, precoBRL } = useMemo(
     () =>
@@ -503,6 +512,12 @@ export default function Configurador() {
   const colunasDeLuz = pontosDeLuz === 2 ? 2 : 1;
   const numPartes =
     1 + colunasDeLuz * (2 + pecasEstruturais.length) + (placa ? 1 : 0);
+
+  // Assento REAL das pastilhas: onde a superfície da base está no raio
+  // delas (no ombro da base o topo nominal fica acima da superfície).
+  const superficieBaseMm = dupla
+    ? alturaSuperficieBaseMm(baseFinal, estab.escala, separacaoEfetivaMm / 2)
+    : undefined;
 
   const espinhaCorpo = useMemo(
     () => ({
@@ -562,7 +577,7 @@ export default function Configurador() {
         <Cena3D
           perfis={perfis}
           alturasMm={{
-            base: base.alturaMm,
+            base: baseFinal.alturaMm,
             corpo: corpo.alturaMm,
             difusor: difusor.alturaMm,
             estruturais: pecasEstruturais.map((p) => p.alturaMm),
@@ -576,6 +591,7 @@ export default function Configurador() {
           segmentos={segmentos}
           expoente={expoente}
           proporcao={proporcaoEfetiva}
+          superficieBaseMm={superficieBaseMm}
           luzAcesa={luzAcesa}
           texturas={texturas}
           espinhaCorpo={espinhaCorpo}
@@ -779,6 +795,7 @@ export default function Configurador() {
               placa={placa}
               setPlaca={setPlaca}
               separacaoEfetivaMm={separacaoEfetivaMm}
+              baseVirouPrato={comp?.ajustes.baseVirouPrato}
               luzAcesa={luzAcesa}
               setLuzAcesa={setLuzAcesa}
             />
@@ -804,6 +821,7 @@ export default function Configurador() {
               placa={placa}
               setPlaca={setPlaca}
               separacaoEfetivaMm={separacaoEfetivaMm}
+              baseVirouPrato={comp?.ajustes.baseVirouPrato}
               raioDifusorTetoMm={comp?.raioDifusorTetoMm}
               tetoDeslocInternoMm={comp?.tetoInternoMm}
               luzAcesa={luzAcesa}
