@@ -486,6 +486,16 @@ export interface FacetasRevolucao {
    * tocam o raio do perfil, as faces mergulham para dentro).
    */
   expoente?: number;
+  /**
+   * ESTICAR (pedido do Caio, 04/08): proporção entre os dois semi-eixos
+   * da seção (b/a, 0–1) — a TERCEIRA função da máquina r(θ). 1 = seção
+   * isotrópica (como sempre foi); 0,55 = seção esticada (quadrado vira
+   * retângulo, círculo vira oval — a base da Persiana). Aplica por cima
+   * do polígono/squircle: o eixo X guarda o raio do perfil (envelope
+   * preservado), o eixo Y encolhe. Zonas de encaixe continuam redondas
+   * pela mesma janela/piso das outras funções.
+   */
+  proporcao?: number;
   /** Início da zona facetada, em mm (abaixo disso: redondo). */
   yMinMm: number;
   /** Fim da zona facetada, em mm (acima disso: redondo). */
@@ -496,21 +506,26 @@ export interface FacetasRevolucao {
   pisoMm?: number;
 }
 
-/** A parte tem modulação lateral por θ (polígono OU superelipse)? */
+/** A parte tem modulação lateral por θ (polígono, superelipse OU esticada)? */
 export function modulaPorTheta(f?: FacetasRevolucao): boolean {
-  return !!f && (f.lados >= 3 || (f.expoente ?? 0) > 2);
+  return (
+    !!f &&
+    (f.lados >= 3 || (f.expoente ?? 0) > 2 || (f.proporcao ?? 1) < 0.999)
+  );
 }
 
 /** Janela de facetas do corpo: poupa a fêmea de baixo e o assento do macho. */
 export function facetasParaCorpo(
   lados: number,
   alturaMm: number,
-  expoente?: number
+  expoente?: number,
+  proporcao?: number
 ): FacetasRevolucao {
   const anelBase = ENCAIXES.baseCorpo.anel;
   return {
     lados,
     ...(expoente ? { expoente } : {}),
+    ...(proporcao != null && proporcao < 1 ? { proporcao } : {}),
     yMinMm: anelBase.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
     yMaxMm: alturaMm - ENCAIXES.corpoDifusor.anel.alturaMm - 2,
     transicaoMm: 8,
@@ -549,12 +564,14 @@ const RAIO_PISO_JUNTA_MM =
 function facetasComPescocoRedondo(
   lados: number,
   alturaTotalMm: number,
-  expoente?: number
+  expoente?: number,
+  proporcao?: number
 ): FacetasRevolucao {
   const transicaoMm = 8;
   return {
     lados,
     ...(expoente ? { expoente } : {}),
+    ...(proporcao != null && proporcao < 1 ? { proporcao } : {}),
     yMinMm: -transicaoMm,
     yMaxMm: alturaTotalMm + transicaoMm,
     transicaoMm,
@@ -569,12 +586,14 @@ function facetasComPescocoRedondo(
 export function facetasParaBase(
   lados: number,
   alturaMm: number,
-  expoente?: number
+  expoente?: number,
+  proporcao?: number
 ): FacetasRevolucao {
   return facetasComPescocoRedondo(
     lados,
     alturaMm + ENCAIXES.baseCorpo.anel.alturaMm,
-    expoente
+    expoente,
+    proporcao
   );
 }
 
@@ -586,12 +605,14 @@ export function facetasParaBase(
 export function facetasParaEstrutural(
   lados: number,
   alturaMm: number,
-  expoente?: number
+  expoente?: number,
+  proporcao?: number
 ): FacetasRevolucao {
   return facetasComPescocoRedondo(
     lados,
     alturaMm + ENCAIXES.baseCorpo.anel.alturaMm,
-    expoente
+    expoente,
+    proporcao
   );
 }
 
@@ -626,12 +647,14 @@ export function separacaoMaximaMm(
 export function facetasParaDifusor(
   lados: number,
   alturaMm: number,
-  expoente?: number
+  expoente?: number,
+  proporcao?: number
 ): FacetasRevolucao {
   const anel = ENCAIXES.corpoDifusor.anel;
   return {
     lados,
     ...(expoente ? { expoente } : {}),
+    ...(proporcao != null && proporcao < 1 ? { proporcao } : {}),
     yMinMm: anel.alturaMm + ENCAIXES.folgaProfundidadeMm + 2,
     yMaxMm: alturaMm + 8,
     transicaoMm: 8,

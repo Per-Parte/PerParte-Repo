@@ -83,6 +83,9 @@ export const ESTRUTURAIS: EstruturalOficial[] = [
   { nome: "Colar", tipo: "anel", alturaMm: 24, barrigaMm: 4 },
   { nome: "Gola", tipo: "anel", alturaMm: 32, barrigaMm: 9 },
   { nome: "Aro", tipo: "anel", alturaMm: 24, barrigaMm: 0 },
+  // Primitivos do modo blocos (04/08) — no FIM para preservar links ?c=.
+  { nome: "Rosquinha", tipo: "anel", alturaMm: 36, barrigaMm: 14 },
+  { nome: "Pílula", tipo: "haste", alturaMm: 64, barrigaMm: 12 },
 ];
 
 /** Máximo de peças estruturais na pilha (entre a base e o corpo). */
@@ -167,4 +170,10 @@ export const LIMITES_CRIAR = {
     /** Distância entre as duas colunas no modo de dois pontos de luz. */
     separacaoMm: { min: 70, max: 160, passo: 5 },
   },
+  /**
+   * ESTICAR — proporção entre os semi-eixos da seção (1 = redonda).
+   * Piso em 0,55: abaixo disso o eixo curto de um corpo comum encostaria
+   * no pé da canaleta/miolo e a peça viraria lâmina. ⚑ validar impresso.
+   */
+  proporcao: { min: 0.55, max: 1, passo: 0.05 },
 } as const;

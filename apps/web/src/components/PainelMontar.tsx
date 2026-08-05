@@ -7,6 +7,7 @@ import {
   ESTRUTURAIS,
   LIMITES_CRIAR,
   MAX_ESTRUTURAIS,
+  PALETA,
   type ParametrosPlaca,
 } from "@per-parte/nucleo";
 import {
@@ -35,6 +36,11 @@ interface Props {
   /** Pilha de estruturais entre a base e o corpo (índices, de baixo para cima). */
   estruturais: number[];
   setEstruturais: (e: number[]) => void;
+  /** Cor efetiva de cada bloco da pilha (índices da PALETA). */
+  coresEstruturais: number[];
+  setCorEstrutural: (k: number, i: number) => void;
+  duplicarEstrutural: (k: number) => void;
+  removerEstrutural: (k: number) => void;
   cores: CoresPartes;
   alvoCor: AlvoCor;
   setAlvoCor: (a: AlvoCor) => void;
@@ -61,6 +67,10 @@ export default function PainelMontar({
   escolherDifusor,
   estruturais,
   setEstruturais,
+  coresEstruturais,
+  setCorEstrutural,
+  duplicarEstrutural,
+  removerEstrutural,
   cores,
   alvoCor,
   setAlvoCor,
@@ -118,14 +128,23 @@ export default function PainelMontar({
                       .replace(".", ",")}{" "}
                     cm
                   </span>
-                  <button
-                    onClick={() =>
-                      setEstruturais(estruturais.filter((_, j) => j !== k))
-                    }
-                    className="rounded-full border border-black/10 px-2 py-0.5 text-[10px] text-[#6D675C] transition-colors hover:border-[#B23B28]/50 hover:text-[#B23B28]"
-                  >
-                    remover
-                  </button>
+                  <span className="flex items-center gap-1.5">
+                    {estruturais.length < MAX_ESTRUTURAIS && (
+                      <button
+                        onClick={() => duplicarEstrutural(k)}
+                        title="Duplicar este bloco (nasce igual, logo acima)"
+                        className="rounded-full border border-black/10 px-2 py-0.5 text-[10px] text-[#6D675C] transition-colors hover:border-black/30 hover:text-[#4A463D]"
+                      >
+                        ⧉ duplicar
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removerEstrutural(k)}
+                      className="rounded-full border border-black/10 px-2 py-0.5 text-[10px] text-[#6D675C] transition-colors hover:border-[#B23B28]/50 hover:text-[#B23B28]"
+                    >
+                      remover
+                    </button>
+                  </span>
                 </div>
                 <Chips
                   nomes={ESTRUTURAIS.map((e) => e.nome)}
@@ -134,6 +153,24 @@ export default function PainelMontar({
                     setEstruturais(estruturais.map((v, j) => (j === k ? i : v)))
                   }
                 />
+                {/* Cor por bloco: cada peça da pilha imprime separada. */}
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {PALETA.map((p, i) => (
+                    <button
+                      key={p.nome}
+                      title={p.nome}
+                      aria-label={`Cor ${p.nome} para este bloco`}
+                      aria-pressed={coresEstruturais[k] === i}
+                      onClick={() => setCorEstrutural(k, i)}
+                      className={`h-4.5 w-4.5 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
+                        coresEstruturais[k] === i
+                          ? "ring-2 ring-palco-escuro ring-offset-1 ring-offset-white"
+                          : "ring-1 ring-black/15"
+                      }`}
+                      style={{ background: p.hex, width: 18, height: 18 }}
+                    />
+                  ))}
+                </div>
               </div>
             );
           })}

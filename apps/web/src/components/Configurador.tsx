@@ -103,8 +103,12 @@ export default function Configurador() {
   });
   /** Pilha de estruturais entre a base e o corpo (índices, de baixo para cima). */
   const [estruturais, setEstruturais] = useState<number[]>([]);
+  /** Cor de cada bloco da pilha (modo blocos: cada peça imprime separada). */
+  const [coresEstruturais, setCoresEstruturais] = useState<number[]>([]);
   const [alvoCor, setAlvoCor] = useState<AlvoCor>("all");
   const [iFaceta, setIFaceta] = useState(0);
+  /** ESTICAR: proporção da seção (1 = redonda; <1 = oval/retângulo). */
+  const [proporcao, setProporcao] = useState(1);
   const [luzAcesa, setLuzAcesa] = useState(true);
   const [pontosDeLuz, setPontosDeLuz] = useState<1 | 2>(1);
   const [separacaoMm, setSeparacaoMm] = useState(100);
@@ -258,7 +262,9 @@ export default function Configurador() {
     setIDifusor(c.iDifusor);
     setCores(c.cores);
     setEstruturais(c.estruturais);
+    setCoresEstruturais(c.coresEstruturais ?? []);
     setIFaceta(c.iFaceta);
+    setProporcao(c.proporcao ?? 1);
     setLuzAcesa(c.luzAcesa);
     setPontosDeLuz(c.pontosDeLuz);
     setSeparacaoMm(c.separacaoMm);
@@ -281,7 +287,9 @@ export default function Configurador() {
         iDifusor,
         cores,
         estruturais,
+        coresEstruturais,
         iFaceta,
+        proporcao,
         luzAcesa,
         pontosDeLuz,
         separacaoMm,
@@ -299,7 +307,9 @@ export default function Configurador() {
     iDifusor,
     cores,
     estruturais,
+    coresEstruturais,
     iFaceta,
+    proporcao,
     luzAcesa,
     pontosDeLuz,
     separacaoMm,
@@ -327,6 +337,32 @@ export default function Configurador() {
     setModo(m);
   }
 
+  // Cor efetiva de cada bloco da pilha (sem cor própria = cor do corpo).
+  const coresEstruturaisEfetivas = estruturais.map(
+    (_, k) => coresEstruturais[k] ?? cores.corpo
+  );
+  function setCorEstrutural(k: number, i: number) {
+    const nova = estruturais.map(
+      (_, j) => coresEstruturais[j] ?? cores.corpo
+    );
+    nova[k] = i;
+    setCoresEstruturais(nova);
+  }
+  /** Duplicar bloco (×N do modo blocos): nasce igual, logo acima, com a cor. */
+  function duplicarEstrutural(k: number) {
+    setEstruturais([
+      ...estruturais.slice(0, k + 1),
+      estruturais[k],
+      ...estruturais.slice(k + 1),
+    ]);
+    const c = coresEstruturaisEfetivas;
+    setCoresEstruturais([...c.slice(0, k + 1), c[k], ...c.slice(k + 1)]);
+  }
+  function removerEstrutural(k: number) {
+    setEstruturais(estruturais.filter((_, j) => j !== k));
+    setCoresEstruturais(coresEstruturaisEfetivas.filter((_, j) => j !== k));
+  }
+
   function escolherCor(i: number) {
     if (alvoCor === "all") setCores({ base: i, corpo: i, difusor: i });
     else setCores({ ...cores, [alvoCor]: i });
@@ -335,6 +371,7 @@ export default function Configurador() {
   const base = modo === "montar" ? BASES[iBase] : criar.base;
   const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
   const expoente = modo === "montar" ? undefined : FACETAS[iFaceta].expoente;
+  const proporcaoEfetiva = modo === "montar" || proporcao >= 0.999 ? undefined : proporcao;
 
   // A pilha de estruturais sobe o corpo e o difusor: para a física (CG,
   // alargamento E2) o efeito é o de um corpo mais alto na mesma coluna.
@@ -417,16 +454,20 @@ export default function Configurador() {
   // Com refletor a base é dupla: a estabilidade roda no modo de duas
   // colunas (conservador — a placa é mais leve que uma coluna de luz;
   // o desvio para trás da placa inclinada ainda não entra no CG ⚑).
+  // ESTICADA, a base tem eixo curto: E1/E2 usam o raio MENOR (conservador —
+  // o tombamento agora tem direção fácil, e a regra olha para ela).
   const estab = useMemo(
     () =>
       estabilidade(
-        base,
+        proporcaoEfetiva
+          ? { ...base, raioMm: base.raioMm * proporcaoEfetiva }
+          : base,
         corpoParaFisica,
         difusor,
         placa ? 2 : pontosDeLuz,
         desvioCabecaMm(difusor, difusor.junta)
       ),
-    [base, corpoParaFisica, difusor, pontosDeLuz, placa]
+    [base, corpoParaFisica, difusor, pontosDeLuz, placa, proporcaoEfetiva]
   );
   const perfis = useMemo(
     () => ({
@@ -492,6 +533,7 @@ export default function Configurador() {
           estruturais: pecasEstruturais,
           segmentos,
           expoente,
+          proporcao: proporcaoEfetiva,
           pontosDeLuz,
           separacaoMm,
           placa,
@@ -529,10 +571,11 @@ export default function Configurador() {
             base: PALETA[cores.base].hex,
             corpo: PALETA[cores.corpo].hex,
             difusor: PALETA[cores.difusor].hex,
-            estruturais: pecasEstruturais.map(() => PALETA[cores.corpo].hex),
+            estruturais: coresEstruturaisEfetivas.map((i) => PALETA[i].hex),
           }}
           segmentos={segmentos}
           expoente={expoente}
+          proporcao={proporcaoEfetiva}
           luzAcesa={luzAcesa}
           texturas={texturas}
           espinhaCorpo={espinhaCorpo}
@@ -721,6 +764,10 @@ export default function Configurador() {
               escolherDifusor={setIDifusor}
               estruturais={estruturais}
               setEstruturais={setEstruturais}
+              coresEstruturais={coresEstruturaisEfetivas}
+              setCorEstrutural={setCorEstrutural}
+              duplicarEstrutural={duplicarEstrutural}
+              removerEstrutural={removerEstrutural}
               cores={cores}
               alvoCor={alvoCor}
               setAlvoCor={setAlvoCor}
@@ -742,6 +789,8 @@ export default function Configurador() {
               remixDe={remixDe}
               iFaceta={iFaceta}
               setIFaceta={setIFaceta}
+              proporcao={proporcao}
+              setProporcao={setProporcao}
               estab={estab}
               contrapesoG={contrapesoG}
               cores={cores}

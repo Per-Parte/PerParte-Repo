@@ -158,11 +158,23 @@ export function malhaRevolucao(
             );
             const norma = Math.pow(2, (nExp - 2) / (2 * nExp));
             rMod = (r * bruto) / norma;
-          } else {
+          } else if (f.lados >= 3) {
             const setor = Math.PI / f.lados;
             const dth =
               ((th % (2 * setor)) + 2 * setor) % (2 * setor) - setor;
             rMod = (r * Math.cos(setor)) / Math.cos(dth);
+          } else {
+            rMod = r;
+          }
+          // ESTICAR: terceira função da máquina r(θ) — escala anisotrópica
+          // da seção (X guarda o envelope, Y encolhe para `proporcao`).
+          // Fator elíptico ≤ 1 e 1-Lipschitz em r: as garantias das outras
+          // funções (envelope, F4) valem de graça.
+          const prop = f.proporcao ?? 1;
+          if (prop < 0.999) {
+            const co = Math.cos(th);
+            const se = Math.sin(th);
+            rMod *= prop / Math.hypot(prop * co, se);
           }
           let rf = r + (rMod - r) * wf;
           if (f.pisoMm != null) {

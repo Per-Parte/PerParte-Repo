@@ -19,6 +19,7 @@ import {
   grampearDifusor,
   grampearLuminaria,
   grampearPlaca,
+  grampearProporcao,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -34,7 +35,11 @@ export interface CriacaoV1 {
   cores: { base: number; corpo: number; difusor: number };
   /** Pilha de estruturais entre a base e o corpo (índices do catálogo, de baixo para cima). */
   estruturais: number[];
+  /** Cor de cada bloco da pilha (índices da PALETA; modo blocos). */
+  coresEstruturais?: number[];
   iFaceta: number;
+  /** ESTICAR: proporção da seção (1 = redonda; 0,55–0,95 = oval/retângulo). */
+  proporcao?: number;
   luzAcesa: boolean;
   pontosDeLuz: 1 | 2;
   separacaoMm: number;
@@ -80,7 +85,13 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
             .slice(0, MAX_ESTRUTURAIS)
             .map((e: unknown) => indice(e, ESTRUTURAIS.length))
         : [],
+      coresEstruturais: Array.isArray(bruto.coresEstruturais)
+        ? bruto.coresEstruturais
+            .slice(0, MAX_ESTRUTURAIS)
+            .map((e: unknown) => indice(e, PALETA.length))
+        : [],
       iFaceta: indice(bruto.iFaceta, FACETAS.length),
+      proporcao: grampearProporcao(bruto.proporcao) ?? 1,
       luzAcesa: bruto.luzAcesa !== false,
       ...grampearLuminaria(bruto),
       placa: bruto.placa ? grampearPlaca(bruto.placa) : null,

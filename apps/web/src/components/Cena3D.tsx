@@ -488,6 +488,8 @@ export interface Cena3DProps {
   vazadoDifusor?: ParametrosVazado;
   /** Superelipse (squircle): expoente do acabamento, quando escolhido. */
   expoente?: number;
+  /** ESTICAR: proporção da seção (1 = redonda; <1 = oval/retângulo). */
+  proporcao?: number;
   /** Corte da borda livre do difusor (oblíquo/dentes). */
   corteDifusor?: CorteBorda;
   /** Corte da borda da GOLA do corpo (o berço do Weight). */
@@ -516,6 +518,7 @@ export default function Cena3D({
   separacaoMm = 0,
   vazadoDifusor,
   expoente,
+  proporcao,
   corteDifusor,
   corteCorpo,
   placa,
@@ -629,25 +632,25 @@ export default function Cena3D({
   // A base e a pilha modulam JUNTO (fase 2 do EXT): "modula o corpo mas
   // não a base" é meio-estado que o cliente lê como defeito.
   const lados = segmentos <= 16 ? segmentos : 0;
-  const comTheta = lados > 0 || (expoente ?? 0) > 2;
+  const comTheta = lados > 0 || (expoente ?? 0) > 2 || (proporcao ?? 1) < 0.999;
   const facetasCorpo = useMemo(
     () =>
       comTheta
-        ? facetasParaCorpo(lados, alturasMm.corpo, expoente)
+        ? facetasParaCorpo(lados, alturasMm.corpo, expoente, proporcao)
         : undefined,
-    [comTheta, lados, alturasMm.corpo, expoente]
+    [comTheta, lados, alturasMm.corpo, expoente, proporcao]
   );
   const facetasDifusor = useMemo(
     () =>
       comTheta
-        ? facetasParaDifusor(lados, alturasMm.difusor, expoente)
+        ? facetasParaDifusor(lados, alturasMm.difusor, expoente, proporcao)
         : undefined,
-    [comTheta, lados, alturasMm.difusor, expoente]
+    [comTheta, lados, alturasMm.difusor, expoente, proporcao]
   );
   const facetasBase = useMemo(
     () =>
-      comTheta ? facetasParaBase(lados, alturasMm.base, expoente) : undefined,
-    [comTheta, lados, alturasMm.base, expoente]
+      comTheta ? facetasParaBase(lados, alturasMm.base, expoente, proporcao) : undefined,
+    [comTheta, lados, alturasMm.base, expoente, proporcao]
   );
   const chaveEstruturais = altEstruturais.join(",");
   const facetasEstruturais = useMemo(
@@ -655,9 +658,9 @@ export default function Cena3D({
       comTheta && chaveEstruturais
         ? chaveEstruturais
             .split(",")
-            .map((h) => facetasParaEstrutural(lados, Number(h), expoente))
+            .map((h) => facetasParaEstrutural(lados, Number(h), expoente, proporcao))
         : undefined,
-    [comTheta, lados, chaveEstruturais, expoente]
+    [comTheta, lados, chaveEstruturais, expoente, proporcao]
   );
 
   // Posições X das colunas DE LUZ (corpo + difusor + lâmpada), em mm.

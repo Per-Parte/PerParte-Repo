@@ -253,3 +253,16 @@ export function grampearExpoente(v: unknown): number | undefined {
   if (!Number.isFinite(n) || n <= 2) return undefined;
   return Math.min(8, Math.max(3, n));
 }
+
+/**
+ * ESTICAR vindo de fora: ausente/1/inválido = seção redonda de sempre;
+ * presente, fica na faixa imprimível (LIMITES_CRIAR.proporcao).
+ */
+export function grampearProporcao(v: unknown): number | undefined {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n >= 0.999) return undefined;
+  return Math.min(
+    LIMITES_CRIAR.proporcao.max,
+    Math.max(LIMITES_CRIAR.proporcao.min, n)
+  );
+}

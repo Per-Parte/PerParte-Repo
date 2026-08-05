@@ -59,6 +59,9 @@ interface Props {
   remixDe: string;
   iFaceta: number;
   setIFaceta: (i: number) => void;
+  /** ESTICAR: proporção da seção (1 = redonda). */
+  proporcao: number;
+  setProporcao: (v: number) => void;
   estab: ResultadoEstabilidade;
   /** E3: gramas de inserto na base (0 = fica de pé sozinha). */
   contrapesoG: number;
@@ -89,6 +92,8 @@ export default function PainelCriar({
   remixDe,
   iFaceta,
   setIFaceta,
+  proporcao,
+  setProporcao,
   estab,
   contrapesoG,
   cores,
@@ -874,6 +879,23 @@ export default function PainelCriar({
             acabamento facetado desliga a textura — escolha Liso para vê-la
           </div>
         )}
+        <div className="mt-3">
+          <SliderCtl
+            rotulo="Esticar a seção"
+            valorFmt={
+              proporcao >= 0.999
+                ? "redonda"
+                : `${Math.round(proporcao * 100)}% de profundidade`
+            }
+            valor={proporcao}
+            min={LIMITES_CRIAR.proporcao.min}
+            max={LIMITES_CRIAR.proporcao.max}
+            passo={LIMITES_CRIAR.proporcao.passo}
+            aoMudar={setProporcao}
+            nota="a seção estica no eixo da largura: quadrado vira retângulo, círculo vira oval — os encaixes continuam redondos"
+            motivoMin="Mais achatada que isso, a peça vira lâmina — o eixo curto encosta no pé do encaixe e no miolo elétrico."
+          />
+        </div>
       </Secao>
 
       <Secao id="luz" titulo="Luz">

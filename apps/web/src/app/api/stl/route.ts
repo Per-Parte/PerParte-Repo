@@ -13,6 +13,7 @@ import {
   grampearDifusor,
   grampearEstruturais,
   grampearExpoente,
+  grampearProporcao,
   grampearLuminaria,
   grampearPlaca,
   grampearSegmentos,
@@ -69,7 +70,8 @@ export async function POST(req: Request) {
   // nos vértices do polígono; a superelipse é suave e só pede malha fina.
   const lados = segmentos <= 16 ? segmentos : 0;
   const expoente = grampearExpoente(dados.expoente);
-  const comTheta = lados > 0 || !!expoente;
+  const proporcao = grampearProporcao(dados.proporcao);
+  const comTheta = lados > 0 || !!expoente || !!proporcao;
   // Refletor (PLACA): presença no request = composição luz + refletor —
   // e refletor com 2 luzes não existe (link forjado cai aqui).
   const comPlaca = dados.placa != null;
@@ -133,7 +135,7 @@ export async function POST(req: Request) {
       undefined,
       undefined,
       comTheta
-        ? facetasParaEstrutural(lados, estruturais[indice].alturaMm, expoente)
+        ? facetasParaEstrutural(lados, estruturais[indice].alturaMm, expoente, proporcao)
         : undefined
     );
     const stlEstrutural = gerarSTLBinario(
@@ -160,7 +162,7 @@ export async function POST(req: Request) {
         comTheta ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
         undefined,
         undefined,
-        comTheta ? facetasParaBase(lados, base.alturaMm, expoente) : undefined
+        comTheta ? facetasParaBase(lados, base.alturaMm, expoente, proporcao) : undefined
       );
       const pastilha = malhaRevolucao(
         perfilPastilhaMacho(ENCAIXES.baseCorpo.anel),
@@ -177,7 +179,7 @@ export async function POST(req: Request) {
         comTheta ? SEGMENTOS_PRODUCAO_GOMOS : SEGMENTOS_PRODUCAO_LISO,
         undefined,
         undefined,
-        comTheta ? facetasParaBase(lados, base.alturaMm, expoente) : undefined
+        comTheta ? facetasParaBase(lados, base.alturaMm, expoente, proporcao) : undefined
       );
     }
   } else {
@@ -246,8 +248,8 @@ export async function POST(req: Request) {
     // REDONDOS — o ajuste F5 não depende do acabamento.
     const facetas = comTheta
       ? parte === "corpo"
-        ? facetasParaCorpo(lados, corpo.alturaMm, expoente)
-        : facetasParaDifusor(lados, difusor.alturaMm, expoente)
+        ? facetasParaCorpo(lados, corpo.alturaMm, expoente, proporcao)
+        : facetasParaDifusor(lados, difusor.alturaMm, expoente, proporcao)
       : undefined;
     const segmentosParte = comTheta
       ? SEGMENTOS_PRODUCAO_GOMOS
