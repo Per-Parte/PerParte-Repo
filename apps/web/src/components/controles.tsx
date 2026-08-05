@@ -99,7 +99,7 @@ export function Chips({
   );
 }
 
-/** Swatches circulares 28 px, agrupados por família da paleta (§4.2). */
+/** Swatches circulares 32 px, agrupados por família da paleta (§4.2). */
 export function PaletaFamilias({
   selecionado,
   aoEscolher,
@@ -122,7 +122,7 @@ export function PaletaFamilias({
                 aria-label={`Cor ${PALETA[i].nome}`}
                 aria-pressed={selecionado === i}
                 onClick={() => aoEscolher(i)}
-                className={`h-7 w-7 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
+                className={`h-8 w-8 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
                   selecionado === i
                     ? "ring-2 ring-palco-escuro ring-offset-2 ring-offset-white"
                     : "ring-1 ring-black/15"
@@ -290,7 +290,7 @@ export function PontosDeLuzCtl({
       {duo && (
         <div className="mt-4">
           <SliderCtl
-            rotulo="Separação das colunas"
+            rotulo="Distância entre as luzes"
             valorFmt={`${(efetiva / 10).toFixed(1).replace(".", ",")} cm`}
             valor={separacaoMm}
             min={sepMin}
@@ -317,7 +317,7 @@ export function PontosDeLuzCtl({
             max={LIMITES_PLACA.raioMm.max}
             passo={LIMITES_PLACA.raioMm.passo}
             aoMudar={(v) => aoMudarPlaca({ ...placa, raioMm: v })}
-            motivoMax="Maior que isso o disco não cabe deitado na impressora (F1)."
+            motivoMax="Maior que isso o disco não cabe deitado na impressora."
           />
           <SliderCtl
             rotulo="Inclinação"

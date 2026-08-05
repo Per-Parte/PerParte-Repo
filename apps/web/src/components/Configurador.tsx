@@ -42,6 +42,10 @@ import PainelMontar from "./PainelMontar";
 import PainelCriar from "./PainelCriar";
 import BotaoSalvar from "./BotaoSalvar";
 import ToggleCena from "./cena/ToggleCena";
+import BarraFerramentas from "./manipulacao/BarraFerramentas";
+import PonteManipulacao from "./manipulacao/PonteManipulacao";
+import ToastLimite from "./manipulacao/ToastLimite";
+import DicaOrbita from "./manipulacao/DicaOrbita";
 import { CHAVE_CENA, cenaValida, type CenaId } from "./cena/tipos";
 import { NumeroAnimado } from "./controles";
 import { codificarCriacao, decodificarCriacao } from "@/lib/criacao";
@@ -605,8 +609,9 @@ export default function Configurador() {
 
   return (
     <div className="relative h-dvh overflow-hidden bg-palco-claro text-palco-escuro">
-      {/* Viewport 3D full-bleed — o palco ocupa a tela inteira, por trás (§4.1) */}
-      <div className="absolute inset-0">
+      {/* Viewport 3D full-bleed — o palco ocupa a tela inteira, por trás (§4.1).
+          A classe palco-3d dá o cursor de mão do canvas (QW10, globals.css). */}
+      <div className="palco-3d absolute inset-0">
         <Cena3D
           perfis={perfis}
           alturasMm={{
@@ -661,6 +666,10 @@ export default function Configurador() {
         preparando={cena === "quarto" && !quartoPronto}
       />
 
+      {/* Ferramentas do palco (manipulação direta §3): rail vertical a meia
+          altura da borda esquerda em md+. */}
+      <BarraFerramentas />
+
       {/* Topo esquerdo: wordmark (volta para a landing) */}
       <Link
         href="/"
@@ -688,6 +697,10 @@ export default function Configurador() {
           sheet) empilha neste wrapper; em md+ ele vira display:contents e
           cada peça volta ao seu canto absoluto — desktop fica como está (§5). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col md:contents">
+        {/* Ferramentas do palco no <md: linha ancorada ao topo do sheet —
+            sobe e desce com ele, nunca fica coberta (§3.2). */}
+        <BarraFerramentas orientacao="horizontal" />
+
         {/* Barra compacta acima do sheet: preço sempre visível + chip de
             partes + interruptor (§5); em md+, os cards flutuantes de §4.1 */}
         <div className="mb-2 flex items-end justify-between gap-2 px-3 md:contents">
@@ -802,6 +815,10 @@ export default function Configurador() {
               </button>
             ))}
           </div>
+          {/* QW8 — microlegenda do switch: o que cada modo faz, numa linha. */}
+          <p className="mt-2 text-center text-[10.5px] leading-relaxed text-[#6D675C]">
+            Montar combina partes prontas; Inventar esculpe cada uma.
+          </p>
           <input
             type="text"
             value={nomeObra}
@@ -952,6 +969,35 @@ export default function Configurador() {
           </div>
         </aside>
       </div>
+
+      {/* Ponte DOM↔Canvas da manipulação direta (render nulo): registra
+          valores + setters no store e cuida da deseleção órfã (§2.1). */}
+      <PonteManipulacao
+        modo={modo}
+        criar={criar}
+        setCriar={setCriar}
+        estruturais={estruturais}
+        setEstruturais={setEstruturais}
+        separacaoMm={separacaoMm}
+        setSeparacaoMm={setSeparacaoMm}
+        placa={placa}
+        setPlaca={setPlaca}
+        pontosDeLuz={pontosDeLuz}
+        corpoEfetivo={corpo}
+        difusorEfetivo={difusor}
+        refRolagem={refRolagem}
+        setAlturaSheet={setAlturaSheet}
+        alturaSheet={alturaSheet}
+        setAlvoCor={setAlvoCor}
+        raioDifusorTetoMm={comp?.raioDifusorTetoMm}
+        tetoDeslocInternoMm={comp?.tetoInternoMm}
+      />
+
+      {/* Motivo didático de limite, flutuando no palco (§6). */}
+      <ToastLimite />
+
+      {/* Dica de primeira visita: como orbitar/aproximar (QW9). */}
+      <DicaOrbita />
     </div>
   );
 }

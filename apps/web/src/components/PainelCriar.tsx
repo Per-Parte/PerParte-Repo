@@ -197,7 +197,7 @@ export default function PainelCriar({
             max={LB.raioMm.max}
             passo={LB.raioMm.passo}
             aoMudar={(v) => mudarBase("raioMm", v)}
-            nota="se a criação ficar pesada no topo, a base alarga sozinha (E2)"
+            nota="se a criação ficar pesada no topo, a base alarga sozinha"
             motivoMax="Mais larga não cabe no prato da impressora."
             motivoMin="Menor que isso a base não segura o conjunto em pé — e o encaixe precisa caber nela."
           />
@@ -234,7 +234,7 @@ export default function PainelCriar({
         {!modoLivre && (
         <>
         <SliderCtl
-          rotulo="Volume do bojo"
+          rotulo="Barriga (bojo)"
           valorFmt={`${criar.corpo.volumeBojoMm >= 0 ? "+" : ""}${cm(criar.corpo.volumeBojoMm)} cm`}
           valor={criar.corpo.volumeBojoMm}
           min={LC.volumeBojoMm.min}
@@ -246,7 +246,7 @@ export default function PainelCriar({
           motivoMin="Afinar mais encostaria no miolo elétrico, que precisa de folga livre por segurança."
         />
         <SliderCtl
-          rotulo="Posição do bojo"
+          rotulo="Altura da barriga"
           valorFmt={fmtPos(criar.corpo.posicaoBojo)}
           valor={criar.corpo.posicaoBojo}
           min={LC.posicaoBojo.min}
@@ -277,7 +277,7 @@ export default function PainelCriar({
         </>
         )}
 
-        <SubRotulo>Silhueta livre (modo hard)</SubRotulo>
+        <SubRotulo>Silhueta livre (avançado)</SubRotulo>
         {!modoLivre ? (
           <button
             onClick={() =>
@@ -291,7 +291,7 @@ export default function PainelCriar({
             }
             className="w-full rounded-full border border-acento/60 bg-acento/10 py-2.5 text-[12.5px] font-semibold text-[#8A5F10] transition-colors hover:bg-acento/20"
           >
-            Esculpir a silhueta — arrastar as arestas
+            Esculpir a silhueta — arrastar os pontos
           </button>
         ) : (
           <div>
@@ -320,14 +320,14 @@ export default function PainelCriar({
 
         <SubRotulo>Curvar o corpo (S)</SubRotulo>
         <SliderCtl
-          rotulo="Deslocamento do topo"
+          rotulo="Debruçar o topo"
           valorFmt={`${criar.corpo.deslocamentoMm >= 0 ? "+" : ""}${cm(criar.corpo.deslocamentoMm)} cm`}
           valor={criar.corpo.deslocamentoMm}
           min={-Math.min(dMax, tetoDeslocInternoMm ?? Infinity)}
           max={dMax}
           passo={LC.deslocamentoMm.passo}
           aoMudar={(v) => mudarCorpo("deslocamentoMm", v)}
-          nota={`o difusor vai junto para o lado; limite de ±${cm(dMax)} cm vem de F4 e cresce com a altura`}
+          nota={`o difusor vai junto para o lado; limite de ±${cm(dMax)} cm cresce com a altura`}
           motivoMax="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
           motivoMin={
             tetoDeslocInternoMm != null && tetoDeslocInternoMm < dMax
@@ -351,7 +351,7 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("posicaoDobra", v)}
         />
 
-        <SubRotulo>Berço no topo (gola)</SubRotulo>
+        <SubRotulo>Berço do difusor (gola)</SubRotulo>
         <Chips
           nomes={["Sem berço", "Com berço"]}
           selecionado={criar.corpo.gola ? 1 : 0}
@@ -372,7 +372,7 @@ export default function PainelCriar({
         {criar.corpo.gola && (
           <div className="mt-3">
             <SliderCtl
-              rotulo="Altura da gola"
+              rotulo="Altura do berço"
               valorFmt={`${cm(criar.corpo.gola.alturaMm)} cm`}
               valor={criar.corpo.gola.alturaMm}
               min={LC.golaAlturaMm.min}
@@ -390,11 +390,11 @@ export default function PainelCriar({
                   },
                 })
               }
-              nota="a parede sobe acima do encaixe e abraça o difusor — o berço do gesto Weight"
+              nota="a parede sobe acima do encaixe — como um vaso que abraça o difusor"
               motivoMax="Mais alto que isso a gola encostaria no difusor — alargue a boca ou escolha um difusor mais fechado."
             />
             <SliderCtl
-              rotulo="Boca da gola"
+              rotulo="Abertura da boca"
               valorFmt={`Ø ${cm(criar.corpo.gola.raioMm * 2)} cm`}
               valor={criar.corpo.gola.raioMm}
               min={LC.golaRaioMm.min}
@@ -460,7 +460,7 @@ export default function PainelCriar({
                       },
                     })
                   }
-                  nota="oblíqua + esfera dentro = o gesto do Weight"
+                  nota="a boca desce em diagonal — fica bonito com uma esfera assentada dentro"
                   motivoMax="Mais fundo que isso o corte alcançaria o assento do encaixe, que fica rebaixado dentro da gola."
                 />
                 {criar.corpo.corte.tipo === "dentes" && (
@@ -590,7 +590,7 @@ export default function PainelCriar({
                   },
                 })
               }
-              nota="a cabeça inteira pende sobre a coluna — o gesto de task light"
+              nota="a cabeça inteira pende sobre a coluna, como uma luminária de escritório"
               motivoMax="Mais inclinada que isso, as paredes da cabeça pediriam suporte na impressão."
             />
             <SliderCtl
@@ -729,7 +729,7 @@ export default function PainelCriar({
         {criar.difusor.vazado && (
           <div className="mt-3">
             <SliderCtl
-              rotulo="Vazios"
+              rotulo="Quantidade de furos"
               valorFmt={`${Math.round(criar.difusor.vazado.densidade * 100)}%`}
               valor={criar.difusor.vazado.densidade}
               min={LIMITES_VAZADO.densidade.min}
@@ -862,13 +862,13 @@ export default function PainelCriar({
           aoMudar={(v) => mudarCorpo("profundidadeGomosMm", v)}
           nota={
             criar.corpo.familiaTextura
-              ? "a textura só esculpe para dentro; se ela variar com a altura, paga o próprio balanço e o perfil aplaina sozinho (F4)"
+              ? "a textura só esculpe para dentro; se ela variar com a altura, paga o próprio balanço e o perfil aplaina sozinho"
               : "gomos esculpem para dentro — sulcos verticais imprimem limpos"
           }
           motivoMax="Mais fundo furaria a parede — o vale da textura precisa deixar material — ou pediria suporte."
         />
         <SliderCtl
-          rotulo="Torção"
+          rotulo="Girar em espiral (torção)"
           valorFmt={`${criar.corpo.torcaoGraus}°`}
           valor={criar.corpo.torcaoGraus}
           min={LC.torcaoGraus.min}
@@ -890,7 +890,7 @@ export default function PainelCriar({
         )}
         <div className="mt-3">
           <SliderCtl
-            rotulo="Esticar a seção"
+            rotulo="Achatar a peça (vista de cima)"
             valorFmt={
               proporcao >= 0.999
                 ? "redonda"
@@ -928,7 +928,7 @@ export default function PainelCriar({
         />
       </Secao>
 
-      <Secao id="regras" titulo="Regras">
+      <Secao id="regras" titulo="Pronto para fabricar" aberta={false}>
         <div
           className={`rounded-2xl border px-4 py-3 ${
             tombaMesmo
@@ -944,7 +944,10 @@ export default function PainelCriar({
             <span className="font-semibold text-[#4F7A44]">✓</span>
           </div>
           <div className="flex justify-between py-1 text-xs text-[#4A463D]">
-            <span>Balanço ≤ {REGRAS.F.balancoMaximoGraus}°</span>
+            <span>
+              Paredes seguram o próprio peso (inclinação ≤{" "}
+              {REGRAS.F.balancoMaximoGraus}°)
+            </span>
             <span className="font-semibold text-[#4F7A44]">✓</span>
           </div>
           <div className="flex justify-between py-1 text-xs text-[#4A463D]">
@@ -987,7 +990,7 @@ export default function PainelCriar({
         </div>
       </Secao>
 
-      <Secao id="publicar" titulo="Publicar no catálogo">
+      <Secao id="publicar" titulo="Publicar no catálogo" aberta={false}>
         <div>
           <input
             type="text"

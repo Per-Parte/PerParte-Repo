@@ -171,12 +171,12 @@ export default function PainelMontar({
                       aria-label={`Cor ${p.nome} para este bloco`}
                       aria-pressed={coresEstruturais[k] === i}
                       onClick={() => setCorEstrutural(k, i)}
-                      className={`h-4.5 w-4.5 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
+                      className={`h-6 w-6 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
                         coresEstruturais[k] === i
                           ? "ring-2 ring-palco-escuro ring-offset-1 ring-offset-white"
                           : "ring-1 ring-black/15"
                       }`}
-                      style={{ background: p.hex, width: 18, height: 18 }}
+                      style={{ background: p.hex, width: 24, height: 24 }}
                     />
                   ))}
                 </div>
@@ -200,7 +200,7 @@ export default function PainelMontar({
           </div>
         )}
         <div className="mt-2.5 text-[10px] leading-relaxed text-[#6D675C]">
-          Os encaixes são os mesmos em toda peça (F5): tudo monta em tudo, em
+          Os encaixes são os mesmos em toda peça: tudo monta em tudo, em
           qualquer ordem. É assim que uma luminária de meio metro sai de uma
           impressora comum — em impressões separadas.
         </div>
@@ -257,7 +257,7 @@ export default function PainelMontar({
         />
       </Secao>
 
-      <Secao id="regras" titulo="Regras">
+      <Secao id="regras" titulo="Pronto para fabricar">
         <div className="rounded-2xl border border-black/[0.08] bg-black/[0.02] px-4 py-3">
           <div className="flex justify-between py-1 text-xs text-[#4A463D]">
             <span>Compatibilidade das partes</span>

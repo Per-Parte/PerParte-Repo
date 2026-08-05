@@ -13,6 +13,8 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import Cena from "./cena/Cena";
 import type { CenaId } from "./cena/tipos";
+import ControladorGestos from "./manipulacao/ControladorGestos";
+import type { MarcaParte } from "./manipulacao/estado";
 import {
   ASSENTO_PASTILHA_MM,
   deslocamentoEspinhaMm,
@@ -146,6 +148,8 @@ interface ParteProps {
   facetas?: FacetasRevolucao;
   /** Corte da borda livre (z(θ)): oblíquo ou dentes — só no difusor. */
   corte?: CorteBorda;
+  /** Marca da parte para o raycast da manipulação direta (userData.pp). */
+  marca?: MarcaParte;
 }
 
 /**
@@ -166,6 +170,7 @@ function Parte({
   vazado,
   facetas,
   corte,
+  marca,
 }: ParteProps) {
   const geometria = useMemo(() => {
     // Facetado/squircle é um estilo próprio e desliga a textura (regra
@@ -252,7 +257,12 @@ function Parte({
 
   return (
     <group position={[xMm / MM, yMm / MM, 0]} rotation={[0, giroY, 0]}>
-      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        castShadow
+        geometry={geometria}
+        rotation={[-Math.PI / 2, 0, 0]}
+        userData={marca ? { pp: marca } : undefined}
+      >
         {difusor ? (
           <meshStandardMaterial
             key={`dif-${facetado}-${luzAcesa}-${mapaVazado ? "vaz" : "solido"}`}
@@ -290,11 +300,14 @@ function PartePlaca({
   xMm,
   yMm,
   cor,
+  marca,
 }: {
   placa: ParametrosPlaca;
   xMm: number;
   yMm: number;
   cor: string;
+  /** Marca da parte para o raycast da manipulação direta (userData.pp). */
+  marca?: MarcaParte;
 }) {
   const geometria = useMemo(() => {
     const m = malhaPlaca(placa, 96);
@@ -309,7 +322,12 @@ function PartePlaca({
   useEffect(() => () => geometria.dispose(), [geometria]);
   return (
     <group position={[xMm / MM, yMm / MM, 0]}>
-      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        castShadow
+        geometry={geometria}
+        rotation={[-Math.PI / 2, 0, 0]}
+        userData={marca ? { pp: marca } : undefined}
+      >
         <meshStandardMaterial color={cor} roughness={0.55} />
       </mesh>
     </group>
@@ -327,6 +345,7 @@ function ParteCabecaInclinada({
   yMm,
   cor,
   luzAcesa,
+  marca,
 }: {
   difusor: ParametrosDifusor;
   junta: JuntaInclinada;
@@ -334,6 +353,8 @@ function ParteCabecaInclinada({
   yMm: number;
   cor: string;
   luzAcesa: boolean;
+  /** Marca da parte para o raycast da manipulação direta (userData.pp). */
+  marca?: MarcaParte;
 }) {
   const geometria = useMemo(() => {
     const m = malhaCabecaInclinada(difusor, junta, 96);
@@ -348,7 +369,12 @@ function ParteCabecaInclinada({
   useEffect(() => () => geometria.dispose(), [geometria]);
   return (
     <group position={[xMm / MM, yMm / MM, 0]}>
-      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        castShadow
+        geometry={geometria}
+        rotation={[-Math.PI / 2, 0, 0]}
+        userData={marca ? { pp: marca } : undefined}
+      >
         <meshStandardMaterial
           color={cor}
           roughness={0.5}
@@ -584,15 +610,34 @@ export default function Cena3D({
 
   // Posições X das colunas DE LUZ (corpo + difusor + lâmpada), em mm.
   // Com refletor, a coluna de luz fica na frente (+X) e a placa atrás (−X).
+  // col = coluna da marca de manipulação (−1 | 0 | 1): 0 quando só há uma;
+  // com refletor, a coluna de luz mora em +X (a placa mora em −X).
   const colunas =
     pontosDeLuz === 2
       ? [
-          { xCorpo: -meiaSepMm, giro: Math.PI, xTopo: -meiaSepMm - dxTopoMm },
-          { xCorpo: meiaSepMm, giro: 0, xTopo: meiaSepMm + dxTopoMm },
+          {
+            xCorpo: -meiaSepMm,
+            giro: Math.PI,
+            xTopo: -meiaSepMm - dxTopoMm,
+            col: -1 as const,
+          },
+          {
+            xCorpo: meiaSepMm,
+            giro: 0,
+            xTopo: meiaSepMm + dxTopoMm,
+            col: 1 as const,
+          },
         ]
       : comPlaca
-        ? [{ xCorpo: meiaSepMm, giro: 0, xTopo: meiaSepMm + dxTopoMm }]
-        : [{ xCorpo: 0, giro: 0, xTopo: dxTopoMm }];
+        ? [
+            {
+              xCorpo: meiaSepMm,
+              giro: 0,
+              xTopo: meiaSepMm + dxTopoMm,
+              col: 1 as const,
+            },
+          ]
+        : [{ xCorpo: 0, giro: 0, xTopo: dxTopoMm, col: 0 as const }];
 
   return (
     // VSM dá à key do estúdio a sombra de borda macia (radius/blurSamples).
@@ -629,6 +674,7 @@ export default function Cena3D({
         cor={coresHex.base}
         segmentos={40}
         facetas={facetasBase}
+        marca={{ parte: "base" }}
       />
       {duo &&
         perfilPastilha &&
@@ -640,6 +686,7 @@ export default function Cena3D({
             xMm={x}
             cor={coresHex.base}
             segmentos={40}
+            marca={{ parte: "pastilha", coluna: i === 0 ? -1 : 1 }}
           />
         ))}
       {comPlaca && placa && (
@@ -648,6 +695,7 @@ export default function Cena3D({
           xMm={-meiaSepMm}
           yMm={yColunaMm}
           cor={coresHex.base}
+          marca={{ parte: "placa" }}
         />
       )}
       {(perfis.estruturais ?? []).map((perfil, k) => {
@@ -665,6 +713,7 @@ export default function Cena3D({
             cor={coresHex.estruturais?.[k] ?? coresHex.corpo}
             segmentos={40}
             facetas={facetasEstruturais?.[k]}
+            marca={{ parte: "estrutural", indice: k, coluna: c.col }}
           />
         ));
       })}
@@ -681,6 +730,7 @@ export default function Cena3D({
           espinha={espinhaCorpo}
           facetas={facetasCorpo}
           corte={corteCorpo}
+          marca={{ parte: "corpo", coluna: c.col }}
         />
       ))}
       {colunas.map((c, i) =>
@@ -693,6 +743,7 @@ export default function Cena3D({
             yMm={yCorpoMm + alturasMm.corpo}
             cor={coresHex.difusor}
             luzAcesa={luzAcesa}
+            marca={{ parte: "difusor", coluna: c.col, inclinada: true }}
           />
         ) : (
           <Parte
@@ -708,9 +759,17 @@ export default function Cena3D({
             vazado={vazadoDifusor}
             facetas={facetasDifusor}
             corte={corteDifusor}
+            marca={{ parte: "difusor", coluna: c.col, inclinada: false }}
           />
         )
       )}
+
+      {/* Manipulação direta: seleção por raycast + glow; arrastar no vazio
+          segue SEMPRE órbita (spec manipulação §2.1/§4). */}
+      <ControladorGestos
+        controlesRef={refControles}
+        suspensoAteRef={suspensoAte}
+      />
 
       {/* O visitante sempre pode arrastar (§4.3); o start suspende o rig 4 s. */}
       <OrbitControls
