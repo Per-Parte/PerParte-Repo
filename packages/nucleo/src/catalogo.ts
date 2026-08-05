@@ -143,7 +143,13 @@ export const LIMITES_CRIAR = {
     ondulacao: { min: 0, max: 12, passo: 1 },
     amplitudeOndaMm: { min: 0, max: 6, passo: 0.5 },
     gomos: { min: 0, max: 24, passo: 2 },
-    profundidadeGomosMm: { min: 0, max: 4, passo: 0.5 },
+    /**
+     * Aletas profundas (raio-X 05/08): 4 → 12 mm. Profundidade não cria
+     * balanço (sulco vertical imprime camada a camada) nem fura o miolo
+     * (pisoMm S2); o custo helicoidal da TORÇÃO é clampado na malha
+     * (tan ≤ 1). Acima de 12, lâmina esbelta ⚑ validar impresso.
+     */
+    profundidadeGomosMm: { min: 0, max: 12, passo: 0.5 },
     torcaoGraus: { min: -90, max: 90, passo: 5 },
     /** Repetição das famílias de textura que não são gomos. */
     repeticaoTextura: { min: 3, max: 24, passo: 1 },

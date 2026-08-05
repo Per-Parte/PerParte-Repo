@@ -34,7 +34,13 @@ export const TIPOS_CORTE_BORDA: { id: TipoCorteBorda; nome: string }[] = [
 ];
 
 export const LIMITES_CORTE_BORDA = {
-  profundidadeMm: { min: 4, max: 25, passo: 1 },
+  /**
+   * Raio-X 05/08: 25 → 60 mm. Os 25 eram conservadorismo do primeiro dia —
+   * o clamp `min` é monótono (anéis nunca se invertem, sólido estanque) e
+   * só remove material de cima, em qualquer profundidade. O gesto da boca
+   * diagonal funda (~50–60 mm) pedia o teto real. ⚑ validar impresso.
+   */
+  profundidadeMm: { min: 4, max: 60, passo: 1 },
   repeticao: { min: 4, max: 20, passo: 1 },
 } as const;
 
@@ -48,7 +54,7 @@ const frac = (x: number) => x - Math.floor(x);
 export function profundidadeMaximaCorteMm(alturaMm: number): number {
   return Math.min(
     LIMITES_CORTE_BORDA.profundidadeMm.max,
-    Math.round(0.3 * alturaMm)
+    Math.round(0.35 * alturaMm)
   );
 }
 

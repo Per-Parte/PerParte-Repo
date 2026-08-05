@@ -105,9 +105,18 @@ export function malhaRevolucao(
   const profundidadeMm = comTextura
     ? profundidadeEfetivaTexturaMm(textura)
     : 0;
-  const torcaoRad = comTextura
-    ? (textura.torcaoGraus * Math.PI) / 180
-    : 0;
+  // A TORÇÃO tem custo próprio de impressão: a face da aleta segue a
+  // hélice, com inclinação tan = r·τ/h — independente da profundidade.
+  // O orçamento das famílias só cobra a variação VERTICAL (coefV), então
+  // a hélice é clampada aqui: em peça larga e baixa, a torção encosta no
+  // F4 e para (limite como ferramenta). ⚑ validar impresso.
+  let torcaoRad = comTextura ? (textura.torcaoGraus * Math.PI) / 180 : 0;
+  if (torcaoRad !== 0 && comTextura) {
+    let rMaxPerfil = 0;
+    for (const p of perfil) rMaxPerfil = Math.max(rMaxPerfil, p.x);
+    const teto = textura.alturaMm / Math.max(1, rMaxPerfil);
+    torcaoRad = Math.sign(torcaoRad) * Math.min(Math.abs(torcaoRad), teto);
+  }
 
   for (let j = 0; j < nAneis; j++) {
     // Espinha curva: o centro do anel se desloca em X conforme a altura.

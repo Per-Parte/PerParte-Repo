@@ -97,7 +97,9 @@ describe("z(θ) — corte de terminação", () => {
       60
     );
     expect(fundo?.profundidadeMm).toBe(profundidadeMaximaCorteMm(60));
-    expect(profundidadeMaximaCorteMm(60)).toBeLessThanOrEqual(18);
+    expect(profundidadeMaximaCorteMm(60)).toBeLessThanOrEqual(21);
+    // Raio-X 05/08: cortes fundos (boca diagonal ~50–60 mm) agora saem.
+    expect(profundidadeMaximaCorteMm(180)).toBe(60);
     const dentes = grampearCorteBorda(
       { tipo: "dentes", profundidadeMm: 10, repeticao: 99 },
       100
