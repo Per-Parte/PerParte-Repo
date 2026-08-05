@@ -3,6 +3,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -39,6 +40,8 @@ import {
 import PainelMontar from "./PainelMontar";
 import PainelCriar from "./PainelCriar";
 import BotaoSalvar from "./BotaoSalvar";
+import ToggleCena from "./cena/ToggleCena";
+import { CHAVE_CENA, cenaValida, type CenaId } from "./cena/tipos";
 import { NumeroAnimado } from "./controles";
 import { codificarCriacao, decodificarCriacao } from "@/lib/criacao";
 
@@ -124,6 +127,10 @@ export default function Configurador() {
   });
   /** Estúdio aceso? false = "apagar a luz do ambiente" (§4.4). */
   const [ambienteAceso, setAmbienteAceso] = useState(true);
+  /** Cenário ao redor da obra (§4.4) — preferência local, fora do ?c=. */
+  const [cena, setCena] = useState<CenaId>("estudio");
+  /** O quarto (GLB) já chegou? Enquanto não, o toggle mostra "Dando forma…". */
+  const [quartoPronto, setQuartoPronto] = useState(false);
   /** Seção visível no scroll do painel — guia a câmera (§4.3). */
   const [secaoAtiva, setSecaoAtiva] = useState("base");
   const refRolagem = useRef<HTMLDivElement>(null);
@@ -246,6 +253,32 @@ export default function Configurador() {
     secoes.forEach((s) => io.observe(s));
     return () => io.disconnect();
   }, [modo]);
+
+  // Hidrata a preferência de cenário do localStorage (só existe no cliente;
+  // o SSR renderiza "estudio" e o cliente corrige na montagem, sem mismatch).
+  useEffect(() => {
+    const guardada = cenaValida(window.localStorage.getItem(CHAVE_CENA));
+    if (guardada && guardada !== "estudio") {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- sincronização
+         única localStorage→estado na montagem: o storage é o sistema externo. */
+      setCena(guardada);
+    }
+  }, []);
+
+  /** Troca o cenário e guarda a escolha — ela NÃO entra no ?c= (link). */
+  function trocarCena(c: CenaId) {
+    setCena(c);
+    try {
+      window.localStorage.setItem(CHAVE_CENA, c);
+    } catch {
+      // Sem storage (modo privado etc.): a troca vale só nesta visita.
+    }
+  }
+
+  /** O cenário pedido terminou de carregar — o pill "Dando forma…" sai. */
+  const aoProntoCena = useCallback((id: CenaId) => {
+    if (id === "quarto") setQuartoPronto(true);
+  }, []);
 
   // Carrega a criação do link (?c=...) uma única vez, ao abrir.
   useEffect(() => {
@@ -591,8 +624,26 @@ export default function Configurador() {
           secaoAtiva={secaoAtiva}
           ambienteAceso={ambienteAceso}
           sinalRolagem={refSinalRolagem}
+          cena={cena}
+          aoProntoCena={aoProntoCena}
+        />
+        {/* Vinheta MUITO sutil nas bordas do palco — profundidade sem pós. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(130% 100% at 50% 44%, transparent 58%, rgba(26,25,23,0.07) 100%)",
+          }}
         />
       </div>
+
+      {/* Toggle de cena Estúdio · Cenário — flutua no alto do palco (§4.4). */}
+      <ToggleCena
+        cena={cena}
+        aoTrocar={trocarCena}
+        preparando={cena === "quarto" && !quartoPronto}
+      />
 
       {/* Topo esquerdo: wordmark (volta para a landing) */}
       <Link

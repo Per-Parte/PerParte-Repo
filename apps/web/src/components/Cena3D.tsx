@@ -9,8 +9,10 @@ import {
   type RefObject,
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import Cena from "./cena/Cena";
+import type { CenaId } from "./cena/tipos";
 import {
   ASSENTO_PASTILHA_MM,
   deslocamentoEspinhaMm,
@@ -50,102 +52,6 @@ function useMovimentoReduzido() {
     },
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => false
-  );
-}
-
-/** Tons do estúdio claro e do estúdio apagado (§4.4 / §2). */
-const ESTUDIO = {
-  fundoClaro: new THREE.Color("#FAF5EA"), // quase branco, quente
-  nevoaClara: new THREE.Color("#E4DCCB"), // --areia
-  chaoClaro: new THREE.Color("#E7DFD0"), // --palco-claro
-  fundoEscuro: new THREE.Color("#0d0c0b"), // quase-preto do apagar a luz
-  nevoaEscura: new THREE.Color("#0d0c0b"),
-  chaoEscuro: new THREE.Color("#141110"), // um fio acima do fundo: a luz da obra poça nele
-};
-
-interface CenarioProps {
-  /**
-   * Slot de cenários (§4.4): "estudio" é o único da v1 — os cenários
-   * realistas que o Davi vai enviar entram como novos ids, sem tocar no resto.
-   */
-  id: "estudio";
-  /** 1 = estúdio aceso · 0,3 = seção Luz (ambiente a 30%) · 0 = apagado. */
-  intensidade: number;
-  reduzido: boolean;
-}
-
-/**
- * O ambiente ao redor da obra: chão infinito fosco, fundo em gradiente suave
- * areia→branco (cor de clear + névoa — a forma mais simples), luzes de
- * estúdio e sombra de contato. Deve ser filho direto do Canvas (o fundo e a
- * névoa se prendem à cena). Tudo aqui escurece junto quando o visitante
- * apaga a luz do ambiente — a transição (~800 ms) é feita por damping.
- */
-function Cenario({ intensidade, reduzido }: CenarioProps) {
-  const atual = useRef(1);
-  const refFundo = useRef<THREE.Color>(null);
-  const refNevoa = useRef<THREE.Fog>(null);
-  const refChao = useRef<THREE.MeshStandardMaterial>(null);
-  const refHemi = useRef<THREE.HemisphereLight>(null);
-  const refChave = useRef<THREE.DirectionalLight>(null);
-  const refContra = useRef<THREE.DirectionalLight>(null);
-
-  useFrame((_, delta) => {
-    const dt = Math.min(delta, 0.1);
-    // λ = 5 ⇒ assenta em ~0,8 s; com movimento reduzido, troca direto (§6).
-    atual.current = reduzido
-      ? intensidade
-      : THREE.MathUtils.damp(atual.current, intensidade, 5, dt);
-    const s = atual.current;
-    refFundo.current?.copy(ESTUDIO.fundoEscuro).lerp(ESTUDIO.fundoClaro, s);
-    refNevoa.current?.color
-      .copy(ESTUDIO.nevoaEscura)
-      .lerp(ESTUDIO.nevoaClara, s);
-    refChao.current?.color.copy(ESTUDIO.chaoEscuro).lerp(ESTUDIO.chaoClaro, s);
-    if (refHemi.current) refHemi.current.intensity = 0.03 + 0.55 * s;
-    if (refChave.current) refChave.current.intensity = 0.05 + 1.15 * s;
-    if (refContra.current) refContra.current.intensity = 0.35 * s;
-  });
-
-  return (
-    <>
-      {/* Fundo areia→branco: clear quase branco + névoa cor de areia (§4.4). */}
-      <color ref={refFundo} attach="background" args={["#FAF5EA"]} />
-      <fog ref={refNevoa} attach="fog" args={["#E4DCCB", 7, 18]} />
-      {/* Luz de estúdio: ambiente suave + key warm + contraluz fria discreta. */}
-      <hemisphereLight ref={refHemi} args={["#FFFFFF", "#D9CFBA", 0.58]} />
-      <directionalLight
-        ref={refChave}
-        position={[4.5, 7.2, 5.3]}
-        intensity={1.2}
-        color="#FFE9CD"
-      />
-      <directionalLight
-        ref={refContra}
-        position={[-5.5, 2.5, -3.5]}
-        intensity={0.35}
-        color="#C9D3DE"
-      />
-      {/* Chão infinito fosco — a névoa o dissolve muito antes da borda. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.004, 0]}>
-        <circleGeometry args={[90, 64]} />
-        <meshStandardMaterial
-          ref={refChao}
-          color="#E7DFD0"
-          roughness={1}
-          metalness={0}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <ContactShadows
-        position={[0, -0.001, 0]}
-        opacity={0.42}
-        scale={7.5}
-        blur={2.7}
-        far={2.6}
-        color="#2A241B"
-      />
-    </>
   );
 }
 
@@ -346,7 +252,7 @@ function Parte({
 
   return (
     <group position={[xMm / MM, yMm / MM, 0]} rotation={[0, giroY, 0]}>
-      <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
         {difusor ? (
           <meshStandardMaterial
             key={`dif-${facetado}-${luzAcesa}-${mapaVazado ? "vaz" : "solido"}`}
@@ -403,7 +309,7 @@ function PartePlaca({
   useEffect(() => () => geometria.dispose(), [geometria]);
   return (
     <group position={[xMm / MM, yMm / MM, 0]}>
-      <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
         <meshStandardMaterial color={cor} roughness={0.55} />
       </mesh>
     </group>
@@ -442,7 +348,7 @@ function ParteCabecaInclinada({
   useEffect(() => () => geometria.dispose(), [geometria]);
   return (
     <group position={[xMm / MM, yMm / MM, 0]}>
-      <mesh geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh castShadow geometry={geometria} rotation={[-Math.PI / 2, 0, 0]}>
         <meshStandardMaterial
           color={cor}
           roughness={0.5}
@@ -504,6 +410,10 @@ export interface Cena3DProps {
   ambienteAceso?: boolean;
   /** Contador que avança a cada scroll do painel — re-sincroniza a câmera. */
   sinalRolagem?: RefObject<number>;
+  /** Cenário ao redor da obra (§4.4) — persiste fora do ?c=. */
+  cena?: CenaId;
+  /** Avisa a UI quando um cenário carregado sob demanda ficou pronto. */
+  aoProntoCena?: (id: CenaId) => void;
 }
 
 export default function Cena3D({
@@ -526,6 +436,8 @@ export default function Cena3D({
   secaoAtiva,
   ambienteAceso = true,
   sinalRolagem,
+  cena = "estudio",
+  aoProntoCena,
 }: Cena3DProps) {
   const reduzido = useMovimentoReduzido();
   const refControles = useRef<ComponentRef<typeof OrbitControls> | null>(null);
@@ -676,9 +588,15 @@ export default function Cena3D({
         : [{ xCorpo: 0, giro: 0, xTopo: dxTopoMm }];
 
   return (
-    <Canvas camera={{ position: [3.4, 2.6, 4.4], fov: 38 }}>
-      {/* O estúdio claro (§4.4) — trocável por cenários realistas depois. */}
-      <Cenario id="estudio" intensidade={luzEstudio} reduzido={reduzido} />
+    // VSM dá à key do estúdio a sombra de borda macia (radius/blurSamples).
+    <Canvas shadows="variance" camera={{ position: [3.4, 2.6, 4.4], fov: 38 }}>
+      {/* O slot de cenários (§4.4): estúdio branco gelo ou quarto realista. */}
+      <Cena
+        id={cena}
+        intensidade={luzEstudio}
+        reduzido={reduzido}
+        aoProntoCena={aoProntoCena}
+      />
       {luzAcesa &&
         colunas.map((c, i) => (
           <pointLight
@@ -693,8 +611,8 @@ export default function Cena3D({
               0,
             ]}
             color="#FFC478"
-            intensity={9}
-            distance={9}
+            intensity={13}
+            distance={13}
           />
         ))}
 
