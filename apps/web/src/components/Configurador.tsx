@@ -26,13 +26,19 @@ import {
   desvioCabecaMm,
   estabilidade,
   estimarPreco,
+  facetasParaBase,
+  facetasParaCorpo,
+  facetasParaDifusor,
+  fatorPerimetroSecao,
+  grampearBase,
+  grampearCorpo,
+  grampearDifusor,
   perfilBase,
   perfilCorpo,
   perfilDifusor,
   perfilEstrutural,
   perfisPlacaParaPeso,
   RAIO_LIVRE_MIOLO_MM,
-  separacaoMaximaMm,
   type ParametrosBase,
   type ParametrosCorpo,
   type ParametrosDifusor,
@@ -99,6 +105,14 @@ const ALTURAS_SHEET = [15, 45, 85];
 const PILL_PRODUCAO =
   "rounded-full border border-black/10 bg-black/[0.02] px-2.5 py-1 text-[#6D675C] transition-colors hover:border-black/30 hover:text-palco-escuro disabled:opacity-40";
 
+/** A criação "nunca tocada" (grampeio do vazio) — referência para saber se
+ *  um link carrega escultura própria ou só o padrão. */
+const CRIAR_PADRAO = JSON.stringify({
+  base: grampearBase({}),
+  corpo: grampearCorpo({}),
+  difusor: grampearDifusor({}),
+});
+
 export default function Configurador() {
   const [modo, setModo] = useState<Modo>("montar");
   const [iBase, setIBase] = useState(0);
@@ -141,6 +155,9 @@ export default function Configurador() {
   const refRolagem = useRef<HTMLDivElement>(null);
   /** Avança a cada scroll do painel; a cena lê para re-sincronizar a câmera. */
   const refSinalRolagem = useRef(0);
+  /** A criação já foi semeada (1ª entrada no Inventar ou link com escultura)?
+   *  Depois disso, trocar de modo NUNCA re-seeda — o trabalho não se apaga. */
+  const criarSemeado = useRef(false);
 
   /** Altura do bottom sheet em <md (§5), em % da tela — começa em meia. */
   const [alturaSheet, setAlturaSheet] = useState(45);
@@ -311,6 +328,10 @@ export default function Configurador() {
     setRemixDe(
       c.remixDe || `${CORPOS[c.iCorpo].nome} + ${DIFUSORES[c.iDifusor].nome}`
     );
+    // Link que chega com escultura própria conta como criação já semeada —
+    // mesmo se vier em modo Montar (escultura escondida não se apaga).
+    if (c.modo === "criar" || JSON.stringify(c.criar) !== CRIAR_PADRAO)
+      criarSemeado.current = true;
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
@@ -364,7 +385,11 @@ export default function Configurador() {
   }
 
   function trocarModo(m: Modo) {
-    if (m === "criar" && modo !== "criar") {
+    // A PRIMEIRA entrada no Inventar parte das peças do Montar (remix).
+    // Depois disso a escultura é do cliente: alternar Montar ↔ Inventar
+    // nunca mais re-seeda (auditoria 2, B5 — perda de trabalho).
+    if (m === "criar" && modo !== "criar" && !criarSemeado.current) {
+      criarSemeado.current = true;
       setCriar({
         base: { ...BASES[iBase] },
         corpo: { ...CORPOS[iCorpo] },
@@ -430,10 +455,11 @@ export default function Configurador() {
     [modo, iCorpo, criar.corpo, difusorBruto]
   );
 
-  // Composição dupla (2 luzes ou luz + refletor): separação sobe até as
-  // colunas terem ar; se nem o teto der conta, o raio do difusor raseia; a
-  // curva S "para dentro" para onde o ar acaba — a MESMA função do backend
-  // (auditoria A2–A4).
+  // Composição dupla (2 luzes ou luz + refletor): a base vira prato de
+  // verdade e alarga até as colunas terem ar; se nem o F1 der conta, o
+  // difusor raseia (junta re-grampeada) e o corpo por último; a curva S
+  // "para dentro" para onde o ar acaba — a MESMA função do backend
+  // (auditorias A2–A4 e B3/B4/B8).
   const dupla = pontosDeLuz === 2 || !!placa;
   const comp = useMemo(
     () =>
@@ -446,12 +472,8 @@ export default function Configurador() {
             {
               comPlaca: !!placa,
               separacaoPedidaMm: separacaoMm,
-              separacaoTetoMm: separacaoMaximaMm(
-                base.raioMm,
-                1,
-                segmentos <= 16 ? segmentos : 0,
-                expoente
-              ),
+              lados: segmentos <= 16 ? segmentos : 0,
+              expoente,
             }
           )
         : null,
@@ -524,6 +546,32 @@ export default function Configurador() {
     }),
     [baseFinal, corpo, difusor, estab.escala, pontosDeLuz, placa, pecasEstruturais]
   );
+  // Peso com o perímetro REAL da seção (aletas engordam a parede, esticar/
+  // facetas encolhem) — as gramas alimentam o contrapeso, que é produção
+  // (auditoria 05/08, B7). Cabeça inclinada é lisa: fator 1.
+  const lados = segmentos <= 16 ? segmentos : 0;
+  const fatoresPeso = useMemo(
+    () => ({
+      base: fatorPerimetroSecao(
+        perfis.base,
+        undefined,
+        facetasParaBase(lados, baseFinal.alturaMm, expoente, proporcaoEfetiva)
+      ),
+      corpo: fatorPerimetroSecao(
+        perfis.corpo,
+        texturas.corpo,
+        facetasParaCorpo(lados, corpo.alturaMm, expoente, proporcaoEfetiva)
+      ),
+      difusor: difusor.junta
+        ? 1
+        : fatorPerimetroSecao(
+            perfis.difusor,
+            texturas.difusor,
+            facetasParaDifusor(lados, difusor.alturaMm, expoente, proporcaoEfetiva)
+          ),
+    }),
+    [perfis, texturas, lados, expoente, proporcaoEfetiva, baseFinal.alturaMm, corpo.alturaMm, difusor.alturaMm, difusor.junta]
+  );
   const { gramas, precoBRL } = useMemo(
     () =>
       estimarPreco(
@@ -532,9 +580,10 @@ export default function Configurador() {
         perfis.difusor,
         pontosDeLuz,
         perfis.estruturais,
-        placa ? perfisPlacaParaPeso(placa) : []
+        placa ? perfisPlacaParaPeso(placa) : [],
+        fatoresPeso
       ),
-    [perfis, pontosDeLuz, placa]
+    [perfis, pontosDeLuz, placa, fatoresPeso]
   );
   // E3: corpo debruçado além do que a base alargada segura pede um inserto
   // de peso na base — item de produção, o STL não muda.
@@ -566,12 +615,15 @@ export default function Configurador() {
   );
 
   const [gerandoSTL, setGerandoSTL] = useState<string | null>(null);
+  /** Falha na geração não pode ser muda (auditoria 05/08, B6). */
+  const [erroSTL, setErroSTL] = useState<string | null>(null);
   async function baixarSTL(
     parte: ParteAlvo | "estrutural" | "placa",
     indice = 0
   ) {
     const chave = parte === "estrutural" ? `estrutural-${indice}` : parte;
     setGerandoSTL(chave);
+    setErroSTL(null);
     try {
       const resp = await fetch("/api/stl", {
         method: "POST",
@@ -591,7 +643,17 @@ export default function Configurador() {
           placa,
         }),
       });
-      if (!resp.ok) return;
+      if (!resp.ok) {
+        const detalhe = await resp
+          .json()
+          .then((j) => (typeof j?.erro === "string" ? j.erro : null))
+          .catch(() => null);
+        setErroSTL(
+          detalhe ?? "não deu para gerar o arquivo agora — tente de novo"
+        );
+        setTimeout(() => setErroSTL(null), 8000);
+        return;
+      }
       const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -602,6 +664,9 @@ export default function Configurador() {
           : `per-parte-${parte}.stl`;
       a.click();
       URL.revokeObjectURL(url);
+    } catch {
+      setErroSTL("não deu para gerar o arquivo agora — tente de novo");
+      setTimeout(() => setErroSTL(null), 8000);
     } finally {
       setGerandoSTL(null);
     }
@@ -864,6 +929,9 @@ export default function Configurador() {
               setPlaca={setPlaca}
               separacaoEfetivaMm={separacaoEfetivaMm}
               baseVirouPrato={comp?.ajustes.baseVirouPrato}
+              baseAlargadaParaMm={
+                comp?.ajustes.baseAlargou ? comp.base.raioMm : undefined
+              }
               luzAcesa={luzAcesa}
               setLuzAcesa={setLuzAcesa}
             />
@@ -890,7 +958,11 @@ export default function Configurador() {
               setPlaca={setPlaca}
               separacaoEfetivaMm={separacaoEfetivaMm}
               baseVirouPrato={comp?.ajustes.baseVirouPrato}
+              baseAlargadaParaMm={
+                comp?.ajustes.baseAlargou ? comp.base.raioMm : undefined
+              }
               raioDifusorTetoMm={comp?.raioDifusorTetoMm}
+              raioCorpoTetoMm={comp?.raioCorpoTetoMm}
               tetoDeslocInternoMm={comp?.tetoInternoMm}
               luzAcesa={luzAcesa}
               setLuzAcesa={setLuzAcesa}
@@ -958,6 +1030,11 @@ export default function Configurador() {
                 </a>
               ))}
             </div>
+            {erroSTL && (
+              <div className="mt-2 text-[10px] leading-relaxed text-[#A85A1E]">
+                {erroSTL}
+              </div>
+            )}
           </div>
         </div>
 
@@ -991,6 +1068,7 @@ export default function Configurador() {
         setAlvoCor={setAlvoCor}
         raioDifusorTetoMm={comp?.raioDifusorTetoMm}
         tetoDeslocInternoMm={comp?.tetoInternoMm}
+        raioCorpoTetoMm={comp?.raioCorpoTetoMm}
       />
 
       {/* Motivo didático de limite, flutuando no palco (§6). */}

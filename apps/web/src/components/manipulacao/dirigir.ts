@@ -431,10 +431,15 @@ export function dirigir(
         pedido,
         LIMITES_CRIAR.corpo.perfilLivreRaioMm.passo
       );
-      const proposto = atual.map((r, j) => (j === i ? bruto : r));
+      // Teto derivado da dupla (o mesmo do slider): as colunas têm ar.
+      const aplicado =
+        p.raioCorpoTetoMm != null
+          ? Math.min(bruto, p.raioCorpoTetoMm)
+          : bruto;
+      const proposto = atual.map((r, j) => (j === i ? aplicado : r));
       const efetivo =
         grampearCorpo({ ...p.criar.corpo, perfilLivre: proposto })
-          .perfilLivre?.[i] ?? bruto;
+          .perfilLivre?.[i] ?? aplicado;
       p.setCriar((c) =>
         c.corpo.perfilLivre
           ? {
@@ -442,7 +447,7 @@ export function dirigir(
               corpo: grampearCorpo({
                 ...c.corpo,
                 perfilLivre: c.corpo.perfilLivre.map((r, j) =>
-                  j === i ? bruto : r
+                  j === i ? aplicado : r
                 ),
               }),
             }

@@ -174,21 +174,25 @@ function Parte({
 }: ParteProps) {
   const geometria = useMemo(() => {
     // Facetado/squircle é um estilo próprio e desliga a textura (regra
-    // existente); a malha fica fina para o encaixe sair redondo.
-    const comFacetas = modulaPorTheta(facetas);
+    // existente). ESTICAR é seção, não acabamento: a textura continua
+    // esculpindo por cima da elipse (auditoria 05/08, B2). A malha fica
+    // fina sempre que há modulação, para o encaixe sair redondo.
+    const comModulacao = modulaPorTheta(facetas);
+    const comFacetasDuras =
+      !!facetas && (facetas.lados >= 3 || (facetas.expoente ?? 0) > 2);
     const comTextura =
-      !comFacetas &&
+      !comFacetasDuras &&
       !!textura &&
       textura.profundidadeMm > 0 &&
       segmentos >= 32 &&
       (textura.familia && textura.familia !== "gomos"
         ? (textura.repeticao ?? 0) > 0
         : textura.gomos > 0);
-    const seg = comFacetas ? 96 : comTextura ? 96 : segmentos;
+    const seg = comModulacao || comTextura ? 96 : segmentos;
     const m = malhaRevolucao(
       perfil,
       seg,
-      comFacetas ? undefined : textura,
+      comFacetasDuras ? undefined : textura,
       espinha,
       facetas,
       corte

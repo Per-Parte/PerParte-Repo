@@ -67,6 +67,8 @@ export interface RegistroPonte {
   raioDifusorTetoMm?: number;
   /** Quanto a curva S ainda pode ir "para dentro" na dupla — idem (§5.2). */
   tetoDeslocInternoMm?: number;
+  /** Teto do raio do corpo na composição dupla — as colunas precisam de ar. */
+  raioCorpoTetoMm?: number;
 }
 
 interface EstadoManipulacao {

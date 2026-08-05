@@ -170,6 +170,37 @@ export function desvioCabecaMm(
   return junta.deslocamentoMm + Math.sin(rad) * difusor.alturaMm * 0.5;
 }
 
+/**
+ * Alcance lateral REAL da cabeça inclinada, em mm a partir do eixo da
+ * coluna — exato do mesmo perfil que gera a malha: um ponto (x, z) do
+ * perfil, girado por `rad` em torno de Y e transladado pelo deslocamento,
+ * chega no máximo a `desloc + x·cos + z·sin` (frente) e recua até
+ * `x·cos − z·sin − desloc` (costas). A regra do ar da composição dupla usa
+ * o lado das COSTAS: por convenção as cabeças apontam para FORA (o espelho
+ * da cena gira a coluna inteira), então é a nuca que encara a vizinha.
+ */
+export function alcanceLateralCabecaMm(
+  difusor: ParametrosDifusor,
+  junta?: JuntaInclinada
+): { paraForaMm: number; paraDentroMm: number } {
+  if (!junta) {
+    const r = perfilDifusor(difusor).reduce((m, p) => Math.max(m, p.x), 0);
+    return { paraForaMm: r, paraDentroMm: r };
+  }
+  const rad = (junta.inclinacaoGraus * Math.PI) / 180;
+  const perfil = perfilDifusor(difusor, ENCAIXES.folgaPadraoMm, false);
+  let frente = 0;
+  let costas = 0;
+  for (const p of perfil) {
+    frente = Math.max(frente, p.x * Math.cos(rad) + p.y * Math.sin(rad));
+    costas = Math.max(costas, p.x * Math.cos(rad) - p.y * Math.sin(rad));
+  }
+  return {
+    paraForaMm: junta.deslocamentoMm + frente,
+    paraDentroMm: Math.max(0, costas - junta.deslocamentoMm),
+  };
+}
+
 /** Raio mínimo da cabeça para o miolo elétrico caber inclinado. ⚑ */
 export const RAIO_MINIMO_CABECA_MM = Math.ceil(
   RAIO_LIVRE_MIOLO_MM / Math.cos((LIMITES_JUNTA.inclinacaoGraus.max * Math.PI) / 180) + 25

@@ -25,13 +25,16 @@ const yPx = (t: number) => MARGEM + (1 - t) * (ALTURA - 2 * MARGEM);
 interface Props {
   corpo: ParametrosCorpo;
   aoMudar: (raios: number[]) => void;
+  /** Composição dupla: teto do raio (as colunas precisam de ar). */
+  raioTetoMm?: number;
 }
 
-export default function EditorSilhueta({ corpo, aoMudar }: Props) {
+export default function EditorSilhueta({ corpo, aoMudar, raioTetoMm }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [arrastando, setArrastando] = useState<number | null>(null);
   const raios = corpo.perfilLivre ?? [];
   const L = LIMITES_CRIAR.corpo.perfilLivreRaioMm;
+  const raioMax = Math.min(L.max, raioTetoMm ?? Infinity);
 
   // Silhueta real (com clamps do núcleo), só a região lateral.
   const perfil = perfilCorpo(corpo).filter(
@@ -48,7 +51,7 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
     const rect = svgRef.current!.getBoundingClientRect();
     const xSvg = ((e.clientX - rect.left) / rect.width) * LARGURA;
     const r = (xSvg - MARGEM) / ESCALA_X;
-    return Math.min(L.max, Math.max(L.min, Math.round(r * 2) / 2));
+    return Math.min(raioMax, Math.max(L.min, Math.round(r * 2) / 2));
   }
 
   return (
@@ -99,6 +102,14 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
       <div className="px-1 pb-1 text-[10px] text-[#6D675C]">
         Arraste os pontos para os lados. O traço é a peça real — os limites de
         fabricação seguram o arrasto sozinhos.
+        {raioTetoMm != null && raioTetoMm < L.max && (
+          <>
+            {" "}
+            Na composição de duas colunas, a silhueta vai até Ø{" "}
+            {Math.round(raioTetoMm / 5)} cm — os corpos precisam de ar entre
+            eles.
+          </>
+        )}
       </div>
     </div>
   );

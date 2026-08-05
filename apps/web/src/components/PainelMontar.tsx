@@ -53,8 +53,10 @@ interface Props {
   setPlaca: (p: ParametrosPlaca | null) => void;
   /** Separação efetiva aplicada na cena (a regra pode subi-la). */
   separacaoEfetivaMm: number;
-  /** A base escolhida afinava para o pico e virou prato (composição dupla). */
+  /** A curva escolhida mudou de cara para virar o prato (composição dupla). */
   baseVirouPrato?: boolean;
+  /** O prato alargou além do raio pedido (colunas com ar) — raio efetivo, mm. */
+  baseAlargadaParaMm?: number;
   luzAcesa: boolean;
   setLuzAcesa: (v: boolean) => void;
 }
@@ -85,6 +87,7 @@ export default function PainelMontar({
   setPlaca,
   separacaoEfetivaMm,
   baseVirouPrato,
+  baseAlargadaParaMm,
   luzAcesa,
   setLuzAcesa,
 }: Props) {
@@ -100,8 +103,14 @@ export default function PainelMontar({
         />
         {baseVirouPrato && (
           <div className="mt-2 text-[10px] leading-relaxed text-[#A85A1E]">
-            no modo de duas colunas a base precisa de prato — bases que
-            afinam para o pico (Cone, Prato) assentam aqui como disco reto
+            no modo de duas colunas a base é um disco reto — formas que
+            afinam ou escalonam não têm onde assentar as duas colunas
+          </div>
+        )}
+        {baseAlargadaParaMm != null && (
+          <div className="mt-2 text-[10px] leading-relaxed text-[#A85A1E]">
+            o disco alargou para Ø {Math.round(baseAlargadaParaMm / 5)} cm —
+            é o tamanho que dá ar entre as colunas
           </div>
         )}
       </Secao>

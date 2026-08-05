@@ -77,10 +77,14 @@ interface Props {
   setPlaca: (p: ParametrosPlaca | null) => void;
   /** Separação efetiva aplicada na cena (a regra pode subi-la). */
   separacaoEfetivaMm: number;
-  /** A base escolhida afinava para o pico e virou prato (composição dupla). */
+  /** A curva escolhida mudou de cara para virar o prato (composição dupla). */
   baseVirouPrato?: boolean;
+  /** O prato alargou além do raio pedido (colunas com ar) — raio efetivo, mm. */
+  baseAlargadaParaMm?: number;
   /** Composição dupla: teto do raio do difusor (o slider explica). */
   raioDifusorTetoMm?: number;
+  /** Composição dupla: teto do raio do corpo (a silhueta explica). */
+  raioCorpoTetoMm?: number;
   /** Composição dupla: quanto a curva S ainda pode ir para DENTRO. */
   tetoDeslocInternoMm?: number;
   luzAcesa: boolean;
@@ -110,7 +114,9 @@ export default function PainelCriar({
   setPlaca,
   separacaoEfetivaMm,
   baseVirouPrato,
+  baseAlargadaParaMm,
   raioDifusorTetoMm,
+  raioCorpoTetoMm,
   tetoDeslocInternoMm,
   luzAcesa,
   setLuzAcesa,
@@ -165,8 +171,15 @@ export default function PainelCriar({
       <Secao id="base" titulo="Base">
         {baseVirouPrato && (
           <div className="mb-2 text-[10px] leading-relaxed text-[#A85A1E]">
-            no modo de duas colunas a base precisa de prato — curvas que
-            afinam para o pico (Cone, Côncava) assentam aqui como Reta
+            no modo de duas colunas a base é um prato reto — curvas que
+            afinam, escalonam ou arredondam não têm onde assentar as duas
+            colunas
+          </div>
+        )}
+        {baseAlargadaParaMm != null && (
+          <div className="mb-2 text-[10px] leading-relaxed text-[#A85A1E]">
+            o prato alargou para Ø {Math.round(baseAlargadaParaMm / 5)} cm —
+            é o tamanho que dá ar entre as colunas
           </div>
         )}
         <Chips
@@ -297,6 +310,7 @@ export default function PainelCriar({
           <div>
             <EditorSilhueta
               corpo={criar.corpo}
+              raioTetoMm={raioCorpoTetoMm}
               aoMudar={(raios) =>
                 aoMudar({
                   ...criar,

@@ -28,7 +28,6 @@ import {
   perfilEstrutural,
   perfilPastilhaMacho,
   RAIO_LIVRE_MIOLO_MM,
-  separacaoMaximaMm,
   transladarMalha,
   unirMalhas,
   type EspinhaLateral,
@@ -78,19 +77,16 @@ export async function POST(req: Request) {
   const comPlaca = dados.placa != null;
   if (comPlaca) luminaria.pontosDeLuz = 1;
 
-  // Composição dupla: a MESMA regra do preview (separação sobe, difusor
-  // raseia, curva S para dentro para) — auditoria A2–A4.
+  // Composição dupla: a MESMA regra do preview (base vira prato e alarga,
+  // difusor raseia com junta re-grampeada, corpo raseia por último, curva S
+  // para dentro para) — auditorias A2–A4 e B3/B4/B8.
   const dupla = luminaria.pontosDeLuz === 2 || comPlaca;
   const comp = dupla
     ? ajustarComposicaoDupla(baseBruta, corpoBruto, difusorBruto, estruturais, {
         comPlaca,
         separacaoPedidaMm: luminaria.separacaoMm,
-        separacaoTetoMm: separacaoMaximaMm(
-          baseBruta.raioMm,
-          1,
-          lados,
-          expoente
-        ),
+        lados,
+        expoente,
       })
     : null;
   // A base pode ter virado prato (cone/côncava não assentam duas colunas).
@@ -255,6 +251,11 @@ export async function POST(req: Request) {
         (!!textura.familia &&
           textura.familia !== "gomos" &&
           (textura.repeticao ?? 0) > 0));
+    // Facetas DE VERDADE (polígono/superelipse) trocam o acabamento e
+    // desligam a textura (decisão declarada). ESTICAR é seção, não
+    // acabamento: gomos e texturas continuam esculpindo por cima da
+    // elipse (auditoria 05/08, B2 — o carve compõe com a modulação).
+    const comFacetasDuras = lados >= 3 || (expoente ?? 0) > 2;
     // Modulado por θ: a lateral vira prisma/superelipse com encaixes
     // REDONDOS — o ajuste F5 não depende do acabamento.
     const facetas = comTheta
@@ -262,9 +263,8 @@ export async function POST(req: Request) {
         ? facetasParaCorpo(lados, corpo.alturaMm, expoente, proporcao)
         : facetasParaDifusor(lados, difusor.alturaMm, expoente, proporcao)
       : undefined;
-    const segmentosParte = comTheta
-      ? SEGMENTOS_PRODUCAO_GOMOS
-      : comTextura
+    const segmentosParte =
+      comTheta || comTextura
         ? SEGMENTOS_PRODUCAO_GOMOS
         : SEGMENTOS_PRODUCAO_LISO;
     // Corte de borda (z(θ)) é malha pura e SAI em produção — no difusor
@@ -273,7 +273,7 @@ export async function POST(req: Request) {
     malha = malhaRevolucao(
       perfil,
       segmentosParte,
-      comTheta ? undefined : textura,
+      comFacetasDuras ? undefined : textura,
       espinha,
       facetas,
       parte === "difusor" ? difusor.corte : corpo.gola ? corpo.corte : undefined

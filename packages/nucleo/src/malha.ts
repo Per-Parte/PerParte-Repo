@@ -59,15 +59,16 @@ export interface TexturaRevolucao {
 
 /**
  * Janela vertical da textura: some suavemente perto das extremidades para
- * nunca tocar encaixes (F5), canaletas ou tampas.
+ * nunca tocar encaixes (F5), canaletas ou tampas. (Exportada para o peso —
+ * o fator de perímetro usa a MESMA janela da malha.)
  */
-function janelaTextura(t: number): number {
+export function janelaTextura(t: number): number {
   if (t <= 0.05 || t >= 0.95) return 0;
   return Math.min(1, (t - 0.05) / 0.08, (0.95 - t) / 0.08);
 }
 
 /** Peso 0→1 da zona facetada numa altura y (rampa suave nas duas pontas). */
-function pesoFacetas(y: number, f: FacetasRevolucao): number {
+export function pesoFacetas(y: number, f: FacetasRevolucao): number {
   const t = Math.max(0.01, f.transicaoMm ?? 8);
   const w = Math.min((y - f.yMinMm) / t, (f.yMaxMm - y) / t, 1);
   return w <= 0 ? 0 : w > 1 ? 1 : w;

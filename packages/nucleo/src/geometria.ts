@@ -21,7 +21,12 @@ export interface Ponto2D {
   y: number;
 }
 
-export type CurvaBase = "reta" | "cone" | "concava" | "degrau";
+/**
+ * "prato" não aparece no catálogo: é a curva que a COMPOSIÇÃO DUPLA impõe
+ * (cilindro de topo plano — as duas pastilhas assentam de verdade; qualquer
+ * ombro engoliria o anel macho, auditoria 05/08).
+ */
+export type CurvaBase = "reta" | "cone" | "concava" | "degrau" | "prato";
 export type FormaDifusor = "globo" | "sino" | "cone" | "lanterna";
 
 export interface ParametrosBase {
@@ -233,7 +238,8 @@ export function perfilBase(
   for (let i = 0; i <= n; i++) {
     const u = i / n;
     let rr: number;
-    if (p.curva === "reta") rr = r - (r - RA) * Math.pow(u, 6);
+    if (p.curva === "prato") rr = r; // cilindro puro: o topo fecha PLANO no raio inteiro
+    else if (p.curva === "reta") rr = r - (r - RA) * Math.pow(u, 6);
     else if (p.curva === "cone") rr = r + (RA - r) * u;
     else if (p.curva === "concava") rr = RA + (r - RA) * Math.pow(1 - u, 1.7);
     else
@@ -250,7 +256,13 @@ export function perfilBase(
   return pontos;
 }
 
-/** Catmull-Rom 1D com extremos presos, para a silhueta livre. */
+/**
+ * Catmull-Rom 1D com extremos presos, para a silhueta livre.
+ * Cada trecho fica PRESO à faixa dos dois controles vizinhos: o Catmull
+ * clássico "embarriga" além dos pontos (com 5 controles em 60 o raio real
+ * chegava a 63 — acima do próprio slider, auditoria 05/08 B1). O clamp
+ * troca a barriga por um platô: o número do controle é o raio de verdade.
+ */
 function interpolarCatmull(ts: number[], vs: number[], u: number): number {
   let i = ts.length - 2;
   for (let k = 0; k < ts.length - 1; k++) {
@@ -265,13 +277,15 @@ function interpolarCatmull(ts: number[], vs: number[], u: number): number {
   const p2 = vs[i + 1];
   const p0 = i > 0 ? vs[i - 1] : p1;
   const p3 = i + 2 < vs.length ? vs[i + 2] : p2;
-  return (
+  const bruto =
     0.5 *
     (2 * p1 +
       (p2 - p0) * x +
       (2 * p0 - 5 * p1 + 4 * p2 - p3) * x * x +
-      (-p0 + 3 * p1 - 3 * p2 + p3) * x * x * x)
-  );
+      (-p0 + 3 * p1 - 3 * p2 + p3) * x * x * x);
+  const piso = Math.min(p1, p2);
+  const teto = Math.max(p1, p2);
+  return bruto < piso ? piso : bruto > teto ? teto : bruto;
 }
 
 /**

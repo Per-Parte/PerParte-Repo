@@ -65,10 +65,15 @@ export function motivoDoLimite(
       }
 
     case "perfilLivre":
-      // A silhueta livre esbarra nos mesmos muros da barriga (§5.3).
-      return lado === "max"
-        ? "Mais volume inclinaria a parede além do que imprime sem suporte — e suporte estraga o acabamento."
-        : "Afinar mais encostaria no miolo elétrico, que precisa de folga livre por segurança.";
+      // A silhueta livre esbarra nos mesmos muros da barriga (§5.3) — e,
+      // na composição de duas colunas, no ar entre elas.
+      if (lado === "max") {
+        return p?.raioCorpoTetoMm != null &&
+          p.raioCorpoTetoMm < LIMITES_CRIAR.corpo.perfilLivreRaioMm.max
+          ? "Na composição de duas colunas, os corpos precisam de ar entre eles — aumente a separação para engordar mais."
+          : "Mais volume inclinaria a parede além do que imprime sem suporte — e suporte estraga o acabamento.";
+      }
+      return "Afinar mais encostaria no miolo elétrico, que precisa de folga livre por segurança.";
 
     case "difusor":
       if (alvo.campo !== "raioMm") return null;
