@@ -7,7 +7,7 @@
  */
 
 import { LIMITES_CRIAR, MAX_ESTRUTURAIS } from "./catalogo";
-import { grampearJunta } from "./junta";
+import { grampearJunta, medidasJunta } from "./junta";
 import { grampearCorteBorda } from "./terminacao";
 import { NOMES_FAMILIAS, type FamiliaTextura } from "./texturas";
 import { grampearVazado } from "./vazados";
@@ -211,7 +211,19 @@ export function ajustarGolaAoDifusor(
 ): ParametrosCorpo {
   if (!corpo.gola) return corpo;
   const L = LIMITES_CRIAR.corpo;
-  const teto = golaMaximaMm(perfilDifusor(difusor), corpo.gola.raioMm);
+  // Com a cabeça inclinada, a geometria real não é o perfil reto: a cabeça
+  // começa um pescoço acima e a face de baixo dela é um plano girado. O
+  // teto vem de onde esse plano cruza a parede da FRENTE da gola (A10).
+  const teto = difusor.junta
+    ? (() => {
+        const med = medidasJunta(difusor, difusor.junta!);
+        const zFrenteMm =
+          med.zCentroMm +
+          Math.tan(med.rad) *
+            (difusor.junta!.deslocamentoMm - corpo.gola!.raioMm);
+        return Math.max(0, Math.min(60, zFrenteMm - 2));
+      })()
+    : golaMaximaMm(perfilDifusor(difusor), corpo.gola.raioMm);
   if (teto < L.golaAlturaMm.min) {
     const semGola = { ...corpo };
     delete semGola.gola;

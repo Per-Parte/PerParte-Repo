@@ -84,6 +84,8 @@ export function decodificarCriacao(param: string): CriacaoV1 | null {
       luzAcesa: bruto.luzAcesa !== false,
       ...grampearLuminaria(bruto),
       placa: bruto.placa ? grampearPlaca(bruto.placa) : null,
+      // Refletor e 2 luzes não coexistem — link forjado cai aqui (A11).
+      ...(bruto.placa ? { pontosDeLuz: 1 as const } : {}),
       criar: {
         base: grampearBase(bruto.criar?.base ?? {}),
         corpo: grampearCorpo(bruto.criar?.corpo ?? {}),

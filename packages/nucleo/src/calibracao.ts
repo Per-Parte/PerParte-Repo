@@ -17,7 +17,16 @@ import {
 
 const RAIO_EIXO_MM = 0.6;
 const BORDA_MM = 6;
-const ESPESSURA_PASTILHA_MM = 3;
+export const ESPESSURA_PASTILHA_MM = 3;
+/** Quanto a pastilha afunda na face da base (os sólidos se fundem). */
+export const AFUNDA_PASTILHA_MM = 1;
+/**
+ * Altura do ASSENTO da pastilha acima da face da base, em mm: é onde as
+ * peças da coluna (corpo/estrutural/placa) de fato apoiam nas composições
+ * duplas. Auditoria A6 (04/08): desenhar a coluna na face da base — e não
+ * aqui — afundava as peças 2 mm dentro da laje.
+ */
+export const ASSENTO_PASTILHA_MM = ESPESSURA_PASTILHA_MM - AFUNDA_PASTILHA_MM;
 
 /** Pastilha com o anel macho para cima. */
 export function perfilPastilhaMacho(anel: AnelEncaixe): Ponto2D[] {

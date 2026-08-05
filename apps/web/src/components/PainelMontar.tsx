@@ -45,6 +45,8 @@ interface Props {
   setSeparacaoMm: (v: number) => void;
   placa: ParametrosPlaca | null;
   setPlaca: (p: ParametrosPlaca | null) => void;
+  /** Separação efetiva aplicada na cena (a regra pode subi-la). */
+  separacaoEfetivaMm: number;
   luzAcesa: boolean;
   setLuzAcesa: (v: boolean) => void;
 }
@@ -69,6 +71,7 @@ export default function PainelMontar({
   setSeparacaoMm,
   placa,
   setPlaca,
+  separacaoEfetivaMm,
   luzAcesa,
   setLuzAcesa,
 }: Props) {
@@ -198,6 +201,7 @@ export default function PainelMontar({
           aoMudarSep={setSeparacaoMm}
           placa={placa}
           aoMudarPlaca={setPlaca}
+          separacaoEfetivaMm={separacaoEfetivaMm}
         />
         <SubRotulo>Luz acesa</SubRotulo>
         <Chips

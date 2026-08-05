@@ -1,4 +1,5 @@
 import {
+  ajustarComposicaoDupla,
   ajustarGolaAoDifusor,
   ENCAIXES,
   estabilidade,
@@ -15,6 +16,7 @@ import {
   grampearLuminaria,
   grampearPlaca,
   grampearSegmentos,
+  desvioCabecaMm,
   malhaCabecaInclinada,
   malhaPlaca,
   malhaRevolucao,
@@ -23,6 +25,7 @@ import {
   perfilDifusor,
   perfilEstrutural,
   perfilPastilhaMacho,
+  RAIO_LIVRE_MIOLO_MM,
   separacaoMaximaMm,
   transladarMalha,
   unirMalhas,
@@ -50,15 +53,45 @@ export async function POST(req: Request) {
 
   // Backend não confia na Ferramenta: grampeia tudo de novo (regra mestra).
   const base = grampearBase(dados.base ?? {});
-  const difusor = grampearDifusor(dados.difusor ?? {});
+  const difusorBruto = grampearDifusor(dados.difusor ?? {});
   // Gola × difusor: a mesma verificação de interferência do preview.
-  const corpo = ajustarGolaAoDifusor(grampearCorpo(dados.corpo ?? {}), difusor);
+  const corpoBruto = ajustarGolaAoDifusor(
+    grampearCorpo(dados.corpo ?? {}),
+    difusorBruto
+  );
   const estruturais = grampearEstruturais(dados.estruturais);
   const segmentos = grampearSegmentos(dados.segmentos);
   const luminaria = grampearLuminaria(dados);
 
+  // Acabamento por θ (facetas ≤16 OU squircle): vale para a LUMINÁRIA
+  // inteira — base e pilha modulam junto com corpo e difusor (fase 2 do
+  // EXT). 192 é múltiplo de 4/6/8/12/16, então as arestas caem exatamente
+  // nos vértices do polígono; a superelipse é suave e só pede malha fina.
+  const lados = segmentos <= 16 ? segmentos : 0;
+  const expoente = grampearExpoente(dados.expoente);
+  const comTheta = lados > 0 || !!expoente;
+  // Refletor (PLACA): presença no request = composição luz + refletor —
+  // e refletor com 2 luzes não existe (link forjado cai aqui).
+  const comPlaca = dados.placa != null;
+  if (comPlaca) luminaria.pontosDeLuz = 1;
+
+  // Composição dupla: a MESMA regra do preview (separação sobe, difusor
+  // raseia, curva S para dentro para) — auditoria A2–A4.
+  const dupla = luminaria.pontosDeLuz === 2 || comPlaca;
+  const comp = dupla
+    ? ajustarComposicaoDupla(corpoBruto, difusorBruto, estruturais, {
+        comPlaca,
+        separacaoPedidaMm: luminaria.separacaoMm,
+        separacaoTetoMm: separacaoMaximaMm(base.raioMm, 1, lados, expoente),
+      })
+    : null;
+  const corpo = comp?.corpo ?? corpoBruto;
+  const difusor = comp?.difusor ?? difusorBruto;
+  const separacaoEfetivaMm = comp?.separacaoMm ?? luminaria.separacaoMm;
+
   // A pilha sobe corpo e difusor: para o alargamento da base (E2) o efeito
-  // é o de um corpo mais alto — mesmo cálculo da Ferramenta.
+  // é o de um corpo mais alto — mesmo cálculo da Ferramenta (incl. o
+  // desvio da cabeça inclinada e o modo duplo do refletor).
   const alturaEstruturaisMm = estruturais.reduce((s, p) => s + p.alturaMm, 0);
   const corpoParaFisica =
     alturaEstruturaisMm > 0
@@ -68,18 +101,9 @@ export async function POST(req: Request) {
     base,
     corpoParaFisica,
     difusor,
-    luminaria.pontosDeLuz
+    comPlaca ? 2 : luminaria.pontosDeLuz,
+    desvioCabecaMm(difusor, difusor.junta)
   );
-
-  // Acabamento por θ (facetas ≤16 OU squircle): vale para a LUMINÁRIA
-  // inteira — base e pilha modulam junto com corpo e difusor (fase 2 do
-  // EXT). 192 é múltiplo de 4/6/8/12/16, então as arestas caem exatamente
-  // nos vértices do polígono; a superelipse é suave e só pede malha fina.
-  const lados = segmentos <= 16 ? segmentos : 0;
-  const expoente = grampearExpoente(dados.expoente);
-  const comTheta = lados > 0 || !!expoente;
-  // Refletor (PLACA): presença no request = composição luz + refletor.
-  const comPlaca = dados.placa != null;
 
   if (parte === "placa") {
     const malhaRefletor = malhaPlaca(grampearPlaca(dados.placa), 128);
@@ -129,11 +153,7 @@ export async function POST(req: Request) {
     if (luminaria.pontosDeLuz === 2 || comPlaca) {
       // Base dupla: prato sem o anel central + uma pastilha de encaixe por
       // coluna, afundada 1 mm na face (os sólidos se unem no fatiamento).
-      const meiaSep =
-        Math.min(
-          luminaria.separacaoMm,
-          separacaoMaximaMm(base.raioMm, est.escala, lados, expoente)
-        ) / 2;
+      const meiaSep = separacaoEfetivaMm / 2;
       // O prato modula; as pastilhas são encaixe puro e ficam sempre redondas.
       const prato = malhaRevolucao(
         perfilBase(base, est.escala, false),
@@ -173,6 +193,8 @@ export async function POST(req: Request) {
         alturaMm: corpo.alturaMm,
         familia: corpo.familiaTextura,
         repeticao: corpo.repeticaoTextura,
+        // S2: nem o vale do sulco entra no cilindro do miolo elétrico.
+        pisoMm: RAIO_LIVRE_MIOLO_MM,
       };
       espinha = {
         deslocamentoMm: corpo.deslocamentoMm,

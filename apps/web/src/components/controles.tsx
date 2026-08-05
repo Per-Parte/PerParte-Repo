@@ -259,6 +259,7 @@ export function PontosDeLuzCtl({
   aoMudarSep,
   placa,
   aoMudarPlaca,
+  separacaoEfetivaMm,
 }: {
   pontosDeLuz: number;
   separacaoMm: number;
@@ -270,8 +271,12 @@ export function PontosDeLuzCtl({
   /** Refletor (PLACA) na segunda coluna — null = sem refletor. */
   placa: ParametrosPlaca | null;
   aoMudarPlaca: (p: ParametrosPlaca | null) => void;
+  /** Separação efetiva aplicada (a regra de composição pode subi-la). */
+  separacaoEfetivaMm?: number;
 }) {
   const duo = pontosDeLuz === 2 || !!placa;
+  const efetiva = separacaoEfetivaMm ?? separacaoMm;
+  const ajustada = Math.abs(efetiva - separacaoMm) > 0.5;
   return (
     <div>
       <Chips
@@ -286,16 +291,18 @@ export function PontosDeLuzCtl({
         <div className="mt-4">
           <SliderCtl
             rotulo="Separação das colunas"
-            valorFmt={`${(separacaoMm / 10).toFixed(1).replace(".", ",")} cm`}
+            valorFmt={`${(efetiva / 10).toFixed(1).replace(".", ",")} cm`}
             valor={separacaoMm}
             min={sepMin}
             max={sepMax}
             passo={sepPasso}
             aoMudar={aoMudarSep}
             nota={
-              placa
-                ? "a luz na frente, o disco refletor atrás — o eclipse acende na parede"
-                : "o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
+              ajustada
+                ? "ajustada para cima: as colunas precisam de ar entre elas — o mostrador mostra o valor real"
+                : placa
+                  ? "a luz na frente, o disco refletor atrás — o eclipse acende na parede"
+                  : "o corpo é a mesma peça impressa 2× (uma girada 180°); módulo elétrico em dobro"
             }
           />
         </div>

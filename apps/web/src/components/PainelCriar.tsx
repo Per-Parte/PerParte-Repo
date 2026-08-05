@@ -6,6 +6,7 @@ import {
   deslocamentoMaximoMm,
   DIFUSORES,
   golaMaximaMm,
+  grampearDifusor,
   JUNTA_PADRAO,
   LIMITES_JUNTA,
   perfilDifusor,
@@ -71,6 +72,12 @@ interface Props {
   setSeparacaoMm: (v: number) => void;
   placa: ParametrosPlaca | null;
   setPlaca: (p: ParametrosPlaca | null) => void;
+  /** Separação efetiva aplicada na cena (a regra pode subi-la). */
+  separacaoEfetivaMm: number;
+  /** Composição dupla: teto do raio do difusor (o slider explica). */
+  raioDifusorTetoMm?: number;
+  /** Composição dupla: quanto a curva S ainda pode ir para DENTRO. */
+  tetoDeslocInternoMm?: number;
   luzAcesa: boolean;
   setLuzAcesa: (v: boolean) => void;
 }
@@ -94,6 +101,9 @@ export default function PainelCriar({
   setSeparacaoMm,
   placa,
   setPlaca,
+  separacaoEfetivaMm,
+  raioDifusorTetoMm,
+  tetoDeslocInternoMm,
   luzAcesa,
   setLuzAcesa,
 }: Props) {
@@ -188,7 +198,22 @@ export default function PainelCriar({
           min={LC.alturaMm.min}
           max={LC.alturaMm.max}
           passo={LC.alturaMm.passo}
-          aoMudar={(v) => mudarCorpo("alturaMm", v)}
+          aoMudar={(v) => {
+            // A9: encolher a altura encolhe o teto da curva S — o valor
+            // guardado acompanha, para o mostrador nunca mentir.
+            const teto = deslocamentoMaximoMm(v);
+            aoMudar({
+              ...criar,
+              corpo: {
+                ...criar.corpo,
+                alturaMm: v,
+                deslocamentoMm: Math.max(
+                  -teto,
+                  Math.min(teto, criar.corpo.deslocamentoMm)
+                ),
+              },
+            });
+          }}
           nota={`regra: ${LC.alturaMm.min / 10}–${LC.alturaMm.max / 10} cm — acima disso a peça não cabe na impressora`}
           motivoMax={`A impressora vai até ${LC.alturaMm.max / 10} cm por peça. Quer mais alta? No modo Montar, some hastes na seção Corpo — é assim que a luminária passa de meio metro.`}
         />
@@ -284,13 +309,17 @@ export default function PainelCriar({
           rotulo="Deslocamento do topo"
           valorFmt={`${criar.corpo.deslocamentoMm >= 0 ? "+" : ""}${cm(criar.corpo.deslocamentoMm)} cm`}
           valor={criar.corpo.deslocamentoMm}
-          min={-dMax}
+          min={-Math.min(dMax, tetoDeslocInternoMm ?? Infinity)}
           max={dMax}
           passo={LC.deslocamentoMm.passo}
           aoMudar={(v) => mudarCorpo("deslocamentoMm", v)}
           nota={`o difusor vai junto para o lado; limite de ±${cm(dMax)} cm vem de F4 e cresce com a altura`}
           motivoMax="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
-          motivoMin="Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
+          motivoMin={
+            tetoDeslocInternoMm != null && tetoDeslocInternoMm < dMax
+              ? "Para dentro só até aqui: as colunas precisam de ar entre elas. Aumente a separação — ou debruce para fora, que é livre."
+              : "Mais inclinado que isso, a espinha pediria suporte. O limite cresce com a altura — um corpo mais alto pode se deslocar mais."
+          }
         />
         {comContrapeso && (
           <div className="mt-2 text-[10px] text-[#A85A1E]">
@@ -449,7 +478,19 @@ export default function PainelCriar({
         <Chips
           nomes={DIFUSORES.map((d) => d.nome)}
           selecionado={iForma}
-          aoEscolher={(i) => aoMudar({ ...criar, difusor: { ...DIFUSORES[i] } })}
+          aoEscolher={(i) =>
+            // A8: trocar a FORMA preserva vazado/corte/cabeça — o grampeio
+            // reaperta o que a forma nova não comportar (ex.: corte fundo).
+            aoMudar({
+              ...criar,
+              difusor: grampearDifusor({
+                ...DIFUSORES[i],
+                vazado: criar.difusor.vazado,
+                corte: criar.difusor.corte,
+                junta: criar.difusor.junta,
+              }),
+            })
+          }
         />
         <div className="mt-3">
           <SliderCtl
@@ -466,12 +507,17 @@ export default function PainelCriar({
             valorFmt={`Ø ${Math.round(criar.difusor.raioMm / 5)} cm`}
             valor={criar.difusor.raioMm}
             min={LD.raioMm.min}
-            max={LD.raioMm.max}
+            max={Math.min(LD.raioMm.max, raioDifusorTetoMm ?? Infinity)}
             passo={LD.raioMm.passo}
             aoMudar={(v) => mudarDifusor("raioMm", v)}
-            motivoMax="Mais aberto não cabe no prato da impressora."
+            motivoMax={
+              raioDifusorTetoMm != null && raioDifusorTetoMm < LD.raioMm.max
+                ? "Na composição de duas colunas, os difusores precisam de ar entre eles — aumente a separação para abrir mais."
+                : "Mais aberto não cabe no prato da impressora."
+            }
             motivoMin="Mais fechado que isso, o difusor encostaria na lâmpada — ela precisa de folga livre por segurança."
           />
+          {!criar.difusor.junta && (
           <SliderCtl
             rotulo="Plissê (gomos)"
             valorFmt={criar.difusor.gomos === 0 ? "liso" : `${criar.difusor.gomos} gomos`}
@@ -481,6 +527,9 @@ export default function PainelCriar({
             passo={LD.gomos.passo}
             aoMudar={(v) => mudarDifusor("gomos", v)}
           />
+          )}
+          {/* A9: a cabeça inclinada é lisa — plissê some em vez de fingir. */}
+          {!criar.difusor.junta && (
           <SliderCtl
             rotulo="Profundidade do plissê"
             valorFmt={`${criar.difusor.profundidadeGomosMm.toFixed(1).replace(".", ",")} mm`}
@@ -491,6 +540,7 @@ export default function PainelCriar({
             aoMudar={(v) => mudarDifusor("profundidadeGomosMm", v)}
             nota="com a luz acesa, o plissê vira desenho de sombra na parede"
           />
+          )}
         </div>
         <SubRotulo>Inclinar a cabeça</SubRotulo>
         <Chips
@@ -837,6 +887,7 @@ export default function PainelCriar({
           aoMudarSep={setSeparacaoMm}
           placa={placa}
           aoMudarPlaca={setPlaca}
+          separacaoEfetivaMm={separacaoEfetivaMm}
         />
         <SubRotulo>Luz acesa</SubRotulo>
         <Chips

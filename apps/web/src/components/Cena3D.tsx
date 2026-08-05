@@ -12,6 +12,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import {
+  ASSENTO_PASTILHA_MM,
   deslocamentoEspinhaMm,
   ENCAIXES,
   facetasParaBase,
@@ -22,6 +23,7 @@ import {
   malhaPlaca,
   malhaRevolucao,
   mascaraVazado,
+  medidasJunta,
   modulaPorTheta,
   perfilPastilhaMacho,
   type CorteBorda,
@@ -526,30 +528,45 @@ export default function Cena3D({
   const refControles = useRef<ComponentRef<typeof OrbitControls> | null>(null);
   /** Até quando o arrasto manual suspende o autoenquadramento (§4.3). */
   const suspensoAte = useRef(0);
-  // A pilha de estruturais vive entre a base e o corpo — soma altura a
-  // tudo que está acima dela.
-  const altEstruturais = alturasMm.estruturais ?? [];
-  const totalEstrMm = altEstruturais.reduce((s, h) => s + h, 0);
-  const yCorpoMm = alturasMm.base + totalEstrMm;
-  const totalMm = yCorpoMm + alturasMm.corpo + alturasMm.difusor;
-  // Com refletor, o topo do disco pode passar da coluna de luz — "obra
-  // inteira" precisa cobrir a placa também (§4.3).
-  const topoPlacaMm = placa
-    ? alturasMm.base +
-      placa.pescocoMm +
-      2 * placa.raioMm * Math.cos((placa.inclinacaoGraus * Math.PI) / 180)
-    : 0;
-  const totalGeralMm = Math.max(totalMm, topoPlacaMm);
-  const lampadaY =
-    (yCorpoMm + alturasMm.corpo + alturasMm.difusor * 0.45) / MM;
-
-  const dxTopoMm = espinhaCorpo
-    ? deslocamentoEspinhaMm(alturasMm.corpo, espinhaCorpo)
-    : 0;
   // Duas colunas: 2 luzes OU luz + refletor (a placa ocupa a segunda).
   const comPlaca = !!placa;
   const duo = pontosDeLuz === 2 || comPlaca;
   const meiaSepMm = duo ? separacaoMm / 2 : 0;
+
+  // A pilha de estruturais vive entre a base e o corpo — soma altura a
+  // tudo que está acima dela. Nas composições duplas a coluna assenta no
+  // TOPO DA PASTILHA (laje − afundamento), não na face da base (A6).
+  const assentoMm = duo ? ASSENTO_PASTILHA_MM : 0;
+  const altEstruturais = alturasMm.estruturais ?? [];
+  const totalEstrMm = altEstruturais.reduce((s, h) => s + h, 0);
+  const yColunaMm = alturasMm.base + assentoMm;
+  const yCorpoMm = yColunaMm + totalEstrMm;
+  const totalMm = yCorpoMm + alturasMm.corpo + alturasMm.difusor;
+  // Com refletor, o topo do disco pode passar da coluna de luz — "obra
+  // inteira" precisa cobrir a placa também (§4.3).
+  const topoPlacaMm = placa
+    ? yColunaMm +
+      placa.pescocoMm +
+      2 * placa.raioMm * Math.cos((placa.inclinacaoGraus * Math.PI) / 180)
+    : 0;
+  const totalGeralMm = Math.max(totalMm, topoPlacaMm);
+  // A lâmpada mora no MIOLO da cabeça — que, inclinada, sobe o pescoço e
+  // acompanha o giro (A5: antes o clarão nascia no pescoço, "luz dupla").
+  const cabeca = difusorInclinado
+    ? medidasJunta(difusorInclinado.difusor, difusorInclinado.junta)
+    : null;
+  const lampadaY =
+    (yCorpoMm +
+      alturasMm.corpo +
+      (cabeca
+        ? cabeca.zCentroMm +
+          Math.cos(cabeca.rad) * difusorInclinado!.difusor.alturaMm * 0.45
+        : alturasMm.difusor * 0.45)) /
+    MM;
+
+  const dxTopoMm = espinhaCorpo
+    ? deslocamentoEspinhaMm(alturasMm.corpo, espinhaCorpo)
+    : 0;
 
   const perfilPastilha = useMemo(
     () => (duo ? perfilPastilhaMacho(ENCAIXES.baseCorpo.anel) : null),
@@ -664,7 +681,11 @@ export default function Cena3D({
           <pointLight
             key={`luz-${i}`}
             position={[
-              (c.xTopo + (difusorInclinado?.junta.deslocamentoMm ?? 0)) / MM,
+              // O deslocamento da cabeça inclinada ESPELHA na coluna girada.
+              (c.xTopo +
+                (c.giro ? -1 : 1) *
+                  (difusorInclinado?.junta.deslocamentoMm ?? 0)) /
+                MM,
               lampadaY,
               0,
             ]}
@@ -697,14 +718,14 @@ export default function Cena3D({
         <PartePlaca
           placa={placa}
           xMm={-meiaSepMm}
-          yMm={alturasMm.base}
+          yMm={yColunaMm}
           cor={coresHex.base}
         />
       )}
       {(perfis.estruturais ?? []).map((perfil, k) => {
         // Altura acumulada das estruturais abaixo desta.
         const yK =
-          alturasMm.base +
+          yColunaMm +
           altEstruturais.slice(0, k).reduce((s, h) => s + h, 0);
         return colunas.map((c, i) => (
           <Parte

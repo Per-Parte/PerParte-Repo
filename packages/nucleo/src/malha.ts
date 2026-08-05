@@ -47,6 +47,14 @@ export interface TexturaRevolucao {
   familia?: FamiliaTextura;
   /** Repetição das famílias que não são gomos. */
   repeticao?: number;
+  /**
+   * Piso do raio que NEM O VALE DO SULCO pode cruzar, em mm. No corpo é o
+   * cilindro do miolo elétrico (S2 — inviolável): o perfil respeita o piso
+   * pela cascata de clamps, mas a textura esculpe a partir do perfil — num
+   * corpo magro o vale desceria para dentro do miolo sem este freio. A
+   * textura raseia sozinha onde falta parede: limite como ferramenta.
+   */
+  pisoMm?: number;
 }
 
 /**
@@ -120,6 +128,10 @@ export function malhaRevolucao(
             w *
             0.5 *
             (valorTextura(familia, u, t, repeticao) - 1);
+          // S2: o vale do sulco nunca cruza o piso (miolo elétrico).
+          if (textura.pisoMm != null && r < textura.pisoMm) {
+            r = Math.min(perfil[j].x, textura.pisoMm);
+          }
         }
       }
       // Modulação por θ: o raio vira função do ângulo, só na janela da

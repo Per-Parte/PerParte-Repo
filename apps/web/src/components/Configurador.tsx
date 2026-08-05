@@ -18,6 +18,7 @@ import {
   ESTRUTURAIS,
   FACETAS,
   PALETA,
+  ajustarComposicaoDupla,
   ajustarGolaAoDifusor,
   contrapesoNecessarioG,
   desvioCabecaMm,
@@ -28,6 +29,7 @@ import {
   perfilDifusor,
   perfilEstrutural,
   perfisPlacaParaPeso,
+  RAIO_LIVRE_MIOLO_MM,
   separacaoMaximaMm,
   type ParametrosBase,
   type ParametrosCorpo,
@@ -331,17 +333,52 @@ export default function Configurador() {
   }
 
   const base = modo === "montar" ? BASES[iBase] : criar.base;
-  const difusor = modo === "montar" ? DIFUSORES[iDifusor] : criar.difusor;
+  const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
+  const expoente = modo === "montar" ? undefined : FACETAS[iFaceta].expoente;
+
+  // A pilha de estruturais sobe o corpo e o difusor: para a física (CG,
+  // alargamento E2) o efeito é o de um corpo mais alto na mesma coluna.
+  const pecasEstruturais = useMemo(
+    () => estruturais.map((i) => ESTRUTURAIS[i]),
+    [estruturais]
+  );
+
+  const difusorBruto = modo === "montar" ? DIFUSORES[iDifusor] : criar.difusor;
   // Gola × difusor: a gola só sobe enquanto o difusor couber dentro dela —
   // mesma função determinística que o backend usa (preview = produção).
-  const corpo = useMemo(
+  const corpoBruto = useMemo(
     () =>
       ajustarGolaAoDifusor(
         modo === "montar" ? CORPOS[iCorpo] : criar.corpo,
-        difusor
+        difusorBruto
       ),
-    [modo, iCorpo, criar.corpo, difusor]
+    [modo, iCorpo, criar.corpo, difusorBruto]
   );
+
+  // Composição dupla (2 luzes ou luz + refletor): separação sobe até as
+  // colunas terem ar; se nem o teto der conta, o raio do difusor raseia; a
+  // curva S "para dentro" para onde o ar acaba — a MESMA função do backend
+  // (auditoria A2–A4).
+  const dupla = pontosDeLuz === 2 || !!placa;
+  const comp = useMemo(
+    () =>
+      dupla
+        ? ajustarComposicaoDupla(corpoBruto, difusorBruto, pecasEstruturais, {
+            comPlaca: !!placa,
+            separacaoPedidaMm: separacaoMm,
+            separacaoTetoMm: separacaoMaximaMm(
+              base.raioMm,
+              1,
+              segmentos <= 16 ? segmentos : 0,
+              expoente
+            ),
+          })
+        : null,
+    [dupla, corpoBruto, difusorBruto, pecasEstruturais, placa, separacaoMm, base.raioMm, segmentos, expoente]
+  );
+  const corpo = comp?.corpo ?? corpoBruto;
+  const difusor = comp?.difusor ?? difusorBruto;
+  const separacaoEfetivaMm = comp?.separacaoMm ?? separacaoMm;
 
   const texturas = useMemo(
     () => ({
@@ -352,6 +389,8 @@ export default function Configurador() {
         alturaMm: corpo.alturaMm,
         familia: corpo.familiaTextura,
         repeticao: corpo.repeticaoTextura,
+        // S2: nem o vale do sulco entra no cilindro do miolo elétrico.
+        pisoMm: RAIO_LIVRE_MIOLO_MM,
       },
       difusor: {
         gomos: difusor.gomos,
@@ -363,12 +402,6 @@ export default function Configurador() {
     [corpo, difusor]
   );
 
-  // A pilha de estruturais sobe o corpo e o difusor: para a física (CG,
-  // alargamento E2) o efeito é o de um corpo mais alto na mesma coluna.
-  const pecasEstruturais = useMemo(
-    () => estruturais.map((i) => ESTRUTURAIS[i]),
-    [estruturais]
-  );
   const alturaEstruturaisMm = pecasEstruturais.reduce(
     (s, p) => s + p.alturaMm,
     0
@@ -437,20 +470,6 @@ export default function Configurador() {
       alturaMm: corpo.alturaMm,
     }),
     [corpo]
-  );
-  const segmentos = modo === "montar" ? 40 : FACETAS[iFaceta].segmentos;
-  const expoente = modo === "montar" ? undefined : FACETAS[iFaceta].expoente;
-
-  // As colunas precisam caber sobre a base (pastilha de encaixe inteira) —
-  // e numa base facetada/squircle o raio útil cai para o do meio da face.
-  const separacaoEfetivaMm = Math.min(
-    separacaoMm,
-    separacaoMaximaMm(
-      base.raioMm,
-      estab.escala,
-      segmentos <= 16 ? segmentos : 0,
-      expoente
-    )
   );
 
   const [gerandoSTL, setGerandoSTL] = useState<string | null>(null);
@@ -712,6 +731,7 @@ export default function Configurador() {
               setSeparacaoMm={setSeparacaoMm}
               placa={placa}
               setPlaca={setPlaca}
+              separacaoEfetivaMm={separacaoEfetivaMm}
               luzAcesa={luzAcesa}
               setLuzAcesa={setLuzAcesa}
             />
@@ -734,6 +754,9 @@ export default function Configurador() {
               setSeparacaoMm={setSeparacaoMm}
               placa={placa}
               setPlaca={setPlaca}
+              separacaoEfetivaMm={separacaoEfetivaMm}
+              raioDifusorTetoMm={comp?.raioDifusorTetoMm}
+              tetoDeslocInternoMm={comp?.tetoInternoMm}
               luzAcesa={luzAcesa}
               setLuzAcesa={setLuzAcesa}
             />

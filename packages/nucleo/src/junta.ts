@@ -55,8 +55,9 @@ export const JUNTA_PADRAO: JuntaInclinada = {
   deslocamentoMm: 24,
 };
 
-/** Raio do topo do pescoço — o plugue que entra na cabeça. */
-const RAIO_TOPO_PESCOCO_MM = 14;
+/** Raio do topo do pescoço — o plugue que entra na cabeça. (A7: 14→18,
+ *  pescoço mais encorpado para a cabeça não ler como flutuando.) */
+const RAIO_TOPO_PESCOCO_MM = 18;
 /** Quanto o topo do pescoço afunda na cabeça (funde na malha). */
 const AFUNDA_MM = 6;
 /** Folga da borda mais baixa da cabeça sobre o plano do encaixe. */
@@ -128,7 +129,7 @@ export function perfilPescocoJunta(
   for (let i = 1; i <= n; i++) {
     const u = i / n;
     pontos.push({
-      x: raioPeMm + (RAIO_TOPO_PESCOCO_MM - raioPeMm) * Math.pow(u, 0.85),
+      x: raioPeMm + (RAIO_TOPO_PESCOCO_MM - raioPeMm) * Math.pow(u, 0.7),
       y: alturaFemea + 1.5 + (alturaMm - alturaFemea - 1.5) * u,
     });
   }

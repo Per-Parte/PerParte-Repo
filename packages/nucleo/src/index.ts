@@ -4,6 +4,7 @@ export * from "./vazados";
 export * from "./terminacao";
 export * from "./geometria";
 export * from "./estabilidade";
+export * from "./composicao";
 export * from "./preco";
 export * from "./catalogo";
 export * from "./malha";
