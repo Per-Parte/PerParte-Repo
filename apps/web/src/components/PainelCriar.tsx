@@ -551,7 +551,7 @@ export default function PainelCriar({
               nota="o pescoço cresce sozinho o necessário — a borda nunca toca o encaixe"
               motivoMax="Mais para o lado que isso, a cabeça sairia de cima do próprio pescoço."
             />
-            <div className="mt-1 text-[10px] text-[#97907F]">
+            <div className="mt-1 text-[10px] text-[#6D675C]">
               a cabeça inclinada é lisa nesta versão — textura, vazado e borda
               cortada ficam para a cabeça reta ⚑
             </div>
@@ -723,6 +723,7 @@ export default function PainelCriar({
             <button
               key={a.id}
               onClick={() => setAlvoCor(a.id)}
+              aria-pressed={alvoCor === a.id}
               className={`flex-1 rounded-full py-1.5 text-[11.5px] transition-all ${
                 alvoCor === a.id
                   ? "bg-palco-escuro font-semibold text-luz-acesa"
@@ -890,7 +891,7 @@ export default function PainelCriar({
           </div>
           <div
             className={`mt-2 text-[10.5px] ${
-              tombaMesmo ? "text-[#B23B28]" : "text-[#97907F]"
+              tombaMesmo ? "text-[#B23B28]" : "text-[#6D675C]"
             }`}
           >
             {tombaMesmo
@@ -911,11 +912,12 @@ export default function PainelCriar({
             value={nomePeca}
             onChange={(e) => setNomePeca(e.target.value)}
             placeholder="dê um nome à sua peça (ex.: Duna)"
-            className="mb-2 w-full rounded-full border border-black/10 bg-black/[0.02] px-4 py-2.5 text-[13px] text-palco-escuro placeholder-[#97907F] outline-none transition-colors focus:border-acento"
+            aria-label="Nome da sua peça"
+            className="mb-2 w-full rounded-full border border-black/10 bg-black/[0.02] px-4 py-2.5 text-[13px] text-palco-escuro placeholder-[#6D675C] outline-none transition-colors focus:border-acento"
           />
           <button
             onClick={() => setPublicada(nomePeca.trim() || "Sem nome")}
-            className="w-full rounded-full bg-palco-escuro py-2.5 text-[13px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento"
+            className="w-full rounded-full bg-palco-escuro py-2.5 text-[13px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento hover:text-palco-escuro"
           >
             Publicar minha parte
           </button>

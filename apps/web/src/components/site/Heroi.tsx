@@ -16,7 +16,10 @@ export default function Heroi() {
             className="pointer-events-none absolute left-1/2 top-1/2 h-[60vw] w-[60vw] -translate-x-1/2 -translate-y-1/2 blur-2xl [background:var(--glow)]"
           />
 
-          <h1 className="relative font-display text-[clamp(56px,9vw,128px)] leading-[0.95] text-palco-escuro">
+          {/* Em <sm o clamp desce junto com a tela (11vw, piso 34px) para
+              "possibilidades" nunca estourar em <380px; de sm para cima é o
+              clamp do spec (§3.2/§5). */}
+          <h1 className="relative font-display text-[clamp(34px,11vw,56px)] leading-[0.95] text-palco-escuro sm:text-[clamp(56px,9vw,128px)]">
             Infinitas
             <br />
             possibilidades
@@ -28,7 +31,7 @@ export default function Heroi() {
           <div className="relative mt-10 flex flex-col items-center gap-5">
             <Link
               href="/configurador"
-              className="rounded-full bg-palco-escuro px-10 py-4 text-[16px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento"
+              className="rounded-full bg-palco-escuro px-10 py-4 text-[16px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento hover:text-palco-escuro"
             >
               Criar minha obra
             </Link>

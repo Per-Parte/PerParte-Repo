@@ -60,7 +60,7 @@ export default function BotaoSalvar({ nome }: { nome?: string }) {
       className={`rounded-full px-4 py-2 text-[12.5px] font-semibold transition-colors duration-300 ease-padrao disabled:opacity-60 ${
         fase === "erro"
           ? "bg-[#B23B28] text-white hover:bg-[#9C3121]"
-          : "bg-palco-escuro text-luz-acesa hover:bg-acento"
+          : "bg-palco-escuro text-luz-acesa hover:bg-acento hover:text-palco-escuro"
       }`}
     >
       {fase === "salvando"

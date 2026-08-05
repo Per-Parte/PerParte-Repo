@@ -94,10 +94,10 @@ export default function PainelMontar({
         <SubRotulo>Empilhar — a luminária cresce por peças</SubRotulo>
         {/* A pilha, de cima para baixo: difusor / corpo / estruturais / base. */}
         <div className="mb-3 space-y-1.5">
-          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#6D675C]">
             difusor · <b className="text-[#4A463D]">{DIFUSORES[iDifusor].nome}</b>
           </div>
-          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#6D675C]">
             corpo · <b className="text-[#4A463D]">{CORPOS[iCorpo].nome}</b>
           </div>
           {[...estruturais].reverse().map((ie, kInv) => {
@@ -134,7 +134,7 @@ export default function PainelMontar({
               </div>
             );
           })}
-          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#97907F]">
+          <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3.5 py-2 text-[11.5px] text-[#6D675C]">
             base · <b className="text-[#4A463D]">{BASES[iBase].nome}</b>
           </div>
         </div>
@@ -146,11 +146,11 @@ export default function PainelMontar({
             + somar uma peça entre a base e o corpo
           </button>
         ) : (
-          <div className="text-center text-[10.5px] text-[#97907F]">
+          <div className="text-center text-[10.5px] text-[#6D675C]">
             pilha cheia — até {MAX_ESTRUTURAIS} peças entre a base e o corpo
           </div>
         )}
-        <div className="mt-2.5 text-[10px] leading-relaxed text-[#97907F]">
+        <div className="mt-2.5 text-[10px] leading-relaxed text-[#6D675C]">
           Os encaixes são os mesmos em toda peça (F5): tudo monta em tudo, em
           qualquer ordem. É assim que uma luminária de meio metro sai de uma
           impressora comum — em impressões separadas.
@@ -171,6 +171,7 @@ export default function PainelMontar({
             <button
               key={a.id}
               onClick={() => setAlvoCor(a.id)}
+              aria-pressed={alvoCor === a.id}
               className={`flex-1 rounded-full py-1.5 text-[11.5px] transition-all ${
                 alvoCor === a.id
                   ? "bg-palco-escuro font-semibold text-luz-acesa"
@@ -216,7 +217,7 @@ export default function PainelMontar({
             <span>Módulo elétrico certificado</span>
             <span className="font-semibold text-[#4F7A44]">incluído ✓</span>
           </div>
-          <div className="mt-2 text-[10px] text-[#97907F]">
+          <div className="mt-2 text-[10px] text-[#6D675C]">
             No modo Montar não existe combinação inválida — os encaixes são
             padronizados por projeto.
           </div>

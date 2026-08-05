@@ -96,7 +96,7 @@ export default function EditorSilhueta({ corpo, aoMudar }: Props) {
           />
         ))}
       </svg>
-      <div className="px-1 pb-1 text-[10px] text-[#97907F]">
+      <div className="px-1 pb-1 text-[10px] text-[#6D675C]">
         Arraste os pontos para os lados. O traço é a peça real — os limites de
         fabricação seguram o arrasto sozinhos.
       </div>

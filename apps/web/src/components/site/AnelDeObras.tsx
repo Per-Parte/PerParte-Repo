@@ -176,11 +176,18 @@ export default function AnelDeObras({ className }: { className?: string }) {
           ))}
       </div>
 
-      {/* Alternativa real para leitores de tela — o anel acima é decorativo. */}
-      <ul className="sr-only" aria-label="Obras em destaque">
+      {/* Alternativa real para leitores de tela e teclado — o anel acima é
+          decorativo. Cada link é sr-only e, ao receber foco do teclado,
+          aparece como chip no canto do herói (foco visível, §6). */}
+      <ul aria-label="Obras em destaque">
         {OBRAS_ANEL.map((obra) => (
           <li key={obra.src}>
-            <a href={obra.href}>{obra.alt}</a>
+            <a
+              href={obra.href}
+              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-20 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-[13px] focus:font-medium focus:text-palco-escuro"
+            >
+              {obra.alt}
+            </a>
           </li>
         ))}
       </ul>

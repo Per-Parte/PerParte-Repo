@@ -6,8 +6,10 @@ const ANCORAS = [
   { rotulo: "Criadores", href: "#criadores" },
 ] as const;
 
+// Hover: o fundo vira acento e o TEXTO escurece — luz-acesa sobre acento
+// reprova AA (1,8:1); palco-escuro sobre acento passa (7,4:1) (§6).
 const PILL =
-  "rounded-full bg-palco-escuro px-5 py-2.5 text-[13px] font-medium text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento";
+  "rounded-full bg-palco-escuro px-5 py-2.5 text-[13px] font-medium text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento hover:text-palco-escuro";
 
 /** Barra transparente sobre o herói (§3.1) — fica acima do Anel de Obras. */
 export default function Header() {

@@ -61,7 +61,8 @@ export default function ObrasDosCriadores() {
           >
             Ver todas
           </button>
-          <p className="text-[12.5px] text-palco-escuro/60">
+          {/* /70 e não /60: 60% sobre areia dá 3,96:1 — reprova AA (§6). */}
+          <p className="text-[12.5px] text-palco-escuro/70">
             marketplace em construção — em breve
           </p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   LIMITES_PLACA,
   PALETA,
@@ -26,13 +26,19 @@ export function Secao({
   aberta?: boolean;
   children: React.ReactNode;
 }) {
+  // Espelha o estado real do <details> para o aria-expanded do header (§6).
+  const [expandida, setExpandida] = useState(aberta);
   return (
     <details
       open={aberta}
       data-secao={id}
+      onToggle={(e) => setExpandida(e.currentTarget.open)}
       className="group border-b border-black/[0.06] last:border-b-0"
     >
-      <summary className="sticky top-0 z-10 flex cursor-pointer select-none list-none items-center justify-between gap-3 bg-white px-5 py-3.5 [&::-webkit-details-marker]:hidden">
+      <summary
+        aria-expanded={expandida}
+        className="sticky top-0 z-10 flex cursor-pointer select-none list-none items-center justify-between gap-3 bg-white px-5 py-3.5 [&::-webkit-details-marker]:hidden"
+      >
         <h3 className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#6D675C]">
           {titulo}
         </h3>
@@ -79,6 +85,7 @@ export function Chips({
         <button
           key={n}
           onClick={() => aoEscolher(i)}
+          aria-pressed={i === selecionado}
           className={`rounded-full px-3.5 py-1.5 text-[12.5px] transition-all ${
             i === selecionado
               ? "bg-palco-escuro font-semibold text-luz-acesa"
@@ -104,7 +111,7 @@ export function PaletaFamilias({
     <div className="space-y-3">
       {FAMILIAS_PALETA.map((f) => (
         <div key={f.nome}>
-          <div className="mb-1.5 text-[10px] uppercase tracking-[0.14em] text-[#97907F]">
+          <div className="mb-1.5 text-[10px] uppercase tracking-[0.14em] text-[#6D675C]">
             {f.nome}
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -112,8 +119,10 @@ export function PaletaFamilias({
               <button
                 key={PALETA[i].nome}
                 title={PALETA[i].nome}
+                aria-label={`Cor ${PALETA[i].nome}`}
+                aria-pressed={selecionado === i}
                 onClick={() => aoEscolher(i)}
-                className={`h-7 w-7 rounded-full transition-transform hover:scale-110 ${
+                className={`h-7 w-7 rounded-full transition-transform hover:scale-110 motion-reduce:transform-none ${
                   selecionado === i
                     ? "ring-2 ring-palco-escuro ring-offset-2 ring-offset-white"
                     : "ring-1 ring-black/15"
@@ -180,6 +189,8 @@ export function SliderCtl({
   motivoMax?: string;
 }) {
   const pct = max > min ? ((valor - min) / (max - min)) * 100 : 0;
+  /** Liga o rótulo ao input de verdade (§6 — todo input com label). */
+  const idInput = useId();
 
   // O motivo do limite: nada de mensagem de erro — uma explicação humana,
   // que aparece quando o arraste encosta no fim do curso e some sozinha.
@@ -200,12 +211,15 @@ export function SliderCtl({
   return (
     <div className="mb-4 last:mb-0">
       <div className="mb-1.5 flex items-baseline justify-between">
-        <label className="text-[13px] text-[#4A463D]">{rotulo}</label>
+        <label htmlFor={idInput} className="text-[13px] text-[#4A463D]">
+          {rotulo}
+        </label>
         <span className="text-[12.5px] font-semibold tabular-nums text-palco-escuro">
           {valorFmt}
         </span>
       </div>
       <input
+        id={idInput}
         type="range"
         className="ctl"
         style={{ ["--pct" as string]: `${pct}%` }}
@@ -213,6 +227,7 @@ export function SliderCtl({
         max={max}
         step={passo}
         value={valor}
+        aria-valuetext={valorFmt}
         onChange={(e) => {
           const v = Number(e.target.value);
           aoMudar(v);
@@ -221,12 +236,12 @@ export function SliderCtl({
       />
       {motivo && (
         <div className="mt-1.5 flex items-start gap-1.5 rounded-lg border border-acento/40 bg-acento/10 px-2.5 py-1.5 text-[10.5px] leading-relaxed text-[#6B4E12]">
-          <span className="font-bold text-[#A87A16]">!</span>
+          <span className="font-bold text-[#8A5F10]">!</span>
           <span>{motivo}</span>
         </div>
       )}
       {nota && !motivo && (
-        <div className="mt-1.5 text-[10px] leading-relaxed text-[#97907F]">
+        <div className="mt-1.5 text-[10px] leading-relaxed text-[#6D675C]">
           {nota}
         </div>
       )}

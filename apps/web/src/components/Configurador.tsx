@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import {
   BASES,
   CORPOS,
@@ -74,6 +82,9 @@ const MODOS: [Modo, string][] = [
 /** Sombra suave e fosca dos elementos que flutuam sobre o palco (§2). */
 const SOMBRA_CARD = "shadow-[0_16px_44px_-20px_rgba(30,30,30,0.45)]";
 
+/** Alturas do bottom sheet em <md (§5), em % da tela: pico · meia · cheia. */
+const ALTURAS_SHEET = [15, 45, 85];
+
 /** Pills discretas do bloco de produção (STL / kit F5). */
 const PILL_PRODUCAO =
   "rounded-full border border-black/10 bg-black/[0.02] px-2.5 py-1 text-[#6D675C] transition-colors hover:border-black/30 hover:text-palco-escuro disabled:opacity-40";
@@ -112,6 +123,74 @@ export default function Configurador() {
   const refRolagem = useRef<HTMLDivElement>(null);
   /** Avança a cada scroll do painel; a cena lê para re-sincronizar a câmera. */
   const refSinalRolagem = useRef(0);
+
+  /** Altura do bottom sheet em <md (§5), em % da tela — começa em meia. */
+  const [alturaSheet, setAlturaSheet] = useState(45);
+  const refSheet = useRef<HTMLElement>(null);
+  /** Arrasto vivo do handle: ponto de partida e altura corrente (em %). */
+  const refArrasto = useRef<{ y0: number; h0: number; h: number } | null>(
+    null
+  );
+  /** O click que fecha um arrasto real não deve também ciclar a altura. */
+  const refArrastou = useRef(false);
+
+  // O arrasto mexe no DOM direto (60 Hz sem re-render); o snap vira estado.
+  function iniciarArrasto(e: PointerEvent<HTMLButtonElement>) {
+    refArrasto.current = { y0: e.clientY, h0: alturaSheet, h: alturaSheet };
+    refArrastou.current = false;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // Durante o dedo, o sheet segue na hora — a transição volta no soltar.
+    refSheet.current?.style.setProperty("transition", "none");
+  }
+
+  function moverArrasto(e: PointerEvent<HTMLButtonElement>) {
+    const a = refArrasto.current;
+    if (!a) return;
+    if (Math.abs(e.clientY - a.y0) > 6) refArrastou.current = true;
+    a.h = Math.min(
+      85,
+      Math.max(15, a.h0 + ((a.y0 - e.clientY) / window.innerHeight) * 100)
+    );
+    refSheet.current?.style.setProperty(
+      "--altura-sheet",
+      `${a.h.toFixed(2)}dvh`
+    );
+  }
+
+  function soltarArrasto() {
+    const a = refArrasto.current;
+    if (!a) return;
+    refArrasto.current = null;
+    refSheet.current?.style.removeProperty("transition");
+    // Snap para a altura mais próxima (§5) — a transição CSS leva até lá.
+    const destino = ALTURAS_SHEET.reduce((m, h) =>
+      Math.abs(h - a.h) < Math.abs(m - a.h) ? h : m
+    );
+    setAlturaSheet(destino);
+    refSheet.current?.style.setProperty("--altura-sheet", `${destino}dvh`);
+  }
+
+  /** Teclado no handle: ↑ sobe um degrau, ↓ desce (§6 — foco operável). */
+  function alturaPeloTeclado(e: KeyboardEvent<HTMLButtonElement>) {
+    const i = ALTURAS_SHEET.indexOf(alturaSheet);
+    if (e.key === "ArrowUp" && i < ALTURAS_SHEET.length - 1) {
+      e.preventDefault();
+      setAlturaSheet(ALTURAS_SHEET[i + 1]);
+    } else if (e.key === "ArrowDown" && i > 0) {
+      e.preventDefault();
+      setAlturaSheet(ALTURAS_SHEET[i - 1]);
+    }
+  }
+
+  /** Toque seco (ou Enter/Espaço) no handle cicla pico → meia → cheia. */
+  function ciclarAltura() {
+    if (refArrastou.current) {
+      refArrastou.current = false;
+      return;
+    }
+    const i = ALTURAS_SHEET.indexOf(alturaSheet);
+    setAlturaSheet(ALTURAS_SHEET[(i + 1) % ALTURAS_SHEET.length]);
+  }
 
   // A seção ativa vem de um IntersectionObserver no contêiner de scroll do
   // painel (root = o próprio contêiner): vence a seção que mais ocupa o
@@ -476,77 +555,114 @@ export default function Configurador() {
         </button>
       </div>
 
-      {/* Cards flutuantes: o preço evolutivo virando experiência (§4.1) */}
-      <div className="pointer-events-none absolute bottom-[calc(48dvh+10px)] left-3 z-10 md:bottom-6 md:left-6">
-        <div
-          className={`w-fit rounded-[var(--raio-painel)] bg-white px-5 py-4 ${SOMBRA_CARD}`}
-        >
-          <div className="font-display text-[34px] leading-none tabular-nums">
-            R$ <NumeroAnimado valor={precoBRL} />
+      {/* Em <md, tudo que mora na borda de baixo (barra compacta + bottom
+          sheet) empilha neste wrapper; em md+ ele vira display:contents e
+          cada peça volta ao seu canto absoluto — desktop fica como está (§5). */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col md:contents">
+        {/* Barra compacta acima do sheet: preço sempre visível + chip de
+            partes + interruptor (§5); em md+, os cards flutuantes de §4.1 */}
+        <div className="mb-2 flex items-end justify-between gap-2 px-3 md:contents">
+          {/* Cards do preço: o preço evolutivo virando experiência (§4.1) */}
+          <div className="pointer-events-none z-10 flex min-w-0 items-center gap-2 md:absolute md:bottom-6 md:left-6 md:block">
+            <div
+              className={`w-fit rounded-full bg-white px-4 py-2.5 md:rounded-[var(--raio-painel)] md:px-5 md:py-4 ${SOMBRA_CARD}`}
+            >
+              <div className="font-display text-[19px] leading-none tabular-nums md:text-[34px]">
+                R$ <NumeroAnimado valor={precoBRL} />
+              </div>
+              <div className="mt-1.5 hidden text-[11px] text-[#6D675C] md:block">
+                evolui com a sua criação
+              </div>
+            </div>
+            <div
+              className={`w-fit truncate rounded-full bg-white px-3.5 py-2 text-[11.5px] tabular-nums text-[#4A463D] md:mt-2 ${SOMBRA_CARD}`}
+            >
+              {numPartes} partes · {Math.round(gramas)} g
+            </div>
           </div>
-          <div className="mt-1.5 text-[11px] text-[#6D675C]">
-            evolui com a sua criação
-          </div>
+
+          {/* Interruptor do estúdio: apagar a luz do ambiente e ver a obra
+              brilhando no escuro — o momento-marca (§4.4). Na barra, nunca
+              embaixo do sheet. */}
+          <button
+            onClick={() => setAmbienteAceso((v) => !v)}
+            aria-pressed={!ambienteAceso}
+            aria-label={
+              ambienteAceso
+                ? "Apagar a luz do ambiente"
+                : "Acender a luz do ambiente"
+            }
+            title={
+              ambienteAceso
+                ? "Apagar a luz do ambiente"
+                : "Acender a luz do ambiente"
+            }
+            className={`pointer-events-auto z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ease-padrao md:absolute md:bottom-6 md:right-[432px] ${SOMBRA_CARD} ${
+              ambienteAceso
+                ? "bg-white text-palco-escuro hover:text-[#8A5F10]"
+                : "bg-palco-escuro text-luz-acesa"
+            }`}
+          >
+            {/* ícone de interruptor — a tecla desce quando o ambiente apaga */}
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              aria-hidden
+            >
+              <rect
+                x="7"
+                y="3.5"
+                width="10"
+                height="17"
+                rx="5"
+                stroke="currentColor"
+                strokeWidth="1.7"
+              />
+              <circle
+                cx="12"
+                cy={ambienteAceso ? 8.5 : 15.5}
+                r="2.4"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
         </div>
-        <div
-          className={`mt-2 w-fit rounded-full bg-white px-3.5 py-2 text-[11.5px] tabular-nums text-[#4A463D] ${SOMBRA_CARD}`}
+
+        {/* Painel de ferramentas — bottom sheet em <md (§5), coluna branca
+            à direita em md+ (§4.1) */}
+        <aside
+          ref={refSheet}
+          style={{ "--altura-sheet": `${alturaSheet}dvh` } as CSSProperties}
+          className={`pointer-events-auto z-20 flex h-[var(--altura-sheet)] flex-col overflow-hidden rounded-t-[var(--raio-painel)] bg-white transition-[height] duration-300 ease-padrao motion-reduce:transition-none md:absolute md:bottom-4 md:right-4 md:top-4 md:h-auto md:w-[400px] md:rounded-[var(--raio-painel)] md:transition-none ${SOMBRA_CARD}`}
         >
-          {numPartes} partes · {Math.round(gramas)} g
-        </div>
-      </div>
+          {/* Handle do sheet (§5): arrasta com snap pico/meia/cheia; toque
+              seco cicla as alturas; setas ↑↓ pelo teclado */}
+          <button
+            type="button"
+            aria-label="Ajustar a altura do painel — pico, meia tela ou tela cheia"
+            className="block w-full shrink-0 cursor-grab touch-none select-none pb-2 pt-2.5 active:cursor-grabbing md:hidden"
+            onPointerDown={iniciarArrasto}
+            onPointerMove={moverArrasto}
+            onPointerUp={soltarArrasto}
+            onPointerCancel={soltarArrasto}
+            onClick={ciclarAltura}
+            onKeyDown={alturaPeloTeclado}
+          >
+            <span
+              aria-hidden
+              className="mx-auto block h-1 w-10 rounded-full bg-black/45"
+            />
+          </button>
 
-      {/* Interruptor do estúdio: apagar a luz do ambiente e ver a obra
-          brilhando no escuro — o momento-marca (§4.4) */}
-      <button
-        onClick={() => setAmbienteAceso((v) => !v)}
-        aria-pressed={!ambienteAceso}
-        aria-label={
-          ambienteAceso
-            ? "Apagar a luz do ambiente"
-            : "Acender a luz do ambiente"
-        }
-        title={
-          ambienteAceso
-            ? "Apagar a luz do ambiente"
-            : "Acender a luz do ambiente"
-        }
-        className={`absolute bottom-[calc(48dvh+10px)] right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-300 ease-padrao md:bottom-6 md:right-[432px] ${SOMBRA_CARD} ${
-          ambienteAceso
-            ? "bg-white text-palco-escuro hover:text-[#8A5F10]"
-            : "bg-palco-escuro text-luz-acesa"
-        }`}
-      >
-        {/* ícone de interruptor — a tecla desce quando o ambiente apaga */}
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
-          <rect
-            x="7"
-            y="3.5"
-            width="10"
-            height="17"
-            rx="5"
-            stroke="currentColor"
-            strokeWidth="1.7"
-          />
-          <circle
-            cx="12"
-            cy={ambienteAceso ? 8.5 : 15.5}
-            r="2.4"
-            fill="currentColor"
-          />
-        </svg>
-      </button>
-
-      {/* Painel de ferramentas — coluna branca à direita (§4.1) */}
-      <aside
-        className={`absolute inset-x-3 bottom-3 top-[52dvh] z-20 flex flex-col overflow-hidden rounded-[var(--raio-painel)] bg-white md:inset-x-auto md:bottom-4 md:right-4 md:top-4 md:w-[400px] ${SOMBRA_CARD}`}
-      >
-        {/* Topo fixo do painel: switch de modo + nome da obra (§4.1) */}
-        <div className="border-b border-black/[0.06] px-5 pb-3.5 pt-4">
+          {/* Topo fixo do painel: switch de modo + nome da obra (§4.1) */}
+          <div className="shrink-0 border-b border-black/[0.06] px-5 pb-3.5 pt-2 md:pt-4">
           <div className="flex rounded-full bg-black/[0.05] p-1">
             {MODOS.map(([id, rotulo]) => (
               <button
                 key={id}
                 onClick={() => trocarModo(id)}
+                aria-pressed={modo === id}
                 className={`flex-1 rounded-full py-2 text-[13px] transition-all duration-300 ease-padrao ${
                   modo === id
                     ? "bg-palco-escuro font-semibold text-luz-acesa"
@@ -564,7 +680,7 @@ export default function Configurador() {
             placeholder="Minha obra"
             maxLength={60}
             aria-label="Nome da obra"
-            className="mt-3 w-full border-b border-transparent bg-transparent pb-1 text-[15px] font-medium text-palco-escuro placeholder-[#97907F] outline-none transition-colors duration-200 ease-padrao focus:border-black/15"
+            className="mt-3 w-full border-b border-transparent bg-transparent pb-1 text-[15px] font-medium text-palco-escuro placeholder-[#6D675C] outline-none transition-colors duration-200 ease-padrao focus:border-black/15"
           />
         </div>
 
@@ -628,7 +744,7 @@ export default function Configurador() {
             <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#6D675C]">
               Produção
             </div>
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[10px] text-[#97907F]">
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[10px] text-[#6D675C]">
               <span>STL:</span>
               {(["base", "corpo", "difusor"] as const).map((p) => {
                 const travadoPorVazado = p === "difusor" && !!difusor.vazado;
@@ -687,13 +803,14 @@ export default function Configurador() {
           </div>
         </div>
 
-        {/* Rodapé do painel: o CTA da loja */}
-        <div className="border-t border-black/[0.06] px-4 py-3">
-          <button className="w-full rounded-full bg-palco-escuro py-3 text-[14px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento">
-            Encomendar
-          </button>
-        </div>
-      </aside>
+          {/* Rodapé do painel: o CTA da loja */}
+          <div className="shrink-0 border-t border-black/[0.06] px-4 py-3">
+            <button className="w-full rounded-full bg-palco-escuro py-3 text-[14px] font-semibold text-luz-acesa transition-colors duration-300 ease-padrao hover:bg-acento hover:text-palco-escuro">
+              Encomendar
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
