@@ -508,10 +508,11 @@ export default function Cena3D({
     const alturaU = totalGeralMm / MM;
     const larguraU = (2 * (raioMaxMm + meiaSepMm + Math.abs(dxTopoMm))) / MM;
     const clamp = THREE.MathUtils.clamp;
-    // Enquadramento com fov 38°: ~1,45× a maior medida, com folga.
-    const longe = clamp(Math.max(1.55 * alturaU, 1.15 * larguraU, 3.4), 3.4, 8.6);
-    const media = clamp(0.72 * longe, 2.9, 7);
-    const perto = clamp(0.5 * longe, 2.5, 5.5);
+    // Enquadramento com fov 38°: a câmera assenta LONGE por padrão — quem
+    // aproxima é o usuário, pelo zoom (pedido do Davi, 05/08).
+    const longe = clamp(Math.max(2.0 * alturaU, 1.5 * larguraU, 4.4), 4.4, 11);
+    const media = clamp(0.74 * longe, 3.7, 8.6);
+    const perto = clamp(0.62 * longe, 3.2, 7.2);
     const alvoObra = (totalGeralMm * 0.52) / MM;
     const yCorpoU = yCorpoMm / MM;
     return {
@@ -595,7 +596,7 @@ export default function Cena3D({
 
   return (
     // VSM dá à key do estúdio a sombra de borda macia (radius/blurSamples).
-    <Canvas shadows="variance" camera={{ position: [3.4, 2.6, 4.4], fov: 38 }}>
+    <Canvas shadows="variance" camera={{ position: [4.8, 3.5, 6.2], fov: 38 }}>
       {/* O slot de cenários (§4.4): estúdio branco gelo ou quarto realista. */}
       <Cena
         id={cena}
@@ -715,8 +716,8 @@ export default function Cena3D({
       <OrbitControls
         ref={refControles}
         enablePan={false}
-        minDistance={2.2}
-        maxDistance={9}
+        minDistance={1.8}
+        maxDistance={11}
         maxPolarAngle={1.62}
         onStart={() => {
           suspensoAte.current = performance.now() + 4000;
