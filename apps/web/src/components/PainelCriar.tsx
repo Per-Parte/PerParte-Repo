@@ -77,6 +77,8 @@ interface Props {
   setPlaca: (p: ParametrosPlaca | null) => void;
   /** Separação efetiva aplicada na cena (a regra pode subi-la). */
   separacaoEfetivaMm: number;
+  /** A base escolhida afinava para o pico e virou prato (composição dupla). */
+  baseVirouPrato?: boolean;
   /** Composição dupla: teto do raio do difusor (o slider explica). */
   raioDifusorTetoMm?: number;
   /** Composição dupla: quanto a curva S ainda pode ir para DENTRO. */
@@ -107,6 +109,7 @@ export default function PainelCriar({
   placa,
   setPlaca,
   separacaoEfetivaMm,
+  baseVirouPrato,
   raioDifusorTetoMm,
   tetoDeslocInternoMm,
   luzAcesa,
@@ -160,6 +163,12 @@ export default function PainelCriar({
       </div>
 
       <Secao id="base" titulo="Base">
+        {baseVirouPrato && (
+          <div className="mb-2 text-[10px] leading-relaxed text-[#A85A1E]">
+            no modo de duas colunas a base precisa de prato — curvas que
+            afinam para o pico (Cone, Côncava) assentam aqui como Reta
+          </div>
+        )}
         <Chips
           nomes={CURVAS.map((c) => c.nome)}
           selecionado={Math.max(
