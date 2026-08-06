@@ -3,11 +3,12 @@
 /**
  * Montagem v2 · F2/F3 — a tela do modo blocos (rota /criar), no layout
  * do wireframe: ferramentas à esquerda, formas na base, painel de
- * variações ↔ propriedades à direita, obra centralizada no meio.
+ * variações ↔ propriedades à direita, obra centralizada no meio e a
+ * manivela de giro no canto superior direito da cena.
  *
  * Undo por GESTO: operações discretas empilham na hora; gestos
- * contínuos (arrastar, slider) guardam a cena de antes no início e
- * empilham uma vez só quando o gesto termina.
+ * contínuos (arrastar, slider, girar a cena) guardam a cena de antes no
+ * início e empilham uma vez só quando o gesto termina.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -24,12 +25,14 @@ import {
   adicionarPontoDeLuz,
   apagarItem,
   atualizarParams,
+  ehPontoDeLuz,
   girarItem,
   moverItem,
   pontosDeLuz,
   type Cena,
 } from "./cena";
 import Viewport3D from "./Viewport3D";
+import { ManivelaCena } from "./ManivelaCena";
 import { BarraFerramentas, type Ferramenta } from "./ferramentas";
 import { BarraFormas } from "./BarraFormas";
 import { PainelDireito } from "./PainelDireito";
@@ -41,6 +44,10 @@ export default function Montagem() {
   const [selecionadoId, setSelecionadoId] = useState<number | null>(null);
   const [ferramenta, setFerramenta] = useState<Ferramenta>("selecionar");
   const [formaAberta, setFormaAberta] = useState<FormaBloco | null>(null);
+  /** Giro da cena inteira (manivela) — é vista, não faz parte da obra. */
+  const [giroCenaGraus, setGiroCenaGraus] = useState(0);
+  /** Cor na ponta do balde de tinta. */
+  const [corAtualIdx, setCorAtualIdx] = useState(0);
 
   // Cena de antes de um gesto contínuo (arrasto/slider) — vira UM passo
   // de undo quando o gesto fecha.
@@ -124,12 +131,22 @@ export default function Montagem() {
     if (!formaAberta) return;
     const variacao = VARIACOES_BLOCO.find((v) => v.id === variacaoId);
     if (!variacao) return;
-    const params = blocoDaVariacao(variacao, formaAberta);
+    const params = blocoDaVariacao(variacao, formaAberta, corAtualIdx);
     comHistorico((c) => adicionarForma(c, params));
     // A forma nova já entra selecionada (espec §4.2) — o id dela é o
     // proximoId de antes da adição.
     setSelecionadoId(cenaRef.current.proximoId);
   };
+
+  /** Balde de tinta: pinta um item com a cor na ponta do balde. */
+  const pintar = useCallback(
+    (id: number, corIdx: number) => {
+      const item = cenaRef.current.itens.find((b) => b.id === id);
+      if (!item || ehPontoDeLuz(item)) return;
+      comHistorico((c) => atualizarParams(c, id, { corIdx }));
+    },
+    [comHistorico]
+  );
 
   const selecionado =
     cena.itens.find((b) => b.id === selecionadoId) ?? null;
@@ -140,6 +157,7 @@ export default function Montagem() {
         itens={cena.itens}
         selecionadoId={selecionadoId}
         ferramenta={ferramenta}
+        giroCenaGraus={giroCenaGraus}
         onSelecionar={setSelecionadoId}
         onMover={(id, dx, dy) => aplicarVivo((c) => moverItem(c, id, dx, dy))}
         onRedimensionar={(id, delta) =>
@@ -152,6 +170,7 @@ export default function Montagem() {
           })
         }
         onGirar={(id, graus) => aplicarVivo((c) => girarItem(c, id, graus))}
+        onPintar={(id) => pintar(id, corAtualIdx)}
         onFimDeGesto={fecharGesto}
       />
 
@@ -189,6 +208,17 @@ export default function Montagem() {
         />
       </aside>
 
+      {/* Canto superior direito da CENA: a manivela que gira a obra. */}
+      <div className="absolute right-[320px] top-3 z-10">
+        <ManivelaCena
+          giroGraus={giroCenaGraus}
+          aoGirar={(delta) => setGiroCenaGraus((g) => g + delta)}
+          aoFimDeGesto={() => {
+            /* o giro é vista: não entra no histórico da obra */
+          }}
+        />
+      </div>
+
       {/* Base: as 4 formas + ponto de luz. */}
       <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2">
         <BarraFormas
@@ -197,6 +227,10 @@ export default function Montagem() {
             setFormaAberta(f);
             // Espec §4.4: clicar na barra volta o painel para a grade.
             setSelecionadoId(null);
+            // Com o balde ou a faca na mão, a grade não apareceria.
+            if (ferramenta === "pintar" || ferramenta === "fatiar") {
+              setFerramenta("selecionar");
+            }
           }}
           quantidadeLuzes={pontosDeLuz(cena).length}
           aoAdicionarLuz={() => {
@@ -206,15 +240,21 @@ export default function Montagem() {
         />
       </div>
 
-      {/* Direita: variações ↔ propriedades. */}
+      {/* Direita: variações ↔ propriedades ↔ paleta ↔ fatiar. */}
       <aside className="absolute bottom-24 right-3 top-3 z-10 w-[300px] max-w-[calc(100vw-6rem)]">
         <PainelDireito
+          ferramenta={ferramenta}
           formaAberta={formaAberta}
           selecionado={selecionado}
+          corAtualIdx={corAtualIdx}
           aoEscolherVariacao={escolherVariacao}
           aoAtualizar={(parciais: Partial<ParametrosBloco>) => {
             if (selecionadoId == null) return;
             aplicarVivo((c) => atualizarParams(c, selecionadoId, parciais));
+          }}
+          aoEscolherCor={(idx) => {
+            setCorAtualIdx(idx);
+            if (selecionadoId != null) pintar(selecionadoId, idx);
           }}
           aoFecharGesto={fecharGesto}
         />

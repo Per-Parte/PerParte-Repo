@@ -6,7 +6,23 @@
  * área de toque generosa (≥ 44 px). Público leigo, de idades variadas.
  */
 
-export type Ferramenta = "selecionar" | "tamanho" | "mover" | "rotacionar";
+export type Ferramenta =
+  | "selecionar"
+  | "tamanho"
+  | "mover"
+  | "rotacionar"
+  | "fatiar"
+  | "pintar";
+
+/** Ordem da barra: as 4 da espec, depois as duas do pedido de 06/08. */
+export const FERRAMENTAS: readonly Ferramenta[] = [
+  "selecionar",
+  "tamanho",
+  "mover",
+  "rotacionar",
+  "fatiar",
+  "pintar",
+] as const;
 
 const ICONES: Record<Ferramenta, React.ReactNode> = {
   selecionar: (
@@ -31,6 +47,21 @@ const ICONES: Record<Ferramenta, React.ReactNode> = {
       <path d="M20 3v4h-4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  // Fatiar: a forma com o plano de corte atravessando (linha tracejada).
+  fatiar: (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M7 4h10v16H7z" strokeLinejoin="round" opacity="0.75" />
+      <path d="M3 12h18" strokeLinecap="round" strokeDasharray="3 2.5" />
+    </svg>
+  ),
+  // Balde de tinta despejando.
+  pintar: (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M5 9l6-6 7 7-6 6z" strokeLinejoin="round" />
+      <path d="M6.5 10.5L4 13a2.5 2.5 0 0 0 3.5 3.5" strokeLinecap="round" />
+      <path d="M18.5 14c1 1.6 1.5 2.7 1.5 3.4a1.5 1.5 0 0 1-3 0c0-.7.5-1.8 1.5-3.4z" strokeLinejoin="round" />
+    </svg>
+  ),
 };
 
 const ROTULOS: Record<Ferramenta, string> = {
@@ -38,13 +69,17 @@ const ROTULOS: Record<Ferramenta, string> = {
   tamanho: "Tamanho",
   mover: "Mover",
   rotacionar: "Rotacionar",
+  fatiar: "Fatiar",
+  pintar: "Pintar",
 };
 
 const DICAS: Record<Ferramenta, string> = {
   selecionar: "Toque numa forma da cena para selecioná-la",
   tamanho: "Arraste para cima ou para baixo para mudar o tamanho",
   mover: "Arraste a forma — ela desliza encostada nas outras",
-  rotacionar: "Arraste para o lado para girar a forma",
+  rotacionar: "Arraste para o lado para girar a forma no próprio eixo",
+  fatiar: "Corte a forma selecionada no eixo que quiser",
+  pintar: "Escolha uma cor no painel e toque nas formas para pintar",
 };
 
 export function BarraFerramentas({
@@ -67,14 +102,14 @@ export function BarraFerramentas({
   aoRefazer(): void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur">
-      {(Object.keys(ROTULOS) as Ferramenta[]).map((f) => (
+    <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur">
+      {FERRAMENTAS.map((f) => (
         <button
           key={f}
           type="button"
           title={DICAS[f]}
           onClick={() => aoEscolher(f)}
-          className={`flex min-h-[56px] w-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-medium transition ${
+          className={`flex min-h-[52px] w-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-medium transition ${
             ativa === f
               ? "bg-neutral-900 text-white"
               : "text-neutral-700 hover:bg-neutral-100"
@@ -92,7 +127,7 @@ export function BarraFerramentas({
         title="Apagar a forma selecionada (quem estava em cima re-ancora)"
         onClick={aoApagar}
         disabled={!temSelecao}
-        className="flex min-h-[56px] w-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-medium text-red-700 transition enabled:hover:bg-red-50 disabled:opacity-30"
+        className="flex min-h-[52px] w-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-medium text-red-700 transition enabled:hover:bg-red-50 disabled:opacity-30"
       >
         <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />

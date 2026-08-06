@@ -6,10 +6,11 @@
  */
 
 import * as THREE from "three";
+import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import {
-  PRIMITIVOS_BLOCO,
   VARIACOES_BLOCO,
   blocoDaVariacao,
+  gerarMalhaBloco,
   gerarMalhaPontoDeLuz,
   type FormaBloco,
   type Malha,
@@ -19,20 +20,36 @@ import {
 /** Mesma escala do configurador atual: 100 mm = 1 unidade da cena. */
 export const MM = 100;
 
+/**
+ * Ângulo a partir do qual uma aresta é VIVA no preview. Abaixo dele as
+ * facetas se fundem (a lateral de um cilindro de 192 colunas continua
+ * lisa, o arco da borda continua liso); acima, a aresta fica crisp — a
+ * quina do cubo, a face de um corte da ferramenta Fatiar. Sem isso a
+ * normal média de vértice espalha o sombreado da tampa do corte pela
+ * parede e a peça aparece listrada.
+ */
+const ANGULO_ARESTA_VIVA = Math.PI / 6;
+
 export function geometriaDaMalha(m: Malha): THREE.BufferGeometry {
   const pos = new Float32Array(m.posicoes.length);
   for (let i = 0; i < m.posicoes.length; i++) pos[i] = m.posicoes[i] / MM;
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   g.setIndex(new THREE.BufferAttribute(m.indices, 1));
-  g.computeVertexNormals();
-  return g;
+  // toCreasedNormals devolve geometria NÃO indexada (é o que permite
+  // normal própria por face na aresta viva). Só o preview usa isto — o
+  // STL de produção sai da malha indexada do núcleo, intacta.
+  const comArestas = toCreasedNormals(g, ANGULO_ARESTA_VIVA);
+  g.dispose();
+  return comArestas;
 }
 
-/** Malha (geometria) de um bloco — preview usa menos segmentos que STL. */
+/**
+ * Malha (geometria) de um bloco — preview usa menos segmentos que STL.
+ * `gerarMalhaBloco` já entrega a peça com borda encurvada e fatiada.
+ */
 export function geometriaDoBloco(params: ParametrosBloco): THREE.BufferGeometry {
-  const malha = PRIMITIVOS_BLOCO[params.forma].gerarMalha(params, 48);
-  return geometriaDaMalha(malha);
+  return geometriaDaMalha(gerarMalhaBloco(params, 48));
 }
 
 /** As duas geometrias do ponto de luz (base opaca + bulbo emissivo). */

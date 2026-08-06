@@ -1,9 +1,11 @@
 "use client";
 
 /**
- * Montagem v2 · F2/F3 — viewport central: a obra fica no centro (a
- * câmera orbita; sem pan), os gestos das ferramentas viram chamadas do
- * modelo de cena (que só devolve contatos válidos — A1 no arrasto).
+ * Montagem v2 · F2/F3 — viewport central: a obra fica no centro e a
+ * câmera só aproxima/afasta. Quem gira a cena é a manivela do canto
+ * (ManivelaCena — pedido do Davi de 06/08): a órbita livre com o cursor
+ * saiu, então o cursor fica inteiro para as ferramentas. Os gestos viram
+ * chamadas do modelo de cena, que só devolve contatos válidos (A1).
  */
 
 import { useMemo, useRef } from "react";
@@ -26,6 +28,8 @@ export interface GestosViewport {
   /** Delta de tamanho geral, em mm (o modelo grampeia). */
   onRedimensionar(id: number, deltaMm: number): void;
   onGirar(id: number, deltaGraus: number): void;
+  /** Balde de tinta: pinta a forma tocada com a cor atual. */
+  onPintar(id: number): void;
   /** Gesto terminou — hora de fechar um passo de undo. */
   onFimDeGesto(): void;
 }
@@ -34,6 +38,8 @@ interface Props extends GestosViewport {
   itens: ItemCena[];
   selecionadoId: number | null;
   ferramenta: Ferramenta;
+  /** Giro da cena inteira (graus), vindo da manivela. */
+  giroCenaGraus: number;
 }
 
 interface Arrasto {
@@ -146,15 +152,18 @@ function CenaMontagem({
   itens,
   selecionadoId,
   ferramenta,
+  giroCenaGraus,
   onSelecionar,
   onMover,
   onRedimensionar,
   onGirar,
+  onPintar,
   onFimDeGesto,
 }: Props) {
   const { camera, gl } = useThree();
   const controles = useRef<OrbitControlsImpl>(null);
   const arrasto = useRef<Arrasto | null>(null);
+  const giroRad = (giroCenaGraus * Math.PI) / 180;
 
   const pontoNoPlano = (
     clientX: number,
@@ -172,6 +181,23 @@ function CenaMontagem({
     return raio.ray.intersectPlane(plano, alvo) ? alvo : null;
   };
 
+  /**
+   * Deslocamento do MUNDO para as coordenadas do núcleo. A cena inteira
+   * está girada pela manivela, então o arrasto precisa voltar ao
+   * referencial local antes de virar (dx, dy) em mm — senão empurrar
+   * para a direita move a peça de través.
+   */
+  const paraNucleoMm = (
+    mundoDx: number,
+    mundoDz: number
+  ): { dxMm: number; dyMm: number } => {
+    const cos = Math.cos(giroRad);
+    const sen = Math.sin(giroRad);
+    const localX = mundoDx * cos - mundoDz * sen;
+    const localZ = mundoDx * sen + mundoDz * cos;
+    return { dxMm: localX * MM, dyMm: -localZ * MM };
+  };
+
   const aoMoverPonteiro = (e: PointerEvent) => {
     const a = arrasto.current;
     if (!a) return;
@@ -179,8 +205,10 @@ function CenaMontagem({
     if (a.tipo === "mover") {
       const ponto = pontoNoPlano(e.clientX, e.clientY, a.plano);
       if (!ponto) return;
-      const dxMm = (ponto.x - a.ultimoPonto.x) * MM;
-      const dyMm = -(ponto.z - a.ultimoPonto.z) * MM;
+      const { dxMm, dyMm } = paraNucleoMm(
+        ponto.x - a.ultimoPonto.x,
+        ponto.z - a.ultimoPonto.z
+      );
       a.ultimoPonto.copy(ponto);
       onMover(a.id, dxMm, dyMm);
     } else if (a.tipo === "tamanho") {
@@ -205,7 +233,13 @@ function CenaMontagem({
     (item: ItemCena) => (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
       onSelecionar(item.id);
-      if (ferramenta === "selecionar") return;
+      // Balde de tinta: tocar já pinta (é o gesto que o público espera).
+      if (ferramenta === "pintar") {
+        onPintar(item.id);
+        return;
+      }
+      // Selecionar e Fatiar não arrastam: o painel da direita conduz.
+      if (ferramenta === "selecionar" || ferramenta === "fatiar") return;
       if (ehPontoDeLuz(item) && ferramenta !== "mover") return;
       const yBase = item.contato.zBaseMm / MM;
       const plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), -yBase);
@@ -230,7 +264,8 @@ function CenaMontagem({
       <directionalLight position={[4, 6, 5]} intensity={1.15} />
       <directionalLight position={[-5, 3, -4]} intensity={0.35} color="#dfe8f0" />
 
-      {/* Chão do estúdio — recebe a poça de luz do bulbo. */}
+      {/* Chão do estúdio — recebe a poça de luz do bulbo. Fica FORA do
+          giro: a mesa não gira, a obra gira sobre ela. */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.001, 0]}
@@ -240,31 +275,36 @@ function CenaMontagem({
         <meshStandardMaterial color="#ECEAE4" roughness={0.92} metalness={0} />
       </mesh>
 
-      {itens.map((item) =>
-        ehPontoDeLuz(item) ? (
-          <PontoDeLuzMesh
-            key={item.id}
-            item={item}
-            selecionado={item.id === selecionadoId}
-            aoPressionar={pressionarItem(item)}
-          />
-        ) : (
-          <BlocoMesh
-            key={item.id}
-            item={item}
-            selecionado={item.id === selecionadoId}
-            aoPressionar={pressionarItem(item)}
-          />
-        )
-      )}
+      {/* Todas as peças giram JUNTAS, no mesmo grupo (pedido do Davi). */}
+      <group rotation={[0, giroRad, 0]}>
+        {itens.map((item) =>
+          ehPontoDeLuz(item) ? (
+            <PontoDeLuzMesh
+              key={item.id}
+              item={item}
+              selecionado={item.id === selecionadoId}
+              aoPressionar={pressionarItem(item)}
+            />
+          ) : (
+            <BlocoMesh
+              key={item.id}
+              item={item}
+              selecionado={item.id === selecionadoId}
+              aoPressionar={pressionarItem(item)}
+            />
+          )
+        )}
+      </group>
 
+      {/* Sem órbita e sem pan: a obra não sai do centro (espec §2) e o
+          giro é da manivela. Sobra o zoom, que é seguro para leigo. */}
       <OrbitControls
         ref={controles}
         target={[0, 0.9, 0]}
         enablePan={false}
+        enableRotate={false}
         minDistance={1.2}
         maxDistance={18}
-        maxPolarAngle={Math.PI * 0.49}
         makeDefault
       />
     </>
