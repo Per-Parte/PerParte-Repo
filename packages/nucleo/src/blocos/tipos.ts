@@ -41,6 +41,50 @@ export interface FurosBloco {
   tamanhoMm: number;
 }
 
+/** Para onde a borda do topo se encurva. */
+export type SentidoBorda = "dentro" | "fora";
+
+export const SENTIDOS_BORDA: readonly SentidoBorda[] = [
+  "fora",
+  "dentro",
+] as const;
+
+/**
+ * Borda encurvada no TOPO do bloco (pedido do Davi, 06/08): a faixa de
+ * cima da silhueta vira um arco que abre para fora (aba de abajur) ou
+ * fecha para dentro (lábio). Vale para cubo, cilindro e pirâmide — a
+ * esfera é curva inteira e não tem borda reta para encurvar (o
+ * grampeador zera `borda` nela). Quando o bloco é OCO a parede inteira
+ * acompanha o arco: a espessura fica constante e o topo vira um anel.
+ * A matemática (e o ângulo que F4 permite) mora em blocos/borda.ts.
+ */
+export interface BordaBloco {
+  sentido: SentidoBorda;
+  /** Raio do arco da borda, em mm — é o "tamanho" do slider. */
+  tamanhoMm: number;
+}
+
+/** Eixo do corte da ferramenta Fatiar (coordenadas LOCAIS do bloco). */
+export type EixoFatia = "x" | "y" | "z";
+
+export const EIXOS_FATIA: readonly EixoFatia[] = ["x", "y", "z"] as const;
+
+/**
+ * Corte plano do bloco (ferramenta Fatiar — pedido do Davi, 06/08): um
+ * semi-espaço perpendicular a um eixo local; o lado que fica é `lado`.
+ * Coordenadas locais: z de 0 (base) a alturaBruta; x e y centrados no
+ * eixo. Depois do corte a malha é reassentada para a base voltar a
+ * z = 0 (convenção do núcleo). O corte deixa uma FACE PLANA — ela
+ * imprime melhor que a superfície original, nunca pior.
+ */
+export interface FatiaBloco {
+  eixo: EixoFatia;
+  /** Cota do plano de corte no eixo, em mm. */
+  posicaoMm: number;
+  /** Qual metade sobrevive: a de coordenada menor ou maior que o plano. */
+  lado: "menor" | "maior";
+}
+
 export interface ParametrosBloco {
   forma: FormaBloco;
   /**
@@ -71,6 +115,10 @@ export interface ParametrosBloco {
    * ilumina e pediria túneis compridos — não existe no catálogo).
    */
   furos: FurosBloco | null;
+  /** Borda encurvada no topo (null = borda reta). Nunca na esfera. */
+  borda: BordaBloco | null;
+  /** Corte plano da ferramenta Fatiar (null = bloco inteiro). */
+  fatia: FatiaBloco | null;
   /** Índice na PALETA do catálogo. */
   corIdx: number;
 }
@@ -154,6 +202,14 @@ export interface ApoioBloco {
    * sub-mm no anel real. Opcional: ausente = superfície sem degraus.
    */
   raiosNotaveisMm?(p: ParametrosBloco): number[];
+  /**
+   * Raio INSCRITO da seção horizontal numa cota z — até onde a seção
+   * existe em TODAS as direções (planta quadrada: meia-aresta, não a
+   * diagonal). É o platô que a ferramenta Fatiar expõe quando corta o
+   * bloco no eixo Z: o apoio do topo passa a ser a seção do corte.
+   * Opcional; ausente = a fatia cai no conservadorismo do envelope.
+   */
+  raioPlatoMm?(p: ParametrosBloco, zMm: number): number;
 }
 
 /**

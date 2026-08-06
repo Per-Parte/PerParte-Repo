@@ -10,13 +10,20 @@
 
 import { REGRAS } from "../regras";
 import { PALETA } from "../catalogo";
+import { anguloBordaRad, arcoBorda } from "./borda";
 import {
+  EIXOS_FATIA,
   FORMAS_BLOCO,
   FORMAS_FURO,
+  SENTIDOS_BORDA,
+  type BordaBloco,
+  type EixoFatia,
+  type FatiaBloco,
   type FormaBloco,
   type FormaFuro,
   type FurosBloco,
   type ParametrosBloco,
+  type SentidoBorda,
 } from "./tipos";
 
 /** Parede mínima do bloco = F2 (a MESMA constante do núcleo). */
@@ -72,7 +79,15 @@ export const LIMITES_BLOCO = {
   furosQuantidade: { min: 0, max: 12, passo: 1 },
   /** Piso do furo; o teto é derivado — furoMaximoMm(p). */
   furoTamanhoMm: { min: 4, passo: 1 },
+  /** Raio do arco da borda; o teto REAL é derivado — bordaTamanhoMaxMm(p). */
+  bordaTamanhoMm: { min: 3, max: 40, passo: 1 },
 } as const;
+
+/**
+ * Material que a fatia sempre deixa de cada lado do corte, em mm — o
+ * corte nunca some com a peça nem raspa uma casquinha inútil. ⚑ proposto.
+ */
+export const FATIA_MARGEM_MM = 5;
 
 const F1 = REGRAS.F.volumeMaximoParteMm;
 
@@ -144,6 +159,62 @@ export function espessuraParedeMaxMm(p: {
 }
 
 /**
+ * Teto do raio do arco da borda, em mm. A borda é limite-como-controle:
+ * — a faixa do arco nunca come mais que 1/3 da altura (sobra corpo);
+ * — para FORA, o alargamento respeita o prato (F1) e não passa de 1/4 da
+ *   largura (aba de abajur, não guarda-sol);
+ * — para DENTRO, o encolhimento nunca fecha a boca nem engole a parede.
+ * Devolve 0 quando nem o arco mínimo cabe (o grampeador zera a borda).
+ */
+export function bordaTamanhoMaxMm(p: {
+  tamanhoMm: number;
+  escalaAltura: number;
+  escalaLargura: number;
+  oca: boolean;
+  espessuraParedeMm: number;
+  sentido: SentidoBorda;
+}): number {
+  const H = alturaBrutaMm(p);
+  const W = larguraBrutaMm(p);
+  const theta = anguloBordaRad(p.sentido, p.oca);
+  const sen = Math.sin(theta);
+  const versseno = 1 - Math.cos(theta); // offset = raio × versseno
+  // Altura: a faixa do arco (raio × sen θ) ≤ 1/3 da altura.
+  let teto = H / (3 * sen);
+  if (p.sentido === "fora") {
+    // Alargamento: cabe no prato (F1) e ≤ 1/4 da largura.
+    const folgaPrato = Math.min(F1.largura, F1.profundidade) / 2 - W / 2;
+    teto = Math.min(teto, Math.max(0, folgaPrato) / versseno, W / 4 / versseno);
+  } else {
+    // Encolhimento: sobra boca (ou miolo) de pelo menos F2 depois da parede.
+    const sobra = p.oca ? p.espessuraParedeMm + PAREDE_MINIMA_BLOCO_MM : 1;
+    teto = Math.min(teto, Math.max(0, W / 2 - sobra) / versseno);
+  }
+  teto = Math.min(teto, LIMITES_BLOCO.bordaTamanhoMm.max);
+  return teto >= LIMITES_BLOCO.bordaTamanhoMm.min ? teto : 0;
+}
+
+/**
+ * Faixa válida da posição do corte da fatia num eixo, em mm (coordenadas
+ * locais). Fora dela o corte não deixaria material dos dois lados —
+ * `min > max` significa "esta peça é pequena demais para fatiar neste
+ * eixo" e o grampeador zera a fatia (clamp, nunca erro).
+ */
+export function limitesFatiaMm(
+  p: { tamanhoMm: number; escalaAltura: number; escalaLargura: number },
+  eixo: EixoFatia
+): { min: number; max: number } {
+  const margem = FATIA_MARGEM_MM;
+  if (eixo === "z") {
+    const H = alturaBrutaMm(p);
+    return { min: margem, max: H - margem };
+  }
+  // x e y são centrados no eixo do bloco: a planta vai de −W/2 a +W/2.
+  const meia = larguraBrutaMm(p) / 2;
+  return { min: -meia + margem, max: meia - margem };
+}
+
+/**
  * Tamanho máximo do furo para os params atuais, em mm — o clamp que
  * garante parede remanescente ≥ F2 entre furos vizinhos e nas bordas,
  * teto de ponte do FDM, e banda hospedeira com folga. Fórmulas
@@ -162,30 +233,46 @@ export function furoMaximoMm(p: ParametrosBloco): number {
   const W = larguraBrutaMm(p);
   const H = alturaBrutaMm(p);
   const wInterna = Math.max(0, W - 2 * p.espessuraParedeMm);
+  // A faixa da borda encurvada não hospeda furo: ela é o arco do topo.
+  const alturaBorda = arcoBorda(p, H).alturaMm;
+  /**
+   * Banda hospedeira REAL de cubo e cilindro (as duas cascas de parede
+   * reta): vai do piso da cavidade ao pé da borda, menos a moldura do
+   * bloco recortado e a tira de folga de cada lado. É a MESMA conta do
+   * gerador — medir só F2, como antes, prometia furo que o gerador
+   * encolhia num cilindro curto com borda (classe de mentira que a
+   * revisão de 06/08 pegou: o clamp promete, a malha entrega menos).
+   */
+  const bandaDeParedeReta = () => {
+    const zPiso = Math.min(p.espessuraParedeMm, H / 3);
+    const zTeto = H - Math.max(zPiso, alturaBorda);
+    return zTeto - zPiso - 2 * (MOLDURA_FURO_MM + TIRA_BANDA_MM);
+  };
   let porBanda: number;
   let alturaBanda: number;
   if (p.forma === "cubo") {
     const porFace = Math.ceil(n / 4);
     porBanda = (wInterna - (porFace + 1) * F2) / porFace;
-    alturaBanda = H - 2 * F2 - 2;
+    alturaBanda = bandaDeParedeReta();
   } else if (p.forma === "piramide") {
     // Largura útil da face a meia altura ≈ metade do lado da base (a
     // interna fica com o clamp geométrico do primitivo — o k encolhe).
     const porFace = Math.ceil(n / 4);
     porBanda = (W / 2 - (porFace + 1) * F2) / porFace;
-    alturaBanda = H - 2 * F2 - 2;
+    alturaBanda = H - 2 * F2 - 2 - alturaBorda;
   } else if (p.forma === "esfera") {
     porBanda = (Math.PI * wInterna) / n - F2;
     // Banda equatorial efetiva (≤ ±30°, apertando com o achatamento
     // para o teto do furo nunca deitar além de F4), descontadas moldura
-    // e tira — as MESMAS constantes que o gerador usa.
+    // e tira — as MESMAS constantes que o gerador usa. (A esfera nunca
+    // tem borda: o grampeador a zera.)
     alturaBanda =
       2 * ((H / 2) * bandaFuroEsferaRad(p) - MOLDURA_FURO_MM - TIRA_BANDA_MM);
   } else {
     porBanda = (Math.PI * wInterna) / n - F2;
-    alturaBanda = H - 2 * F2 - 2;
+    alturaBanda = bandaDeParedeReta();
   }
-  return Math.min(FURO_PONTE_MAX_MM, porBanda, alturaBanda);
+  return Math.min(FURO_PONTE_MAX_MM, porBanda, Math.max(0, alturaBanda));
 }
 
 export const BLOCO_PADRAO: ParametrosBloco = {
@@ -196,6 +283,8 @@ export const BLOCO_PADRAO: ParametrosBloco = {
   oca: false,
   espessuraParedeMm: 2,
   furos: null,
+  borda: null,
+  fatia: null,
   corIdx: 0,
 };
 
@@ -257,6 +346,34 @@ export function grampearBloco(v: unknown): ParametrosBloco {
     espessuraParedeMaxMm(base)
   );
 
+  // BORDA antes dos furos: a faixa do arco não hospeda furo, então o teto
+  // de furoMaximoMm depende dela (e ela não depende dos furos — só de oca,
+  // que já está decidido acima). A esfera nunca tem borda: é curva inteira.
+  let borda: BordaBloco | null = null;
+  const bordaBruta =
+    bruto.borda && typeof bruto.borda === "object" ? bruto.borda : null;
+  if (bordaBruta && forma !== "esfera") {
+    const sentido: SentidoBorda = SENTIDOS_BORDA.includes(
+      bordaBruta.sentido as SentidoBorda
+    )
+      ? (bordaBruta.sentido as SentidoBorda)
+      : "fora";
+    const teto = bordaTamanhoMaxMm({
+      ...base,
+      oca,
+      espessuraParedeMm,
+      sentido,
+    });
+    const pedido = num(bordaBruta.tamanhoMm, 0);
+    // teto 0 = nem o arco mínimo cabe nesta peça → borda some (nunca erro).
+    if (teto > 0 && pedido > 0) {
+      borda = {
+        sentido,
+        tamanhoMm: clamp(pedido, L.bordaTamanhoMm.min, teto),
+      };
+    }
+  }
+
   let furos: FurosBloco | null = null;
   if (temFuros) {
     const formaFuro: FormaFuro = FORMAS_FURO.includes(
@@ -277,6 +394,7 @@ export function grampearBloco(v: unknown): ParametrosBloco {
         ...base,
         oca: true,
         espessuraParedeMm,
+        borda,
         furos: { forma: formaFuro, quantidade: q, tamanhoMm: 0 },
       }) >= L.furoTamanhoMm.min;
     while (quantidade > 0 && !cabe(quantidade)) quantidade--;
@@ -287,6 +405,7 @@ export function grampearBloco(v: unknown): ParametrosBloco {
         ...base,
         oca: true,
         espessuraParedeMm,
+        borda,
         furos: { forma: formaFuro, quantidade, tamanhoMm: 0 },
       });
       furos = {
@@ -297,6 +416,29 @@ export function grampearBloco(v: unknown): ParametrosBloco {
           L.furoTamanhoMm.min,
           teto
         ),
+      };
+    }
+  }
+
+  // FATIA por último: o corte é posicionado nas dimensões JÁ grampeadas.
+  let fatia: FatiaBloco | null = null;
+  const fatiaBruta =
+    bruto.fatia && typeof bruto.fatia === "object" ? bruto.fatia : null;
+  if (fatiaBruta) {
+    const eixo: EixoFatia = EIXOS_FATIA.includes(fatiaBruta.eixo as EixoFatia)
+      ? (fatiaBruta.eixo as EixoFatia)
+      : "z";
+    const faixa = limitesFatiaMm(base, eixo);
+    // faixa vazia = peça pequena demais para cortar neste eixo: sem fatia.
+    if (faixa.min <= faixa.max) {
+      fatia = {
+        eixo,
+        posicaoMm: clamp(
+          num(fatiaBruta.posicaoMm, (faixa.min + faixa.max) / 2),
+          faixa.min,
+          faixa.max
+        ),
+        lado: fatiaBruta.lado === "maior" ? "maior" : "menor",
       };
     }
   }
@@ -315,6 +457,8 @@ export function grampearBloco(v: unknown): ParametrosBloco {
     oca: furos ? true : oca,
     espessuraParedeMm,
     furos,
+    borda,
+    fatia,
     corIdx,
   };
 }
