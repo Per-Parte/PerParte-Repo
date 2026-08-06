@@ -13,3 +13,4 @@ export * from "./junta";
 export * from "./stl";
 export * from "./validacao";
 export * from "./calibracao";
+export * from "./blocos";
