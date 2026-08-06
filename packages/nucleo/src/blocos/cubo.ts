@@ -30,6 +30,18 @@
  *   reto (mesmo u e mesmo z dos dois lados, offset só na normal). As duas
  *   grades laterais compartilham as MESMAS linhas z na banda dos furos.
  *
+ * — BORDA ENCURVADA (pedido do Davi, 06/08): a faixa de cima da silhueta
+ *   vira um ARCO (blocos/borda.ts) que abre como aba de abajur ("fora") ou
+ *   fecha como lábio ("dentro"). Os anéis do cubo têm meia-largura
+ *   CONSTANTE a0; com borda, a meia-largura do anel na cota z passa a ser
+ *   a0 + offset(z) — e a faixa ganha anéis PRÓPRIOS (o arco em 2 segmentos
+ *   sairia facetado). Na oca as DUAS paredes levam o MESMO offset: a
+ *   espessura fica constante e a moldura plana de z = H continua ligando o
+ *   perímetro externo ao interno, agora deslocada. A tampa de baixo e a
+ *   moldura/anel do topo seguem compartilhando os índices do perímetro.
+ *   A faixa do arco NÃO hospeda furo (furoMaximoMm já desconta a altura
+ *   dela): a banda dos furos para no pé da borda.
+ *
  * ⚑ Clamp geométrico interno do furo: furoMaximoMm (limites.ts) já mede a
  *   casca INTERNA (revisão de 06/08), mas a fatia REAL da face interna
  *   ainda depende da grade (células inteiras, moldura em células) — se o
@@ -44,6 +56,7 @@
  * gerarMalhaCubo assume params já grampeados (grampearBloco antes).
  */
 
+import { anguloBordaRad, arcoBorda } from "./borda";
 import type {
   ApoioBloco,
   FormaFuro,
@@ -66,6 +79,23 @@ const F2 = PAREDE_MINIMA_BLOCO_MM;
 /** Passo-alvo das linhas z da grade da casca oca, em mm. */
 const PASSO_LINHA_MM = 4;
 
+/**
+ * Passo-alvo (⚑) e piso de segmentos das linhas de grade DENTRO da faixa
+ * do arco da borda: a borda é a silhueta que o cliente vê de perto, e com
+ * 2 segmentos a curva sairia facetada. As MESMAS réguas do cilindro
+ * (⚑ casca.ts: o dono único da borda mora em blocos/borda.ts, mas a régua
+ * de malha é de cada primitivo — consolidar junto com a receita do furo).
+ */
+const PASSO_LINHA_BORDA_MM = 1.5;
+const SEGMENTOS_MINIMOS_BORDA = 8;
+
+/**
+ * Miolo que o offset para DENTRO nunca come, em mm — o mesmo piso de eixo
+ * da geometria do núcleo. bordaTamanhoMaxMm (limites.ts) já mantém boca e
+ * parede no caso normal; isto é o cinto de segurança do clamp geométrico.
+ */
+const PISO_MIOLO_MM = 0.6;
+
 /** Meia-largura externa da planta — helper único (malha e apoio). */
 function meiaLarguraMm(p: ParametrosBloco): number {
   return Math.max(1, larguraBrutaMm(p) / 2);
@@ -87,30 +117,164 @@ function zPisoMm(p: ParametrosBloco): number {
   return Math.min(p.espessuraParedeMm, alturaBrutaMm(p) / 3);
 }
 
+/**
+ * O arco da borda deste cubo com o offset já GRAMPEADO à geometria —
+ * fonte única da malha E do apoio (o apoio tem de dizer a verdade sobre a
+ * malha real). Cinto de segurança: se o offset para DENTRO comesse a
+ * meia-largura inteira (ou a parede interna da casca), o offset trunca no
+ * que sobra, deixando um piso de material — clamp geométrico, nunca erro.
+ * bordaTamanhoMaxMm (limites.ts) já evita isso no caso normal.
+ */
+function bordaCubo(p: ParametrosBloco, alturaTotalMm: number) {
+  const arco = arcoBorda(p, alturaTotalMm);
+  // Quem aperta primeiro é a boca quando oca (a parede desliza inteira: as
+  // duas superfícies levam o MESMO offset, então a espessura não muda).
+  const menor = p.oca ? meiaLarguraInternaMm(p) : meiaLarguraMm(p);
+  const pisoOffset = -Math.max(0, menor - PISO_MIOLO_MM);
+  const limitar = (o: number) => (o < pisoOffset ? pisoOffset : o);
+  return {
+    alturaMm: arco.alturaMm,
+    offsetTopoMm: limitar(arco.offsetTopoMm),
+    offsetEmMm: (zMm: number) => limitar(arco.offsetEmMm(zMm)),
+    // Inverso do arco CRU: só é consultado com offsets de magnitude ≤ a que
+    // sobrou depois do truncamento, onde os dois coincidem.
+    zDoOffsetMm: (offsetMm: number) => arco.zDoOffsetMm(offsetMm),
+  };
+}
+
+type BordaCubo = ReturnType<typeof bordaCubo>;
+
+/**
+ * Cotas z das linhas de grade DENTRO da faixa do arco — o PÉ fica de fora
+ * (ele entra como linha exata da grade do corpo) e a última é o topo
+ * EXATO. Amostra em passos iguais de ÂNGULO do arco (pelo inverso
+ * zDoOffsetMm, sem refazer a conta do arco): comprimento de arco constante
+ * deixa a curva lisa nas duas pontas — em z uniforme, o último segmento de
+ * um arco de 90° (borda para dentro, sólida) daria um salto grosseiro.
+ */
+function linhasBordaMm(
+  p: ParametrosBloco,
+  alturaTotalMm: number,
+  borda: BordaCubo
+): number[] {
+  if (borda.alturaMm <= 0 || !p.borda) return [];
+  const theta = anguloBordaRad(p.borda.sentido, p.oca);
+  const senTheta = Math.sin(theta);
+  const versseno = 1 - Math.cos(theta);
+  if (senTheta <= 0 || versseno <= 0) return [];
+  // comprimento = R·θ, com R tirado da altura da faixa (R·sen θ).
+  const comprimento = (borda.alturaMm / senTheta) * theta;
+  const segmentos = Math.max(
+    SEGMENTOS_MINIMOS_BORDA,
+    Math.ceil(comprimento / PASSO_LINHA_BORDA_MM)
+  );
+  const zs: number[] = [];
+  for (let k = 1; k < segmentos; k++) {
+    const offset =
+      (borda.offsetTopoMm * (1 - Math.cos((theta * k) / segmentos))) / versseno;
+    const z = borda.zDoOffsetMm(offset);
+    if (z == null) continue;
+    const anterior = zs.length > 0 ? zs[zs.length - 1] : -Infinity;
+    if (z > anterior + 1e-6 && z < alturaTotalMm - 1e-6) zs.push(z);
+  }
+  zs.push(alturaTotalMm);
+  return zs;
+}
+
+/** Meia-largura EXTERNA da planta numa cota z (com a borda). */
+function meiaLarguraEmMm(
+  p: ParametrosBloco,
+  borda: BordaCubo,
+  zMm: number
+): number {
+  return meiaLarguraMm(p) + borda.offsetEmMm(zMm);
+}
+
+/** Meia-largura da CAVIDADE numa cota z — o MESMO offset da externa. */
+function meiaLarguraInternaEmMm(
+  p: ParametrosBloco,
+  borda: BordaCubo,
+  zMm: number
+): number {
+  return meiaLarguraInternaMm(p) + borda.offsetEmMm(zMm);
+}
+
+/** Meia-largura externa no TOPO: com borda, o platô/anel do fim do arco. */
+function meiaLarguraTopoMm(p: ParametrosBloco): number {
+  const alturaTotal = alturaBrutaMm(p);
+  return meiaLarguraMm(p) + bordaCubo(p, alturaTotal).offsetTopoMm;
+}
+
 export const apoioCubo: ApoioBloco = {
+  // A borda encurva a faixa do topo mas nunca muda a ALTURA do bloco.
   alturaTopoMm: (p) => alturaBrutaMm(p),
   // Platôs quadrados: raio do círculo INSCRITO (pousar perto do canto
-  // conta como fora — conservador, documentado em tipos.ts).
-  raioApoioSuperiorMm: (p) => larguraBrutaMm(p) / 2,
+  // conta como fora — conservador, documentado em tipos.ts). Com borda, o
+  // platô do topo é o do ARCO: maior para fora (aba), menor para dentro.
+  raioApoioSuperiorMm: (p) => meiaLarguraTopoMm(p),
   raioApoioInferiorMm: (p) => larguraBrutaMm(p) / 2,
   raioEnvelopeMm(p, zMm) {
-    if (zMm < 0 || zMm > alturaBrutaMm(p)) return 0;
-    // Planta quadrada: envelope pelo raio CIRCUNSCRITO (nunca interpenetra).
-    return (larguraBrutaMm(p) / 2) * Math.SQRT2;
+    const alturaTotal = alturaBrutaMm(p);
+    if (zMm < 0 || zMm > alturaTotal) return 0;
+    // Planta quadrada: envelope pelo raio CIRCUNSCRITO (nunca interpenetra);
+    // dentro da faixa, a meia-largura é a do arco.
+    const borda = bordaCubo(p, alturaTotal);
+    return meiaLarguraEmMm(p, borda, zMm) * Math.SQRT2;
   },
   zSuperficieTopoMm(p, dMm) {
-    if (dMm > meiaLarguraMm(p)) return null;
-    // Caixa aberta (modelo radial inscrito, conservador — tipos.ts): quem
-    // cabe na boca assenta no piso; na moldura (b_i ≤ d ≤ a0), em H.
-    if (p.oca && dMm < meiaLarguraInternaMm(p)) return zPisoMm(p);
-    return alturaBrutaMm(p);
+    const alturaTotal = alturaBrutaMm(p);
+    const borda = bordaCubo(p, alturaTotal);
+    const a0 = meiaLarguraMm(p);
+    const aTopo = a0 + borda.offsetTopoMm;
+    if (dMm > Math.max(a0, aTopo)) return null;
+    // Caixa aberta (modelo radial inscrito, conservador — tipos.ts).
+    if (p.oca) {
+      const bi = meiaLarguraInternaMm(p);
+      const biTopo = bi + borda.offsetTopoMm;
+      // Quem passa pela boca INTEIRA assenta no piso da cavidade.
+      if (dMm <= Math.min(bi, biTopo)) return zPisoMm(p);
+      // Borda para FORA: a boca ABRE com z e a parede interna do arco é
+      // uma rampa que sobe — quem não passa pela boca de baixo pousa nela.
+      if (borda.offsetTopoMm > 0 && dMm < biTopo) {
+        return borda.zDoOffsetMm(dMm - bi) ?? alturaTotal;
+      }
+    }
+    // Platô do topo (tampa da pura, moldura da oca) — agora deslocado.
+    if (dMm <= aTopo) return alturaTotal;
+    // Só sobra a borda para DENTRO: entre a meia-largura do topo e a do
+    // corpo a superfície é o ARCO (o lábio olha para cima), e o inverso
+    // dele dá a cota EXATA de assentamento (A1: nunca prometer alto demais).
+    return borda.zDoOffsetMm(dMm - a0) ?? alturaTotal;
   },
   zSuperficieBaseMm(p, dMm) {
+    // A base nunca é encurvada: a tampa do fundo é a meia-largura do corpo.
     if (dMm > meiaLarguraMm(p)) return null;
     return 0;
   },
-  // O degrau da boca da caixa aberta (tangencia.ts amostra este raio).
-  raiosNotaveisMm: (p) => (p.oca ? [meiaLarguraInternaMm(p)] : []),
+  // Degraus da superfície superior: a boca da caixa aberta (embaixo e no
+  // topo, quando a borda a desloca) e a QUINA da meia-largura do topo, onde
+  // o platô acaba (tangencia.ts amostra estes raios exatos).
+  raiosNotaveisMm(p) {
+    const alturaTotal = alturaBrutaMm(p);
+    const borda = bordaCubo(p, alturaTotal);
+    const raios: number[] = [];
+    if (p.oca) {
+      raios.push(meiaLarguraInternaMm(p));
+      if (borda.offsetTopoMm !== 0) {
+        raios.push(meiaLarguraInternaMm(p) + borda.offsetTopoMm);
+      }
+    }
+    if (borda.alturaMm > 0) raios.push(meiaLarguraMm(p) + borda.offsetTopoMm);
+    return raios;
+  },
+  // Planta quadrada: o raio INSCRITO da seção é a MEIA-ARESTA (não a
+  // diagonal) do contorno EXTERNO — é o platô que a fatia no eixo Z expõe
+  // (todo bloco da F1 tem fundo fechado e o corte assenta sobre a casca).
+  raioPlatoMm(p, zMm) {
+    const alturaTotal = alturaBrutaMm(p);
+    if (zMm < 0 || zMm > alturaTotal) return 0;
+    return meiaLarguraEmMm(p, bordaCubo(p, alturaTotal), zMm);
+  },
 };
 
 /** Cantos da planta (CCW visto de cima) — mesma ordem da pirâmide. */
@@ -485,19 +649,46 @@ function blocosDaCasca(
   });
 }
 
-/** Cubo maciço: 4 laterais + 2 tampas em grade, um casco fechado. */
-function malhaCuboPuro(a0: number, H: number, S: number): MalhaBloco {
+/**
+ * Cubo maciço: 4 laterais + 2 tampas em grade, um casco fechado. Com
+ * borda, a lateral deixa de ser um único par de anéis: o PÉ da faixa é
+ * linha exata e o arco ganha anéis próprios até o topo (a tampa de cima
+ * segue o anel deslocado — platô maior para fora, menor para dentro).
+ */
+function malhaCuboPuro(
+  p: ParametrosBloco,
+  a0: number,
+  H: number,
+  S: number,
+  borda: BordaCubo
+): MalhaBloco {
   const posicoes: number[] = [];
   const trios: number[] = [];
-  const anelBase = anelQuadrado(posicoes, a0, 0, S);
-  const anelTopo = anelQuadrado(posicoes, a0, H, S);
-  for (let k = 0; k < 4 * S; k++) {
-    const k2 = (k + 1) % (4 * S);
-    trios.push(anelBase[k], anelBase[k2], anelTopo[k2]);
-    trios.push(anelBase[k], anelTopo[k2], anelTopo[k]);
+  const zs: number[] = [0];
+  if (borda.alturaMm > 0) {
+    const zPe = H - borda.alturaMm;
+    if (zPe > 1e-6) zs.push(zPe);
+    zs.push(...linhasBordaMm(p, H, borda));
+  } else {
+    zs.push(H);
   }
-  tamparParaBaixo(trios, gradeTampa(posicoes, anelBase, a0, 0, S), S);
-  tamparParaCima(trios, gradeTampa(posicoes, anelTopo, a0, H, S), S);
+  const aneis = zs.map((z) =>
+    anelQuadrado(posicoes, meiaLarguraEmMm(p, borda, z), z, S)
+  );
+  for (let j = 0; j + 1 < aneis.length; j++) {
+    for (let k = 0; k < 4 * S; k++) {
+      const k2 = (k + 1) % (4 * S);
+      trios.push(aneis[j][k], aneis[j][k2], aneis[j + 1][k2]);
+      trios.push(aneis[j][k], aneis[j + 1][k2], aneis[j + 1][k]);
+    }
+  }
+  tamparParaBaixo(trios, gradeTampa(posicoes, aneis[0], a0, 0, S), S);
+  const aTopo = meiaLarguraEmMm(p, borda, H);
+  tamparParaCima(
+    trios,
+    gradeTampa(posicoes, aneis[aneis.length - 1], aTopo, H, S),
+    S
+  );
   return {
     posicoes: Float32Array.from(posicoes),
     indices: Uint32Array.from(trios),
@@ -510,18 +701,25 @@ function malhaCuboPuro(a0: number, H: number, S: number): MalhaBloco {
  * paredes u × z de zPiso a H) e moldura quadrada plana em z = H ligando
  * o perímetro externo ao interno — topo de parede, sem ponte. As duas
  * laterais usam as MESMAS linhas z na banda — os furos recortam blocos
- * equivalentes nas duas e o túnel liga os polígonos.
+ * equivalentes nas duas e o túnel liga os polígonos. Com BORDA, essas
+ * mesmas linhas ganham a faixa do arco no topo e as duas paredes levam o
+ * MESMO offset: a espessura não muda e a moldura sai deslocada com elas.
  */
 function malhaCuboOco(
   p: ParametrosBloco,
   a0: number,
   H: number,
-  S: number
+  S: number,
+  borda: BordaCubo
 ): MalhaBloco {
   const bi = meiaLarguraInternaMm(p);
   const zPiso = zPisoMm(p);
-  // Teto da banda dos furos (simétrico ao piso); as paredes sobem até H.
-  const zTetoMax = H - zPiso;
+  // Pé da faixa do arco: acima dele a parede deixa de ser vertical.
+  const zPeBorda = H - borda.alturaMm;
+  // Teto da banda dos furos (simétrico ao piso); as paredes sobem até H. A
+  // faixa do arco NÃO hospeda furo (furoMaximoMm já desconta a altura dela)
+  // — a banda para no pé da borda.
+  const zTetoMax = Math.min(H - zPiso, zPeBorda);
 
   const plano = planejarFuros(p, a0, bi, S, zPiso, zTetoMax, H / 2);
 
@@ -545,7 +743,14 @@ function malhaCuboOco(
     preencherAte(plano.zCentro);
     linhaBlocoAlto = preencherAte(plano.zBlocoAlto);
   }
-  preencherAte(H);
+  // A faixa do arco ganha linhas próprias, mais finas — o PÉ (zPeBorda) é
+  // linha exata da grade do corpo e a última linha é o topo exato.
+  if (borda.alturaMm > 0) {
+    if (zPeBorda > linhas[linhas.length - 1] + 1e-6) preencherAte(zPeBorda);
+    for (const z of linhasBordaMm(p, H, borda)) linhas.push(z);
+  } else {
+    preencherAte(H);
+  }
 
   // ---- vértices (compartilhados por índice; a costura nunca duplica) ----
   const posicoes: number[] = [];
@@ -554,10 +759,14 @@ function malhaCuboOco(
     return posicoes.length / 3 - 1;
   };
   const linhasExternas = [0, ...linhas];
+  // As DUAS paredes recebem o MESMO offset do arco na cota z: a espessura
+  // fica constante e a moldura do topo continua ligando as duas.
   const gradeExterna = linhasExternas.map((z) =>
-    anelQuadrado(posicoes, a0, z, S)
+    anelQuadrado(posicoes, meiaLarguraEmMm(p, borda, z), z, S)
   );
-  const gradeInterna = linhas.map((z) => anelQuadrado(posicoes, bi, z, S));
+  const gradeInterna = linhas.map((z) =>
+    anelQuadrado(posicoes, meiaLarguraInternaEmMm(p, borda, z), z, S)
+  );
 
   // Blocos por casca: as larguras de célula diferem (2a0/S vs 2bi/S).
   const blocosExt = plano ? blocosDaCasca(plano, a0, S) : null;
@@ -713,13 +922,25 @@ function malhaCuboOco(
         for (const q of plano.pontos) {
           const u = uc + q.a;
           const z = plano.zCentro + q.b;
+          // O offset do arco na cota do vértice (ZERO na prática — a banda
+          // dos furos para no pé da borda; somado porque a meia-largura numa
+          // cota z é a do arco, e o polígono mora na superfície da parede).
+          const off = borda.offsetEmMm(z);
           doLadoExterno.push({
-            indice: vertice(nx * a0 + ux * u, ny * a0 + uy * u, z),
+            indice: vertice(
+              nx * (a0 + off) + ux * u,
+              ny * (a0 + off) + uy * u,
+              z
+            ),
             a: q.a,
             b: q.b,
           });
           doLadoInterno.push({
-            indice: vertice(nx * bi + ux * u, ny * bi + uy * u, z),
+            indice: vertice(
+              nx * (bi + off) + ux * u,
+              ny * (bi + off) + uy * u,
+              z
+            ),
             a: q.a,
             b: q.b,
           });
@@ -793,12 +1014,13 @@ export function gerarMalhaCubo(
   // Colunas por face: múltiplo de 6 (até 3 furos por face dividem a banda
   // em partes exatas) e nunca abaixo de 48 — mesma régua da pirâmide.
   const S = 6 * Math.max(8, Math.ceil(segmentos / 6));
+  const borda = bordaCubo(p, H);
   if (!p.oca) {
     // Pura: um casco fechado, sem furos (o grampeador nunca entrega furos
     // com oca = false — furo é sempre passante de parede).
-    return malhaCuboPuro(a0, H, S);
+    return malhaCuboPuro(p, a0, H, S, borda);
   }
-  return malhaCuboOco(p, a0, H, S);
+  return malhaCuboOco(p, a0, H, S, borda);
 }
 
 export const primitivoCubo: PrimitivoBloco = {

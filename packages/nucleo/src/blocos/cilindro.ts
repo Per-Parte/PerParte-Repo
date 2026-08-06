@@ -25,6 +25,13 @@
  *   vértice para CIMA), a borda do bloco costura no polígono como cinta
  *   ordenada por ângulo ("zipper") e um anel de M quads liga o polígono
  *   externo ao interno — o túnel RADIAL de parede.
+ * — BORDA ENCURVADA (pedido do Davi, 06/08): a faixa de cima da silhueta
+ *   vira um ARCO (blocos/borda.ts) que abre como aba de abajur ("fora") ou
+ *   fecha como lábio ("dentro"). Como o cilindro descreve a planta por
+ *   "raio em função de z", o arco entra como OFFSET radial somado a esse
+ *   raio — nas DUAS paredes da oca, para a espessura ficar constante e o
+ *   anel do topo continuar ligando as duas (agora deslocado). Na pura o
+ *   perfil da revolução ganha os pontos do arco no topo.
  *
  * Convenções do núcleo (malha.ts): mm; Z é a vertical de impressão (F8);
  * origem no eixo com base em z = 0; enrolamento anti-horário visto de
@@ -35,6 +42,7 @@
  */
 
 import { malhaRevolucao } from "../malha";
+import { anguloBordaRad, arcoBorda } from "./borda";
 import type {
   ApoioBloco,
   FormaFuro,
@@ -58,6 +66,14 @@ const RAIO_EIXO_MM = 0.6;
 /** Passo-alvo das linhas z da grade da casca oca, em mm. */
 const PASSO_LINHA_MM = 4;
 
+/**
+ * Passo-alvo (⚑) e piso de segmentos das linhas de grade DENTRO da faixa
+ * do arco da borda: a borda é a silhueta que o cliente vê de perto, e com
+ * 2 segmentos a curva sairia facetada.
+ */
+const PASSO_LINHA_BORDA_MM = 1.5;
+const SEGMENTOS_MINIMOS_BORDA = 8;
+
 /** Raio externo com o mesmo piso de eixo da malha — helper único. */
 function raioExternoMm(p: ParametrosBloco): number {
   return Math.max(RAIO_EIXO_MM * 2, larguraBrutaMm(p) / 2);
@@ -77,28 +93,148 @@ function zPisoMm(p: ParametrosBloco): number {
   return Math.min(p.espessuraParedeMm, alturaBrutaMm(p) / 3);
 }
 
+/**
+ * O arco da borda deste cilindro com o offset já GRAMPEADO à geometria —
+ * fonte única da malha E do apoio (o apoio tem de dizer a verdade sobre a
+ * malha real). Cinto de segurança: se o offset para DENTRO comesse o raio
+ * inteiro (ou a parede interna da casca), o offset trunca no que sobra,
+ * deixando um piso de material — clamp geométrico, nunca erro.
+ * bordaTamanhoMaxMm (limites.ts) já evita isso no caso normal.
+ */
+function bordaCilindro(p: ParametrosBloco, alturaTotalMm: number) {
+  const arco = arcoBorda(p, alturaTotalMm);
+  // O raio que aperta primeiro é o da boca quando oca (a parede desliza
+  // inteira: as duas superfícies levam o MESMO offset).
+  const menorRaio = p.oca ? raioInternoMm(p) : raioExternoMm(p);
+  const pisoOffset = -Math.max(0, menorRaio - RAIO_EIXO_MM);
+  const limitar = (o: number) => (o < pisoOffset ? pisoOffset : o);
+  return {
+    alturaMm: arco.alturaMm,
+    offsetTopoMm: limitar(arco.offsetTopoMm),
+    offsetEmMm: (zMm: number) => limitar(arco.offsetEmMm(zMm)),
+    // Inverso do arco CRU: só é consultado com offsets de magnitude ≤ a que
+    // sobrou depois do truncamento, onde os dois coincidem.
+    zDoOffsetMm: (offsetMm: number) => arco.zDoOffsetMm(offsetMm),
+  };
+}
+
+type BordaCilindro = ReturnType<typeof bordaCilindro>;
+
+/**
+ * Cotas z das linhas de grade DENTRO da faixa do arco — o PÉ fica de fora
+ * (ele já é linha da grade do corpo) e a última é o topo EXATO. Amostra em
+ * passos iguais de ÂNGULO do arco (usando o inverso zDoOffsetMm, sem
+ * refazer a conta do arco): comprimento de arco constante deixa a curva
+ * lisa nas duas pontas — em z uniforme, o último segmento de um arco de 90°
+ * (borda para dentro, sólida) daria um salto grosseiro de raio.
+ */
+function linhasBordaMm(
+  p: ParametrosBloco,
+  alturaTotalMm: number,
+  borda: BordaCilindro
+): number[] {
+  if (borda.alturaMm <= 0 || !p.borda) return [];
+  const theta = anguloBordaRad(p.borda.sentido, p.oca);
+  const senTheta = Math.sin(theta);
+  const versseno = 1 - Math.cos(theta);
+  if (senTheta <= 0 || versseno <= 0) return [];
+  // comprimento = R·θ, com R tirado da altura da faixa (R·sen θ).
+  const comprimento = (borda.alturaMm / senTheta) * theta;
+  const segmentos = Math.max(
+    SEGMENTOS_MINIMOS_BORDA,
+    Math.ceil(comprimento / PASSO_LINHA_BORDA_MM)
+  );
+  const zs: number[] = [];
+  for (let k = 1; k < segmentos; k++) {
+    const offset =
+      (borda.offsetTopoMm * (1 - Math.cos((theta * k) / segmentos))) / versseno;
+    const z = borda.zDoOffsetMm(offset);
+    if (z == null) continue;
+    const anterior = zs.length > 0 ? zs[zs.length - 1] : -Infinity;
+    if (z > anterior + 1e-6 && z < alturaTotalMm - 1e-6) zs.push(z);
+  }
+  zs.push(alturaTotalMm);
+  return zs;
+}
+
 export const apoioCilindro: ApoioBloco = {
+  // A borda encurva a faixa do topo mas nunca muda a ALTURA do bloco.
   alturaTopoMm: (p) => alturaBrutaMm(p),
-  raioApoioSuperiorMm: (p) => larguraBrutaMm(p) / 2,
+  // O platô do topo é o raio do TOPO: maior com a borda para fora (aba),
+  // menor com a borda para dentro (lábio).
+  raioApoioSuperiorMm: (p) => raioTopoCilindroMm(p),
   raioApoioInferiorMm: (p) => larguraBrutaMm(p) / 2,
   raioEnvelopeMm(p, zMm) {
-    if (zMm < 0 || zMm > alturaBrutaMm(p)) return 0;
-    return larguraBrutaMm(p) / 2;
+    const alturaTotal = alturaBrutaMm(p);
+    if (zMm < 0 || zMm > alturaTotal) return 0;
+    // Dentro da faixa do arco a silhueta é a do arco (planta redonda: o
+    // envelope É o raio da seção).
+    return raioExternoMm(p) + bordaCilindro(p, alturaTotal).offsetEmMm(zMm);
   },
   zSuperficieTopoMm(p, dMm) {
-    if (dMm > raioExternoMm(p)) return null;
-    // Borda aberta: quem cabe na boca assenta no piso da cavidade; na
-    // coroa da borda (raioInterno < d ≤ raioExterno), assenta em H.
-    if (p.oca && dMm <= raioInternoMm(p)) return zPisoMm(p);
-    return alturaBrutaMm(p);
+    const alturaTotal = alturaBrutaMm(p);
+    const borda = bordaCilindro(p, alturaTotal);
+    const raioCorpo = raioExternoMm(p);
+    const raioTopo = raioCorpo + borda.offsetTopoMm;
+    if (dMm > Math.max(raioCorpo, raioTopo)) return null;
+    if (p.oca) {
+      const raioBoca = raioInternoMm(p);
+      const raioBocaTopo = raioBoca + borda.offsetTopoMm;
+      // Borda aberta (espec §4): quem passa pela cavidade INTEIRA assenta
+      // no piso dela.
+      if (dMm <= Math.min(raioBoca, raioBocaTopo)) return zPisoMm(p);
+      // Borda para FORA: a boca ABRE com z, e a parede interna do arco é
+      // uma rampa que sobe — quem não passa pela boca de baixo pousa nela.
+      if (borda.offsetTopoMm > 0 && dMm < raioBocaTopo) {
+        return borda.zDoOffsetMm(dMm - raioBoca) ?? alturaTotal;
+      }
+    }
+    // Platô do topo (disco da pura, anel da oca) — agora deslocado.
+    if (dMm <= raioTopo) return alturaTotal;
+    // Só sobra a borda para DENTRO: entre o raio do topo e o do corpo a
+    // superfície é o ARCO (o lábio olha para cima). O inverso do arco dá
+    // a cota exata de assentamento.
+    return borda.zDoOffsetMm(dMm - raioCorpo) ?? alturaTotal;
   },
   zSuperficieBaseMm(p, dMm) {
+    // A base nunca é encurvada: o disco do fundo é o raio do corpo.
     if (dMm > raioExternoMm(p)) return null;
     return 0;
   },
-  // O degrau da boca da casca aberta (tangencia.ts amostra este raio).
-  raiosNotaveisMm: (p) => (p.oca ? [raioInternoMm(p)] : []),
+  // Degraus da superfície superior: a boca da casca aberta (embaixo e no
+  // topo, quando a borda a desloca) e a QUINA do raio do topo, onde o
+  // platô acaba (tangencia.ts amostra estes raios exatos).
+  raiosNotaveisMm(p) {
+    const alturaTotal = alturaBrutaMm(p);
+    const borda = bordaCilindro(p, alturaTotal);
+    const raios: number[] = [];
+    if (p.oca) {
+      raios.push(raioInternoMm(p));
+      if (borda.offsetTopoMm !== 0) {
+        raios.push(raioInternoMm(p) + borda.offsetTopoMm);
+      }
+    }
+    if (borda.alturaMm > 0) {
+      raios.push(raioExternoMm(p) + borda.offsetTopoMm);
+    }
+    return raios;
+  },
+  // Planta redonda: o raio inscrito da seção É o raio dela — medido no
+  // contorno EXTERNO (a fatia expõe a casca inteira; todo bloco da F1 tem
+  // fundo fechado e o corte assenta sobre o anel), com o offset do arco
+  // dentro da faixa da borda.
+  raioPlatoMm(p, zMm) {
+    const alturaTotal = alturaBrutaMm(p);
+    if (zMm < 0 || zMm > alturaTotal) return 0;
+    return raioExternoMm(p) + bordaCilindro(p, alturaTotal).offsetEmMm(zMm);
+  },
 };
+
+/** Raio externo no TOPO do bloco — com a borda, o raio do fim do arco. */
+function raioTopoCilindroMm(p: ParametrosBloco): number {
+  const alturaTotal = alturaBrutaMm(p);
+  return raioExternoMm(p) + bordaCilindro(p, alturaTotal).offsetTopoMm;
+}
 
 /** Ponto no espaço de parâmetro da lateral (a = arco em mm, b = z em mm). */
 interface PontoParam {
@@ -347,8 +483,13 @@ function malhaCilindroOco(
 ): MalhaBloco {
   const raioInterno = raioInternoMm(p);
   const zPiso = zPisoMm(p);
-  // Teto da banda dos furos (simétrico ao piso); a parede sobe até H.
-  const zTetoMax = alturaTotal - zPiso;
+  const borda = bordaCilindro(p, alturaTotal);
+  // Pé da faixa do arco: acima dele a parede deixa de ser vertical.
+  const zPeBorda = alturaTotal - borda.alturaMm;
+  // Teto da banda dos furos (simétrico ao piso); a parede sobe até H. A
+  // faixa do arco NÃO hospeda furo (furoMaximoMm já desconta a altura
+  // dela) — a banda para no pé da borda.
+  const zTetoMax = Math.min(alturaTotal - zPiso, zPeBorda);
 
   const nColunas = segmentosGrade(segmentos, p.furos?.quantidade ?? 0);
   const plano = planejarFuros(
@@ -364,9 +505,9 @@ function malhaCilindroOco(
   // nas duas paredes — é ela que o anel da borda costura); as bordas do
   // bloco do furo são linhas EXATAS da grade (célula inteira).
   const linhas: number[] = [zPiso];
-  const preencherAte = (ate: number): number => {
+  const preencherAte = (ate: number, passoMm = PASSO_LINHA_MM): number => {
     const de = linhas[linhas.length - 1];
-    const passos = Math.max(1, Math.ceil((ate - de) / PASSO_LINHA_MM));
+    const passos = Math.max(1, Math.ceil((ate - de) / passoMm));
     for (let t = 1; t < passos; t++) {
       linhas.push(de + (t * (ate - de)) / passos);
     }
@@ -380,7 +521,16 @@ function malhaCilindroOco(
     preencherAte(plano.zCentro);
     linhaBlocoAlto = preencherAte(plano.zBlocoAlto);
   }
-  preencherAte(alturaTotal);
+  // A faixa do arco ganha linhas próprias, mais finas — o PÉ (zPeBorda) e
+  // o TOPO (alturaTotal) são linhas EXATAS da grade, senão a curva sairia
+  // facetada em dois segmentos.
+  const linhasDaBorda = linhasBordaMm(p, alturaTotal, borda);
+  if (linhasDaBorda.length > 0 && zPeBorda > linhas[linhas.length - 1] + 1e-6) {
+    preencherAte(zPeBorda);
+    for (const z of linhasDaBorda) linhas.push(z);
+  } else {
+    preencherAte(alturaTotal);
+  }
 
   // ---- vértices (compartilhados por índice; a costura nunca duplica) ----
   const posicoes: number[] = [];
@@ -402,9 +552,15 @@ function malhaCilindroOco(
     }
     return ids;
   };
+  // As DUAS paredes recebem o MESMO offset do arco na cota z: a espessura
+  // fica constante e o anel do topo continua ligando as duas.
   const linhasExternas = [0, ...linhas];
-  const gradeExterna = linhasExternas.map((z) => anel(raioExterno, z));
-  const gradeInterna = linhas.map((z) => anel(raioInterno, z));
+  const gradeExterna = linhasExternas.map((z) =>
+    anel(raioExterno + borda.offsetEmMm(z), z)
+  );
+  const gradeInterna = linhas.map((z) =>
+    anel(raioInterno + borda.offsetEmMm(z), z)
+  );
 
   // ---- triângulos ----
   const externos: number[] = [];
@@ -537,13 +693,17 @@ function malhaCilindroOco(
         const z = plano.zCentro + q.b;
         const c = Math.cos(th);
         const s = Math.sin(th);
+        // O offset do arco na cota do vértice (zero na prática — a banda
+        // dos furos para no pé da borda; somado para o raio numa cota z
+        // ser SEMPRE a mesma conta, aqui e na grade).
+        const off = borda.offsetEmMm(z);
         doLadoExterno.push({
-          indice: vertice(raioExterno * c, raioExterno * s, z),
+          indice: vertice((raioExterno + off) * c, (raioExterno + off) * s, z),
           a: q.a,
           b: q.b,
         });
         doLadoInterno.push({
-          indice: vertice(raioInterno * c, raioInterno * s, z),
+          indice: vertice((raioInterno + off) * c, (raioInterno + off) * s, z),
           a: q.a,
           b: q.b,
         });
@@ -602,14 +762,21 @@ export function gerarMalhaCilindro(
   const raio = raioExternoMm(p);
   const altura = alturaBrutaMm(p);
   if (!p.oca) {
-    // Pura: o caminho de todo o núcleo — perfil retangular revolucionado.
-    return malhaRevolucao(
-      [
-        { x: raio, y: 0 },
-        { x: raio, y: altura },
-      ],
-      segmentosGrade(segmentos, 0)
-    );
+    // Pura: o caminho de todo o núcleo — perfil revolucionado. Sem borda é
+    // o retângulo; com borda o perfil ganha os pontos do ARCO no topo
+    // (o leque do ápice fecha o disco do topo no novo raio).
+    const borda = bordaCilindro(p, altura);
+    const linhasDaBorda = linhasBordaMm(p, altura, borda);
+    const perfil = [{ x: raio, y: 0 }];
+    if (linhasDaBorda.length > 0) {
+      perfil.push({ x: raio, y: altura - borda.alturaMm });
+      for (const z of linhasDaBorda) {
+        perfil.push({ x: raio + borda.offsetEmMm(z), y: z });
+      }
+    } else {
+      perfil.push({ x: raio, y: altura });
+    }
+    return malhaRevolucao(perfil, segmentosGrade(segmentos, 0));
   }
   return malhaCilindroOco(p, raio, altura, segmentos);
 }

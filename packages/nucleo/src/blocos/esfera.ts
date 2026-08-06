@@ -141,6 +141,16 @@ export const apoioEsfera: ApoioBloco = {
   // Borda do respiro: a superfície superior salta do piso da cavidade para
   // a calota externa — a varredura de tangencia.ts amostra o raio exato.
   raiosNotaveisMm: (p) => (p.oca ? [respiroEsferaMm(p).raioMm] : []),
+  // Planta redonda: o raio inscrito da seção É o raio dela. Mede o
+  // contorno EXTERNO (a casca da oca também apoia — todo bloco da F1 tem
+  // fundo fechado e pousa sobre o anel, como no ponto de luz).
+  raioPlatoMm(p, zMm) {
+    const a = larguraBrutaMm(p) / 2;
+    const c = alturaBrutaMm(p) / 2;
+    if (zMm < 0 || zMm > 2 * c) return 0;
+    const u = (zMm - c) / c;
+    return a * Math.sqrt(Math.max(0, 1 - u * u));
+  },
 };
 
 /** Ponto no espaço de parâmetro da banda (a = arco equatorial em mm,
