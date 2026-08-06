@@ -15,6 +15,7 @@ import {
   assentarAoEntrar,
   contatoIma,
   deslizarContato,
+  fatiaDeBaseEstavel,
   grampearBloco,
   type ApoioDe,
   type BlocoNaCena,
@@ -60,12 +61,29 @@ const paramsDaLuz = (): ParametrosBloco => ({
   forma: FORMA_LUZ,
 });
 
-/** Adiciona uma forma: assenta no topo da mais alta (mesa se vazia). */
+/**
+ * Adiciona uma forma: assenta no topo da mais alta (mesa se a cena está
+ * vazia). Quem pousa NO CHÃO entra com base estável — a forma mede a
+ * própria área de contato e, se ela não a sustenta, nasce com o corte que
+ * sustenta (item 1 do plano de alterações: a esfera vem com pé chato). A
+ * regra é do núcleo (`fatiaDeBaseEstavel`); a cena só decide QUANDO
+ * aplicar: na entrada, nunca durante um arrasto — mudar a geometria de
+ * alguém no meio de um gesto seria assustador.
+ */
 export function adicionarForma(cena: Cena, params: ParametrosBloco): Cena {
-  const contato = assentarAoEntrar(params, cena.itens, apoioDeCena);
+  let finais = params;
+  let contato = assentarAoEntrar(finais, cena.itens, apoioDeCena);
+  if (contato.sobre == null) {
+    const fatia = fatiaDeBaseEstavel(finais, apoioDeCena(finais.forma));
+    if (fatia) {
+      finais = grampearBloco({ ...finais, fatia });
+      // O corte muda a altura da peça: re-assenta com a geometria final.
+      contato = assentarAoEntrar(finais, cena.itens, apoioDeCena);
+    }
+  }
   const item: ItemCena = {
     id: cena.proximoId,
-    params,
+    params: finais,
     contato,
     giroZGraus: 0,
   };
