@@ -98,6 +98,16 @@ export interface BlocoNaCena {
   contato: ContatoBloco;
 }
 
+/*
+ * Contrato da F2 para o PONTO DE LUZ na cena (decisão registrada aqui
+ * para a F2 não improvisar): ponto de luz NÃO é FormaBloco — a cena da
+ * F2 amplia o discriminante (ex.: ItemDaCena = BlocoNaCena |
+ * PontoDeLuzNaCena) e o seu ApoioDe resolve apoioPontoDeLuz
+ * (ponto-de-luz.ts) para esses itens; os params são ignorados (peça
+ * padronizada). A matemática de tangencia.ts já aceita qualquer
+ * ApoioBloco — nada aqui muda na F2.
+ */
+
 /**
  * Funções de contato de UMA forma — a matemática que tangencia.ts consome.
  * Tudo em coordenadas LOCAIS do bloco (base em z = 0, eixo em x = y = 0).
@@ -136,6 +146,14 @@ export interface ApoioBloco {
    * null = fora do envelope da base.
    */
   zSuperficieBaseMm(p: ParametrosBloco, dMm: number): number | null;
+  /**
+   * Raios onde a superfície SUPERIOR é descontínua (borda do respiro da
+   * esfera oca, borda da abertura de uma casca, raio do bulbo do ponto
+   * de luz). A varredura radial de tangencia.ts amostra em passos de
+   * 1 mm E nestes raios exatos — sem isto, um pouso na borda penetraria
+   * sub-mm no anel real. Opcional: ausente = superfície sem degraus.
+   */
+  raiosNotaveisMm?(p: ParametrosBloco): number[];
 }
 
 /**

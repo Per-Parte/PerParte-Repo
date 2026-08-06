@@ -32,6 +32,33 @@ export const BALANCO_MAXIMO_BLOCO_GRAUS = REGRAS.F.balancoMaximoGraus;
  */
 export const FURO_PONTE_MAX_MM = 20;
 
+/**
+ * Moldura entre o polígono do furo e a borda do bloco recortado (⚑) e
+ * tira mínima entre o bloco e as bordas da banda hospedeira (⚑) — donos
+ * únicos AQUI: os primitivos e as heurísticas de furoMaximoMm precisam
+ * das MESMAS constantes para o teto do slider coincidir com o que a
+ * malha entrega (achado da revisão de 06/08).
+ */
+export const MOLDURA_FURO_MM = 2;
+export const TIRA_BANDA_MM = 1;
+
+/**
+ * Meia-abertura EFETIVA (rad de latitude paramétrica) da banda equatorial
+ * que hospeda furos na esfera. Os ±30° nominais valem para a esfera
+ * redonda; num esferoide ACHATADO a inclinação real da superfície numa
+ * latitude φ é atan((a/c)·tanφ) — os mesmos ±30° paramétricos deitariam
+ * o teto do furo além de F4 (achado da revisão de 06/08). Derivação:
+ * teto do furo ≤ F4 ⇔ φ ≤ atan((c/a)·tan(F4)).
+ */
+export function bandaFuroEsferaRad(p: {
+  escalaAltura: number;
+  escalaLargura: number;
+}): number {
+  const tanF4 = Math.tan((BALANCO_MAXIMO_BLOCO_GRAUS * Math.PI) / 180);
+  const razao = p.escalaAltura / p.escalaLargura; // c/a (tamanho cancela)
+  return Math.min(Math.PI / 6, Math.atan(razao * tanF4));
+}
+
 /** Faixas dos sliders da F3 (mm e escalas adimensionais). */
 export const LIMITES_BLOCO = {
   /** ⚑ proposto: 40 mm ainda pega na mão; 200 deixa margem p/ escalas no F1. */
@@ -123,28 +150,41 @@ export function espessuraParedeMaxMm(p: {
  * conservadoras por forma (⚑ heurísticas — validar impresso):
  * — cubo/pirâmide: furos distribuídos nas 4 faces laterais (nunca no
  *   topo/fundo — são as regiões de apoio A1);
- * — cilindro/esfera: furos na banda lateral/equatorial (perímetro π·d).
+ * — cilindro/esfera: furos na banda lateral/equatorial.
+ * As larguras medem a superfície INTERNA da casca (a mais apertada) —
+ * furo é passante de parede, e a parede remanescente que importa é a
+ * pior das duas (achado da revisão de 06/08: medir só a externa fazia
+ * o grampeador prometer furos que o gerador descartava ou encolhia).
  */
 export function furoMaximoMm(p: ParametrosBloco): number {
   const n = Math.max(1, p.furos?.quantidade ?? 1);
   const F2 = PAREDE_MINIMA_BLOCO_MM;
   const W = larguraBrutaMm(p);
   const H = alturaBrutaMm(p);
+  const wInterna = Math.max(0, W - 2 * p.espessuraParedeMm);
   let porBanda: number;
+  let alturaBanda: number;
   if (p.forma === "cubo") {
     const porFace = Math.ceil(n / 4);
-    porBanda = (W - (porFace + 1) * F2) / porFace;
+    porBanda = (wInterna - (porFace + 1) * F2) / porFace;
+    alturaBanda = H - 2 * F2 - 2;
   } else if (p.forma === "piramide") {
-    // Largura útil da face a meia altura ≈ metade do lado da base.
+    // Largura útil da face a meia altura ≈ metade do lado da base (a
+    // interna fica com o clamp geométrico do primitivo — o k encolhe).
     const porFace = Math.ceil(n / 4);
     porBanda = (W / 2 - (porFace + 1) * F2) / porFace;
+    alturaBanda = H - 2 * F2 - 2;
+  } else if (p.forma === "esfera") {
+    porBanda = (Math.PI * wInterna) / n - F2;
+    // Banda equatorial efetiva (≤ ±30°, apertando com o achatamento
+    // para o teto do furo nunca deitar além de F4), descontadas moldura
+    // e tira — as MESMAS constantes que o gerador usa.
+    alturaBanda =
+      2 * ((H / 2) * bandaFuroEsferaRad(p) - MOLDURA_FURO_MM - TIRA_BANDA_MM);
   } else {
-    // Cilindro e esfera: perímetro da banda (equador, na esfera).
-    porBanda = (Math.PI * W) / n - F2;
+    porBanda = (Math.PI * wInterna) / n - F2;
+    alturaBanda = H - 2 * F2 - 2;
   }
-  // Altura útil da banda hospedeira (esfera fura só entre ±~30° de
-  // latitude — acima disso o teto do furo deita e viola F4).
-  const alturaBanda = p.forma === "esfera" ? H / 3 : H - 2 * F2 - 2;
   return Math.min(FURO_PONTE_MAX_MM, porBanda, alturaBanda);
 }
 
