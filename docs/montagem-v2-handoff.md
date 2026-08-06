@@ -1,23 +1,37 @@
 # Montagem v2 — estado da execução (handoff)
 
-> Registro vivo da frente `montagem-v2` (espec: `docs/montagem-v2-prompt.md`).
-> Atualizado em **06/08/2026**. Branch: `montagem-v2`.
+> Registro vivo da frente Montagem v2 (espec: `docs/montagem-v2-prompt.md`;
+> pedidos de 06/08 no cofre: "Montagem v2 — ajustes do Davi").
+> Atualizado em **06/08/2026**. Já mesclada na `main` e no ar em `/criar`.
 
-## Onde estamos: F1 CONCLUÍDA e REVISADA ✅ · F2/F3 em construção
+## Ferramentas novas (pedido do Davi, 06/08 — depois de ver a `/criar` no ar)
 
-A F1 (núcleo blocos) está completa em `packages/nucleo/src/blocos/`, passou por **revisão adversarial** (4 lentes independentes com testes-sonda, 23 achados — todos corrigidos ou documentados abaixo) e tem 262 testes verdes (131 pré-existentes intactos + 131 do módulo blocos). Nenhum arquivo existente do núcleo foi modificado além do export do barrel em `src/index.ts` (regra "o núcleo cresce, não muda").
+Quatro capacidades, todas com teste e todas no ar em `/criar`:
+
+1. **Borda encurvada** (`src/blocos/borda.ts` + os três primitivos de lado reto): a faixa de cima da silhueta vira um arco que abre para fora (aba de abajur) ou fecha para dentro (lábio); o slider é o raio do arco. **O ângulo que o arco varre sai de F4**, e depende de ser oca: para fora sempre paga F4 (a superfície diverge); para dentro e sólida vai até 90° (cúpula convergente — cada camada assenta na de baixo); para dentro e oca volta a pagar F4 (o material passa a pairar sobre a cavidade). A esfera não tem borda (é curva inteira — o grampeador zera). Na pirâmide com borda para fora o ápice vira um platô, e o apoio passa a reconhecê-lo.
+2. **Fatiar** (`src/blocos/fatiar.ts`): corte plano em x, y ou z, com o lado que fica escolhido. Recorte Sutherland–Hodgman com vértices de interseção cacheados por aresta (estanqueidade por índice preservada), fronteira achada por **topologia** (aresta sem par oposto), tampa por polígono-com-buracos (classificação por área assinada + aresta-ponte + ear clipping) e reassentamento da base em z = 0. Composto no barrel: `gerarMalhaBloco` e `apoioDaForma` já entregam a peça cortada e o apoio que conta a verdade sobre ela. Prova mais forte do teste: `volume(lado menor) + volume(lado maior) = volume da peça inteira` nos 576 cortes da varredura (erro relativo ≤ 6,5e-9) — tampa que sobra, falta ou dobra aparece aí.
+3. **Manivela de giro** (`components/montagem/ManivelaCena.tsx`): a órbita livre saiu (`enableRotate={false}`); quem gira a obra é um ícone 3D de luminária no canto superior direito, que gira junto e funciona como mostrador. A câmera só aproxima/afasta. Os deltas de arrasto voltam ao referencial local antes de virar mm — senão empurrar para a direita moveria a peça de través.
+4. **Balde de tinta**: ferramenta própria; com ela na mão o painel mostra a paleta e tocar numa forma pinta com a cor escolhida.
+
+**Detalhe de render que veio junto:** o preview usa `toCreasedNormals` (aresta viva acima de 30°). Sem isso a normal média de vértice espalhava o sombreado da tampa do corte pela parede e a peça aparecia listrada. Só o preview — o STL sai da malha indexada do núcleo, intacta.
+
+## Onde estamos: F1 REVISADA ✅ · F2/F3 v0 no ar ✅ · F4/F5 a fazer
+
+A F1 (núcleo blocos) está completa em `packages/nucleo/src/blocos/`, passou por **revisão adversarial** (4 lentes independentes com testes-sonda, 23 achados — todos corrigidos ou documentados abaixo) e tem **292 testes verdes** (131 pré-existentes intactos + 161 do módulo blocos). Nenhum arquivo existente do núcleo foi modificado além do export do barrel em `src/index.ts` (regra "o núcleo cresce, não muda").
 
 | Peça | Arquivo | Testes | Estado |
 | --- | --- | --- | --- |
-| Tipos e contratos (com `raiosNotaveisMm`) | `src/blocos/tipos.ts` | — | ✅ |
+| Tipos e contratos (`raiosNotaveisMm`, `raioPlatoMm`, borda, fatia) | `src/blocos/tipos.ts` | — | ✅ |
 | Clamps derivados de F1/F2/F4 (medem a casca interna) | `src/blocos/limites.ts` | via variações | ✅ |
 | Catálogo das 8 variações | `src/blocos/variacoes.ts` | 66 | ✅ |
 | Tangência A1 (varredura + ímã multi-bloco) | `src/blocos/tangencia.ts` | 21 | ✅ |
-| Ponto de luz (base 5×5, bulbo 4 cm, clamp 1–2/obra) | `src/blocos/ponto-de-luz.ts` | 9 | ✅ |
-| Cilindro (oca de borda ABERTA) | `src/blocos/cilindro.ts` | 8 | ✅ |
-| Pirâmide (oca fechada, cavidade paralela) | `src/blocos/piramide.ts` | 9 | ✅ |
+| Borda encurvada (arco derivado de F4) | `src/blocos/borda.ts` | via primitivos | ✅ |
+| Fatiar (corte plano + tampa + apoio) | `src/blocos/fatiar.ts` | 14 | ✅ |
+| Ponto de luz (base 5×5, bulbo 4 cm, clamp 1–2/obra) | `src/blocos/ponto-de-luz.ts` | 8 | ✅ |
+| Cilindro (oca de borda ABERTA) | `src/blocos/cilindro.ts` | 14 | ✅ |
+| Pirâmide (oca fechada, cavidade paralela) | `src/blocos/piramide.ts` | 14 | ✅ |
 | Esfera (oca com respiro polar por ângulo) | `src/blocos/esfera.ts` | 11 | ✅ |
-| Cubo (oca de borda ABERTA) | `src/blocos/cubo.ts` | 8 | ✅ |
+| Cubo (oca de borda ABERTA) | `src/blocos/cubo.ts` | 13 | ✅ |
 
 ## ⚠️ Para validar com Davi + Caio (divergências da espec §4)
 
@@ -53,7 +67,7 @@ Se os sócios quiserem outra leitura para pirâmide/esfera, a topologia do túne
 
 ## Próximas fases
 
-- **F2/F3 — Cena + UI** (em construção, rota `/criar`): decisão dos sócios de 06/08 — **pode subir no site principal** (rota paralela; o configurador atual continua intocado na rota dele). Plugar a UI em `tangencia.ts` (assentarAoEntrar/deslizarContato/contatoIma), grade de variações 3 colunas com miniaturas do motor, propriedades com sliders grampeados, ponto de luz emissivo (cor da cena atual: `#FFC478`), undo, lixeira com re-ancoragem via `contatoIma`, `PONTOS_DE_LUZ_POR_OBRA` do núcleo.
+- **F2/F3 v0 — no ar** em `/criar` (rota paralela; o configurador atual segue intocado): UI plugada em `tangencia.ts` (assentarAoEntrar/deslizarContato/contatoIma), grade de variações com miniaturas do motor, sliders grampeados, ponto de luz emissivo `#FFC478`, undo por gesto, lixeira com re-ancoragem, `PONTOS_DE_LUZ_POR_OBRA` do núcleo, e as 4 ferramentas de 06/08. Falta da F3: alças 3D de escala e realce do ponto de contato durante o arrasto.
 - **F4 — Persistência e preço**: schema v2 no `?c=`, salvar, preço por soma, STL por forma (cada `gerarMalha` já devolve o sólido pronto).
 - **F5 — Polimento e aceite**: touch, performance, teste com usuário leigo (critérios da espec §8).
 
