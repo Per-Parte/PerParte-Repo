@@ -13,6 +13,15 @@
  * em passos de 1 mm ao longo da linha que liga os dois eixos (as
  * superfícies são de revolução ou platôs — o pior ponto está nessa
  * linha). Determinístico, sem solver.
+ *
+ * ⚑ TODO fixação física entre formas tangentes (pino, cola, encaixe
+ * impresso) — decisão de produção em aberto (espec §5); não bloqueia
+ * F1–F5.
+ *
+ * Plantas QUADRADAS entram na varredura pela aproximação radial: pouso
+ * pelo disco inscrito, envelope lateral pelo circunscrito — contatos
+ * diagonais exatos ficam para a F2 se o uso pedir (achados media/baixa
+ * da revisão de 06/08).
  */
 
 import type {
@@ -95,6 +104,23 @@ export function cotaAssentamentoMm(
   if (tMin <= 0 && 0 <= tMax) amostras.push(0);
   if (tMin <= d && d <= tMax) amostras.push(d);
 
+  // …e os RAIOS NOTÁVEIS das duas superfícies (degraus: borda do bulbo
+  // do ponto de luz, respiro da esfera oca) — a borda exata E os dois
+  // lados do degrau (±1e-6), tudo clampado à sobreposição. Sem isto, um
+  // pouso na borda penetraria sub-mm no anel real (revisão de 06/08).
+  const notaveis: number[] = [];
+  for (const r of apoioBaixo.raiosNotaveisMm?.(deBaixo) ?? []) {
+    notaveis.push(r, -r); // topoDeBaixo é função de |t|
+  }
+  for (const r of apoioCima.raiosNotaveisMm?.(deCima) ?? []) {
+    notaveis.push(d - r, d + r); // baseDeCima é função de |d − t|
+  }
+  for (const t of notaveis) {
+    for (const lado of [-1e-6, 0, 1e-6]) {
+      amostras.push(Math.min(tMax, Math.max(tMin, t + lado)));
+    }
+  }
+
   let cota: number | null = null;
   for (const t of amostras) {
     const zTopo = topoDeBaixo(Math.abs(t));
@@ -132,13 +158,17 @@ export function assentarAoEntrar(
   }
   const cota = cotaAssentamentoMm(novo, maisAlto.params, 0, 0, apoioDe);
   if (cota == null) {
-    // Defensivo (coaxial sempre sobrepõe nas 4 formas): cai para a mesa.
-    return {
-      sobre: null,
-      xMm: maisAlto.contato.xMm,
-      yMm: maisAlto.contato.yMm,
-      zBaseMm: 0,
-    };
+    // Defensivo (coaxial sempre sobrepõe nas formas da F1): o imã acha
+    // o contato válido mais próximo — na mesa, EMPURRADO para fora do
+    // envelope de quem está embaixo, nunca dentro dele (revisão de
+    // 06/08: cair no mesmo (x, y) interpenetrava o bloco de baixo).
+    return contatoIma(
+      novo,
+      cena,
+      maisAlto.contato.xMm,
+      maisAlto.contato.yMm,
+      apoioDe
+    );
   }
   return {
     sobre: maisAlto.id,
@@ -169,7 +199,18 @@ export function deslizarContato(
       ? undefined
       : cena.find((b) => b.id === bloco.contato.sobre && b.id !== bloco.id);
   if (suporte == null) {
-    return { sobre: null, xMm: alvoX, yMm: alvoY, zBaseMm: 0 };
+    // Na mesa: desliza pelo plano — mas o contato prometido é VÁLIDO
+    // aqui também: o alvo é empurrado para fora dos envelopes dos
+    // OUTROS blocos (revisão de 06/08: o arrasto atravessava vizinhos).
+    const alvo = empurrarParaForaMm(
+      bloco.params,
+      cena,
+      alvoX,
+      alvoY,
+      bloco.id,
+      apoioDe
+    );
+    return { sobre: null, xMm: alvo.xMm, yMm: alvo.yMm, zBaseMm: 0 };
   }
 
   const apoio = apoioDe(suporte.params.forma);
@@ -235,10 +276,111 @@ function distanciaTangenciaLateralMm(
 }
 
 /**
+ * Empurra um alvo em planta para FORA dos envelopes de todos os blocos
+ * da cena (tangência de envelopes = distanciaTangenciaLateralMm).
+ * Iterativo e determinístico: cada passo resolve a violação MAIS
+ * profunda, empurrando na direção eixo→alvo do bloco violado (alvo NO
+ * eixo → +X). Envelopes convexos em planta convergem em poucos passos
+ * (revisão de 06/08: empurrar só para fora do bloco mais próximo
+ * devolvia posição DENTRO de outro bloco da cena) ⚑; se o teto de 16
+ * estourar, devolve a última posição — sempre melhor ou igual à inicial.
+ */
+function empurrarParaForaMm(
+  params: ParametrosBloco,
+  cena: readonly BlocoNaCena[],
+  xMm: number,
+  yMm: number,
+  ignorarId: number | null,
+  apoioDe: ApoioDe
+): { xMm: number; yMm: number } {
+  let x = xMm;
+  let y = yMm;
+  let anterior: BlocoNaCena | null = null;
+  for (let passo = 0; passo < 16; passo++) {
+    let pior: BlocoNaCena | null = null;
+    let piorFalta = 1e-9;
+    let piorDist = 0;
+    let piorTangencia = 0;
+    for (const bloco of cena) {
+      if (bloco.id === ignorarId) continue;
+      const tangencia = distanciaTangenciaLateralMm(params, bloco, apoioDe);
+      if (tangencia <= 0) continue;
+      const dist = Math.hypot(x - bloco.contato.xMm, y - bloco.contato.yMm);
+      const falta = tangencia - dist;
+      if (falta > piorFalta) {
+        pior = bloco;
+        piorFalta = falta;
+        piorDist = dist;
+        piorTangencia = tangencia;
+      }
+    }
+    if (pior == null) return { xMm: x, yMm: y };
+
+    // Pingue-pongue entre DOIS envelopes (sair de um entra no outro —
+    // ex.: alvo entre dois blocos próximos): resolve a tangência DUPLA
+    // exata, a interseção dos dois círculos de tangência mais próxima
+    // do alvo original (empate → lado +Y, determinístico).
+    if (anterior != null && anterior.id !== pior.id) {
+      const dupla = tangenciaDuplaMm(params, anterior, pior, xMm, yMm, apoioDe);
+      if (dupla != null) {
+        x = dupla.xMm;
+        y = dupla.yMm;
+        anterior = null;
+        continue;
+      }
+    }
+
+    const ux = piorDist === 0 ? 1 : (x - pior.contato.xMm) / piorDist;
+    const uy = piorDist === 0 ? 0 : (y - pior.contato.yMm) / piorDist;
+    x = pior.contato.xMm + ux * piorTangencia;
+    y = pior.contato.yMm + uy * piorTangencia;
+    anterior = pior;
+  }
+  return { xMm: x, yMm: y };
+}
+
+/**
+ * Interseção dos círculos de tangência de dois blocos (o ponto onde o
+ * bloco novo encosta nos DOIS ao mesmo tempo), do lado mais próximo do
+ * alvo. null = um envelope engole o outro (o empurrão radial resolve).
+ */
+function tangenciaDuplaMm(
+  params: ParametrosBloco,
+  a: BlocoNaCena,
+  b: BlocoNaCena,
+  alvoXMm: number,
+  alvoYMm: number,
+  apoioDe: ApoioDe
+): { xMm: number; yMm: number } | null {
+  const ra = distanciaTangenciaLateralMm(params, a, apoioDe);
+  const rb = distanciaTangenciaLateralMm(params, b, apoioDe);
+  const dx = b.contato.xMm - a.contato.xMm;
+  const dy = b.contato.yMm - a.contato.yMm;
+  const d = Math.hypot(dx, dy);
+  if (d < 1e-9) return null;
+  const ao = (ra * ra - rb * rb + d * d) / (2 * d);
+  const h2 = ra * ra - ao * ao;
+  if (h2 < 0) return null;
+  const h = Math.sqrt(h2);
+  const mx = a.contato.xMm + (ao * dx) / d;
+  const my = a.contato.yMm + (ao * dy) / d;
+  const px = (-dy / d) * h;
+  const py = (dx / d) * h;
+  const lado1 = { xMm: mx + px, yMm: my + py };
+  const lado2 = { xMm: mx - px, yMm: my - py };
+  const d1 = Math.hypot(lado1.xMm - alvoXMm, lado1.yMm - alvoYMm);
+  const d2 = Math.hypot(lado2.xMm - alvoXMm, lado2.yMm - alvoYMm);
+  if (Math.abs(d1 - d2) < 1e-9) {
+    return lado1.yMm >= lado2.yMm ? lado1 : lado2;
+  }
+  return d1 <= d2 ? lado1 : lado2;
+}
+
+/**
  * "IMÃ": dado um alvo solto em planta (o mouse largou o bloco ali), o
  * contato VÁLIDO mais próximo — topo de um bloco cuja região de apoio
- * alcança o alvo, senão encostado na lateral do bloco mais próximo
- * (tangência de envelopes), senão a mesa no próprio (x, y).
+ * alcança o alvo, senão a mesa com o alvo EMPURRADO para fora de todos
+ * os envelopes (tangência lateral; alvo já livre fica onde está).
  */
 export function contatoIma(
   params: ParametrosBloco,
@@ -268,34 +410,15 @@ export function contatoIma(
   }
   if (melhorTopo) return melhorTopo;
 
-  // 2) Lateral encostada: só quando pousar NO alvo interpenetraria um
-  //    bloco — o imã empurra para fora até a tangência de envelopes do
-  //    bloco mais próximo (menor empurrão).
-  let melhorLateral: ContatoBloco | null = null;
-  let menorEmpurrao = Infinity;
-  for (const bloco of cena) {
-    const distTangencia = distanciaTangenciaLateralMm(params, bloco, apoioDe);
-    if (distTangencia <= 0) continue;
-    const dx = alvoXMm - bloco.contato.xMm;
-    const dy = alvoYMm - bloco.contato.yMm;
-    const dist = Math.hypot(dx, dy);
-    if (dist >= distTangencia) continue; // alvo livre: não interpenetra
-    const empurrao = distTangencia - dist;
-    if (empurrao < menorEmpurrao) {
-      menorEmpurrao = empurrao;
-      // Direção do eixo do bloco para o alvo (alvo NO eixo → +X).
-      const ux = dist === 0 ? 1 : dx / dist;
-      const uy = dist === 0 ? 0 : dy / dist;
-      melhorLateral = {
-        sobre: null,
-        xMm: bloco.contato.xMm + ux * distTangencia,
-        yMm: bloco.contato.yMm + uy * distTangencia,
-        zBaseMm: 0,
-      };
-    }
-  }
-  if (melhorLateral) return melhorLateral;
-
-  // 3) Mesa no próprio (x, y) — A1 com o plano de base.
-  return { sobre: null, xMm: alvoXMm, yMm: alvoYMm, zBaseMm: 0 };
+  // 2) Mesa, com o alvo empurrado para fora de TODOS os envelopes
+  //    (alvo livre fica no próprio (x, y)) — A1 com o plano de base.
+  const alvo = empurrarParaForaMm(
+    params,
+    cena,
+    alvoXMm,
+    alvoYMm,
+    null,
+    apoioDe
+  );
+  return { sobre: null, xMm: alvo.xMm, yMm: alvo.yMm, zBaseMm: 0 };
 }

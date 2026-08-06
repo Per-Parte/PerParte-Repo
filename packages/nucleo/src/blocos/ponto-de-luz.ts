@@ -35,6 +35,14 @@ export function alturaPontoDeLuzMm(): number {
   return PONTO_DE_LUZ.baseAlturaMm + PONTO_DE_LUZ.bulboAlturaMm;
 }
 
+/**
+ * Quantos pontos de luz uma obra pode ter (espec §6: "ao menos 1 ponto
+ * de luz por obra para concluir; máximo nesta fase: 2" — clamp, não
+ * erro). ⚑ teto provisório. A cena da F2 consome DAQUI — regra do
+ * produto mora no núcleo, nunca vira número mágico no apps/web.
+ */
+export const PONTOS_DE_LUZ_POR_OBRA = { min: 1, max: 2 } as const;
+
 export interface MalhaPontoDeLuz {
   /** Base quadrada — opaca, cor do bloco. */
   base: MalhaBloco;
@@ -107,8 +115,14 @@ export function gerarMalhaPontoDeLuz(segmentos = 48): MalhaPontoDeLuz {
 }
 
 /**
- * Apoio do ponto de luz para a tangência (A1): os blocos assentam na
- * BASE quadrada (nunca no bulbo). Ignora os params (peça padronizada).
+ * Apoio do ponto de luz para a tangência (A1). O anel da base recebe
+ * pouso ao redor do bulbo, mas quem chega POR CIMA encontra primeiro a
+ * cápsula do bulbo — devolver null para d < raio do bulbo deixava um
+ * bloco de fundo fechado "pousar" no anel atravessando o bulbo inteiro
+ * (achado da revisão de 06/08; TODO bloco da F1 tem fundo fechado).
+ * ⚑ Quando existir a abertura de encaixe (fase posterior), bloco oco
+ * poderá envolver o bulbo e pousar no anel — condicionar aqui.
+ * Ignora os params (peça padronizada).
  */
 export const apoioPontoDeLuz: ApoioBloco = {
   alturaTopoMm: () => alturaPontoDeLuzMm(),
@@ -122,13 +136,27 @@ export const apoioPontoDeLuz: ApoioBloco = {
     return PONTO_DE_LUZ.bulboRaioMm;
   },
   zSuperficieTopoMm(_p: ParametrosBloco, dMm: number) {
-    // Assenta no anel da base ao redor do bulbo; sobre o bulbo, nada pousa.
     if (dMm > PONTO_DE_LUZ.baseLadoMm / 2) return null;
-    if (dMm < PONTO_DE_LUZ.bulboRaioMm) return null;
+    const r = PONTO_DE_LUZ.bulboRaioMm;
+    if (dMm < r) {
+      // Cápsula do bulbo: cúpula semiesférica sobre o pescoço.
+      return (
+        PONTO_DE_LUZ.baseAlturaMm +
+        (PONTO_DE_LUZ.bulboAlturaMm - r) +
+        Math.sqrt(Math.max(0, r * r - dMm * dMm))
+      );
+    }
+    // Anel da base ao redor do bulbo.
     return PONTO_DE_LUZ.baseAlturaMm;
   },
   zSuperficieBaseMm(_p: ParametrosBloco, dMm: number) {
     if (dMm > PONTO_DE_LUZ.baseLadoMm / 2) return null;
     return 0;
   },
+  // Degraus da superfície superior: borda do bulbo (cápsula → anel) e
+  // borda da base — a varredura de tangencia.ts amostra os raios exatos.
+  raiosNotaveisMm: () => [
+    PONTO_DE_LUZ.bulboRaioMm,
+    PONTO_DE_LUZ.baseLadoMm / 2,
+  ],
 };

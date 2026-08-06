@@ -176,16 +176,35 @@ describe("cotaAssentamentoMm (varredura radial)", () => {
     ).toBeNull();
   });
 
-  it("superfície ANULAR (ponto de luz real): cubo assenta no anel da base", () => {
+  it("ponto de luz real: cubo coaxial pousa no TOPO do bulbo, nunca o atravessa", () => {
     // Apoio de mentira que devolve o apoio REAL do ponto de luz para a
-    // forma "cilindro" — exercita o buraco no meio do domínio (o topo
-    // só existe entre o raio do bulbo e a borda da base).
+    // forma "cilindro". Regressão do achado de 06/08: o anel da base
+    // devolvia pouso "válido" que empalava o bulbo inteiro (todo bloco
+    // da F1 tem fundo fechado) — agora quem cobre o bulbo assenta na
+    // cápsula.
     const apoioComPonto: ApoioDe = (forma) =>
       forma === "cilindro" ? apoioPontoDeLuz : apoioPlato;
     const cota = cotaAssentamentoMm(
       params("cubo", 100),
       params("cilindro", 50), // params ignorados pelo apoio do ponto de luz
       0,
+      0,
+      apoioComPonto
+    );
+    expect(cota).toBeCloseTo(
+      PONTO_DE_LUZ.baseAlturaMm + PONTO_DE_LUZ.bulboAlturaMm
+    );
+  });
+
+  it("ponto de luz real: anel da base segue recebendo pouso fora do bulbo", () => {
+    // Cubo pequeno afastado o bastante para o footprint cair só no anel
+    // (d entre o raio do bulbo e a borda da base): assenta na base.
+    const apoioComPonto: ApoioDe = (forma) =>
+      forma === "cilindro" ? apoioPontoDeLuz : apoioPlato;
+    const cota = cotaAssentamentoMm(
+      params("cubo", 40),
+      params("cilindro", 50),
+      40,
       0,
       apoioComPonto
     );
@@ -362,6 +381,58 @@ describe("contatoIma", () => {
     const contato = contatoIma(novo, cenaDupla, 20, 0, apoioDe);
     expect(contato.sobre).toBe(2);
     expect(contato.zBaseMm).toBeCloseTo(120);
+  });
+
+  it("entre DOIS blocos: o empurrão lateral não entrega dentro do vizinho", () => {
+    // Regressão do achado de 06/08: empurrar só para fora do bloco mais
+    // próximo devolvia posição com ~91 mm de sobreposição com o segundo.
+    const cenaDupla = [
+      ...cena,
+      bloco(2, params("cubo", 100), {
+        sobre: null,
+        xMm: 150,
+        yMm: 0,
+        zBaseMm: 0,
+      }),
+    ];
+    const alvo = contatoIma(params("cubo", 100), cenaDupla, 75, 0, apoioDe);
+    expect(alvo.sobre).toBeNull();
+    for (const b of cenaDupla) {
+      const dist = Math.hypot(
+        alvo.xMm - b.contato.xMm,
+        alvo.yMm - b.contato.yMm
+      );
+      // Tangência de envelopes de dois cubos 100: 50 + 50 = 100 mm.
+      expect(dist).toBeGreaterThanOrEqual(100 - 1e-6);
+    }
+  });
+
+  it("deslizar na mesa contra um vizinho clampa na tangência (não atravessa)", () => {
+    // Regressão do achado de 06/08: o arrasto pela mesa atravessava os
+    // outros blocos (100% de sobreposição no fim do gesto).
+    const parado = bloco(1, params("cubo", 100), {
+      sobre: null,
+      xMm: 0,
+      yMm: 0,
+      zBaseMm: 0,
+    });
+    const arrastado = bloco(2, params("cubo", 100), {
+      sobre: null,
+      xMm: 150,
+      yMm: 0,
+      zBaseMm: 0,
+    });
+    const contato = deslizarContato(
+      arrastado,
+      [parado, arrastado],
+      -150,
+      0,
+      apoioDe
+    );
+    expect(contato.sobre).toBeNull();
+    const dist = Math.hypot(contato.xMm, contato.yMm);
+    expect(dist).toBeGreaterThanOrEqual(100 - 1e-6);
+    expect(contato.zBaseMm).toBe(0);
   });
 
   it("invariante A1: toda operação devolve contato com gap 0", () => {

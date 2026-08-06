@@ -10,6 +10,7 @@ import {
   apoioPontoDeLuz,
   gerarMalhaPontoDeLuz,
   PONTO_DE_LUZ,
+  PONTOS_DE_LUZ_POR_OBRA,
 } from "../src/blocos/ponto-de-luz";
 import type { Malha } from "../src/malha";
 import { verificarEstanque, volumeAssinadoMm3 } from "./apoio";
@@ -104,10 +105,33 @@ describe("constantes e apoio do ponto de luz", () => {
     expect(
       apoioPontoDeLuz.zSuperficieTopoMm(p, PONTO_DE_LUZ.bulboRaioMm + 1)
     ).toBeCloseTo(PONTO_DE_LUZ.baseAlturaMm);
-    // …nunca sobre o bulbo, nem fora da base.
-    expect(apoioPontoDeLuz.zSuperficieTopoMm(p, 0)).toBeNull();
+    // …e sobre o bulbo o pouso é na CÁPSULA (revisão de 06/08: devolver
+    // null deixava um bloco de fundo fechado "pousar" no anel
+    // atravessando o bulbo inteiro): no eixo, o topo do bulbo.
+    expect(apoioPontoDeLuz.zSuperficieTopoMm(p, 0)).toBeCloseTo(
+      alturaPontoDeLuzMm()
+    );
+    // Meio caminho da cúpula: base + pescoço + √(r² − d²).
+    const r = PONTO_DE_LUZ.bulboRaioMm;
+    expect(apoioPontoDeLuz.zSuperficieTopoMm(p, r / 2)).toBeCloseTo(
+      PONTO_DE_LUZ.baseAlturaMm +
+        (PONTO_DE_LUZ.bulboAlturaMm - r) +
+        Math.sqrt(r * r - (r / 2) ** 2)
+    );
+    // Fora da base, nada pousa.
     expect(
       apoioPontoDeLuz.zSuperficieTopoMm(p, PONTO_DE_LUZ.baseLadoMm / 2 + 1)
     ).toBeNull();
+    // Degraus declarados para a varredura da tangência (borda do bulbo
+    // e borda da base).
+    expect(apoioPontoDeLuz.raiosNotaveisMm?.(p)).toEqual([
+      PONTO_DE_LUZ.bulboRaioMm,
+      PONTO_DE_LUZ.baseLadoMm / 2,
+    ]);
+  });
+
+  it("clamp de quantidade por obra: mínimo 1, máximo 2 (espec §6)", () => {
+    expect(PONTOS_DE_LUZ_POR_OBRA.min).toBe(1);
+    expect(PONTOS_DE_LUZ_POR_OBRA.max).toBe(2);
   });
 });
