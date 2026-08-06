@@ -1,13 +1,23 @@
 /**
  * Montagem v2 · F1 — primitivo CILINDRO.
  *
+ * ⚑ casca.ts: este arquivo é a cópia-MÃE da "receita única" do furo
+ * (contorno do polígono, zíper ordenado por ângulo, túnel e inversão de
+ * trios) copiada por esfera.ts, cubo.ts e piramide.ts — extrair para um
+ * casca.ts compartilhado na consolidação, sem mudar comportamento.
+ *
  * Receita de topologia (espec da F1, seção "cilindro"):
  * — PURA: malhaRevolucao do perfil retangular (pé no raio, sobe, fecha no
  *   eixo em cima e embaixo pelos ápices) — o caminho de todo o núcleo.
- * — OCA: casca externa + interna invertida (grade θ × z), FUNDO FECHADO
- *   (Restrição honesta da F1: a abertura de encaixe do ponto de luz é
- *   fase posterior ⚑); a cavidade fecha em TETO CÔNICO a 45° (= F4) e o
- *   ápice trunca no que couber (clamp geométrico interno, não do usuário).
+ * — OCA: borda ABERTA em cima (espec §4 — "oca (borda aberta em cima)"):
+ *   parede externa de z = 0 a z = H com FUNDO FECHADO (restrição honesta
+ *   da F1: a abertura de encaixe do ponto de luz é fase posterior ⚑),
+ *   cavidade invertida (piso em leque em zPiso + parede θ × z de zPiso a
+ *   H) e um ANEL plano de quads em z = H ligando a borda externa à
+ *   interna (largura = parede) — topo de parede vertical, ZERO ponte, e
+ *   a luz sai por cima. A revisão de 06/08 derrubou os tetos fechados
+ *   (cone/pirâmide truncados): viravam placa-ponte acima do teto de
+ *   ponte do FDM e contrariavam a espec.
  * — FUROS: é o "cubo enrolado" — receita única do furo na grade (θ, z) da
  *   lateral: cada furo reserva um bloco retangular inteiro de células
  *   (tamanho do furo + 1 célula de moldura), o contorno do furo é um
@@ -32,21 +42,40 @@ import type {
   ParametrosBloco,
   PrimitivoBloco,
 } from "./tipos";
-import { alturaBrutaMm, grampearBloco, larguraBrutaMm } from "./limites";
+import {
+  MOLDURA_FURO_MM,
+  TIRA_BANDA_MM,
+  alturaBrutaMm,
+  grampearBloco,
+  larguraBrutaMm,
+} from "./limites";
 
 const DOIS_PI = Math.PI * 2;
 
 /** Mesmo piso de raio no eixo da geometria do núcleo (geometria.ts). */
 const RAIO_EIXO_MM = 0.6;
 
-/** Moldura entre o polígono do furo e a borda do bloco recortado (⚑). */
-const MOLDURA_FURO_MM = 2;
-
-/** Tira mínima de células entre o bloco do furo e as bordas da banda (⚑). */
-const TIRA_BANDA_MM = 1;
-
 /** Passo-alvo das linhas z da grade da casca oca, em mm. */
 const PASSO_LINHA_MM = 4;
+
+/** Raio externo com o mesmo piso de eixo da malha — helper único. */
+function raioExternoMm(p: ParametrosBloco): number {
+  return Math.max(RAIO_EIXO_MM * 2, larguraBrutaMm(p) / 2);
+}
+
+/**
+ * Raio da boca/cavidade da casca oca — a MESMA conta da malha, usada
+ * pelo apoio (assentamento e raiosNotaveisMm nunca podem divergir da
+ * geometria real).
+ */
+function raioInternoMm(p: ParametrosBloco): number {
+  return Math.max(RAIO_EIXO_MM * 2, raioExternoMm(p) - p.espessuraParedeMm);
+}
+
+/** Cota do piso da cavidade da casca oca. */
+function zPisoMm(p: ParametrosBloco): number {
+  return Math.min(p.espessuraParedeMm, alturaBrutaMm(p) / 3);
+}
 
 export const apoioCilindro: ApoioBloco = {
   alturaTopoMm: (p) => alturaBrutaMm(p),
@@ -57,13 +86,18 @@ export const apoioCilindro: ApoioBloco = {
     return larguraBrutaMm(p) / 2;
   },
   zSuperficieTopoMm(p, dMm) {
-    if (dMm > larguraBrutaMm(p) / 2) return null;
+    if (dMm > raioExternoMm(p)) return null;
+    // Borda aberta: quem cabe na boca assenta no piso da cavidade; na
+    // coroa da borda (raioInterno < d ≤ raioExterno), assenta em H.
+    if (p.oca && dMm <= raioInternoMm(p)) return zPisoMm(p);
     return alturaBrutaMm(p);
   },
   zSuperficieBaseMm(p, dMm) {
-    if (dMm > larguraBrutaMm(p) / 2) return null;
+    if (dMm > raioExternoMm(p)) return null;
     return 0;
   },
+  // O degrau da boca da casca aberta (tangencia.ts amostra este raio).
+  raiosNotaveisMm: (p) => (p.oca ? [raioInternoMm(p)] : []),
 };
 
 /** Ponto no espaço de parâmetro da lateral (a = arco em mm, b = z em mm). */
@@ -299,10 +333,11 @@ function planejarFuros(
 }
 
 /**
- * Casca oca (com ou sem furos): superfície externa fechada (tampas em
- * z = 0 e z = H) + cavidade interna invertida (piso, parede θ × z e teto
- * cônico a 45°). As duas laterais usam a MESMA grade (θ, z) na banda —
- * os furos recortam células idênticas nas duas e o túnel liga os anéis.
+ * Casca oca de borda ABERTA (com ou sem furos): parede externa z = 0 → H
+ * com fundo fechado, cavidade invertida (piso em zPiso + parede θ × z de
+ * zPiso a H) e anel plano em z = H ligando as duas bordas — topo de
+ * parede, sem ponte. As duas laterais usam a MESMA grade (θ, z) na banda
+ * — os furos recortam células idênticas nas duas e o túnel liga os anéis.
  */
 function malhaCilindroOco(
   p: ParametrosBloco,
@@ -310,12 +345,10 @@ function malhaCilindroOco(
   alturaTotal: number,
   segmentos: number
 ): MalhaBloco {
-  const parede = p.espessuraParedeMm;
-  const raioInterno = Math.max(RAIO_EIXO_MM * 2, raioExterno - parede);
-  const zPiso = Math.min(parede, alturaTotal / 3);
+  const raioInterno = raioInternoMm(p);
+  const zPiso = zPisoMm(p);
+  // Teto da banda dos furos (simétrico ao piso); a parede sobe até H.
   const zTetoMax = alturaTotal - zPiso;
-  // Ombro da cavidade: onde a parede interna vira o cone de 45° (F4).
-  const zOmbroCheio = Math.max(zPiso, zTetoMax - raioInterno);
 
   const nColunas = segmentosGrade(segmentos, p.furos?.quantidade ?? 0);
   const plano = planejarFuros(
@@ -327,18 +360,9 @@ function malhaCilindroOco(
     alturaTotal / 2
   );
 
-  // Furos empurram o ombro para cima quando precisam de banda: o cone
-  // trunca no que couber e o disco do teto vira ponte ⚑ (validar impresso
-  // junto com FURO_PONTE_MAX_MM — furo grande pode passar do teto de ponte).
-  const zOmbro = plano
-    ? Math.min(
-        zTetoMax,
-        Math.max(zOmbroCheio, plano.zBlocoAlto + TIRA_BANDA_MM)
-      )
-    : zOmbroCheio;
-
-  // Linhas z da banda compartilhada; as bordas do bloco do furo são
-  // linhas EXATAS da grade (célula inteira, sem meia-célula).
+  // Linhas z da banda compartilhada (zPiso → H; a ÚLTIMA linha é H exato
+  // nas duas paredes — é ela que o anel da borda costura); as bordas do
+  // bloco do furo são linhas EXATAS da grade (célula inteira).
   const linhas: number[] = [zPiso];
   const preencherAte = (ate: number): number => {
     const de = linhas[linhas.length - 1];
@@ -355,11 +379,8 @@ function malhaCilindroOco(
     linhaBlocoBaixo = preencherAte(plano.zBlocoBaixo);
     preencherAte(plano.zCentro);
     linhaBlocoAlto = preencherAte(plano.zBlocoAlto);
-    preencherAte(zOmbro);
-  } else if (zOmbro - zPiso > 1e-9) {
-    preencherAte(zOmbro);
   }
-  const linhaOmbro = linhas.length - 1;
+  preencherAte(alturaTotal);
 
   // ---- vértices (compartilhados por índice; a costura nunca duplica) ----
   const posicoes: number[] = [];
@@ -381,7 +402,7 @@ function malhaCilindroOco(
     }
     return ids;
   };
-  const linhasExternas = [0, ...linhas, alturaTotal];
+  const linhasExternas = [0, ...linhas];
   const gradeExterna = linhasExternas.map((z) => anel(raioExterno, z));
   const gradeInterna = linhas.map((z) => anel(raioInterno, z));
 
@@ -412,7 +433,7 @@ function malhaCilindroOco(
   // Parede externa (z = 0 → H); na banda, células dos blocos ficam de fora.
   for (let j = 0; j < linhasExternas.length - 1; j++) {
     for (let i = 0; i < nColunas; i++) {
-      if (j >= 1 && j <= linhaOmbro && celulaRemovida(i, j - 1)) continue;
+      if (j >= 1 && celulaRemovida(i, j - 1)) continue;
       const i2 = (i + 1) % nColunas;
       quad(
         externos,
@@ -424,21 +445,35 @@ function malhaCilindroOco(
     }
   }
 
-  // Tampas externas — fundo SEMPRE fechado na F1 (abertura de encaixe do
-  // ponto de luz é fase posterior ⚑).
+  // Fundo externo SEMPRE fechado na F1 (abertura de encaixe do ponto de
+  // luz é fase posterior ⚑).
   const centroBase = vertice(0, 0, 0);
-  const centroTopo = vertice(0, 0, alturaTotal);
   const anelBase = gradeExterna[0];
-  const anelTopoExterno = gradeExterna[gradeExterna.length - 1];
   for (let i = 0; i < nColunas; i++) {
     const i2 = (i + 1) % nColunas;
     externos.push(centroBase, anelBase[i2], anelBase[i]);
-    externos.push(centroTopo, anelTopoExterno[i], anelTopoExterno[i2]);
+  }
+
+  // Borda ABERTA em cima (espec §4): anel plano de quads em z = H ligando
+  // a borda externa à interna (largura = parede) — normais +Z, topo de
+  // parede vertical, ponte nenhuma. Compartilha os vértices do topo das
+  // duas paredes: estanque por índice.
+  const anelTopoExterno = gradeExterna[gradeExterna.length - 1];
+  const anelTopoInterno = gradeInterna[gradeInterna.length - 1];
+  for (let i = 0; i < nColunas; i++) {
+    const i2 = (i + 1) % nColunas;
+    quad(
+      externos,
+      anelTopoExterno[i],
+      anelTopoExterno[i2],
+      anelTopoInterno[i2],
+      anelTopoInterno[i]
+    );
   }
 
   // Parede da cavidade: cópia da grade deslocada para dentro, mesmo
   // recorte de células (receita única do furo, item 6 da espec).
-  for (let j = 0; j < linhaOmbro; j++) {
+  for (let j = 0; j < linhas.length - 1; j++) {
     for (let i = 0; i < nColunas; i++) {
       if (celulaRemovida(i, j)) continue;
       const i2 = (i + 1) % nColunas;
@@ -458,39 +493,6 @@ function malhaCilindroOco(
   for (let i = 0; i < nColunas; i++) {
     const i2 = (i + 1) % nColunas;
     internos.push(centroPiso, anelPiso[i2], anelPiso[i]);
-  }
-
-  // Teto cônico a 45° (= F4 exato quando o cone cabe inteiro); truncado,
-  // fecha num disco — clamp geométrico interno, nunca erro.
-  const anelOmbro = gradeInterna[linhaOmbro];
-  const alturaCone = zTetoMax - zOmbro;
-  const raioTeto = raioInterno - alturaCone;
-  if (alturaCone <= 1e-9) {
-    // Caso extremo: banda comeu o cone inteiro — teto plano direto.
-    const centroTeto = vertice(0, 0, zOmbro);
-    for (let i = 0; i < nColunas; i++) {
-      const i2 = (i + 1) % nColunas;
-      internos.push(centroTeto, anelOmbro[i], anelOmbro[i2]);
-    }
-  } else if (raioTeto <= RAIO_EIXO_MM) {
-    // Cone cheio: ápice no eixo.
-    const apice = vertice(0, 0, zTetoMax);
-    for (let i = 0; i < nColunas; i++) {
-      const i2 = (i + 1) % nColunas;
-      internos.push(apice, anelOmbro[i], anelOmbro[i2]);
-    }
-  } else {
-    // Cone truncado: anel do teto + disco (⚑ ponte — ver zOmbro acima).
-    const anelTeto = anel(raioTeto, zTetoMax);
-    for (let i = 0; i < nColunas; i++) {
-      const i2 = (i + 1) % nColunas;
-      quad(internos, anelOmbro[i], anelOmbro[i2], anelTeto[i2], anelTeto[i]);
-    }
-    const centroTeto = vertice(0, 0, zTetoMax);
-    for (let i = 0; i < nColunas; i++) {
-      const i2 = (i + 1) % nColunas;
-      internos.push(centroTeto, anelTeto[i], anelTeto[i2]);
-    }
   }
 
   // ---- furos: recorte + costura + túnel radial ----
@@ -597,7 +599,7 @@ export function gerarMalhaCilindro(
   p: ParametrosBloco,
   segmentos = 48
 ): MalhaBloco {
-  const raio = Math.max(RAIO_EIXO_MM * 2, larguraBrutaMm(p) / 2);
+  const raio = raioExternoMm(p);
   const altura = alturaBrutaMm(p);
   if (!p.oca) {
     // Pura: o caminho de todo o núcleo — perfil retangular revolucionado.
