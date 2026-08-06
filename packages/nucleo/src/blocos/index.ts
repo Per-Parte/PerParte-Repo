@@ -1,10 +1,9 @@
 /**
- * Montagem v2 · F1 — barrel do módulo de blocos.
+ * Montagem v2 · F1 — barrel do módulo de blocos (F1 completa).
  *
- * Tipos, limites, variações, tangência A1, ponto de luz e os primitivos
- * cilindro e pirâmide estão COMPLETOS; gerarMalhaEsfera e gerarMalhaCubo
- * estão em stub (TODO F1) — preencher seguindo a receita de topologia no
- * cabeçalho de cada arquivo, sem mudar nenhuma assinatura daqui.
+ * Tipos, limites, variações, tangência A1, ponto de luz e os quatro
+ * primitivos (esfera, cubo, cilindro, pirâmide) com malha estanque.
+ * Estado da frente: docs/montagem-v2-handoff.md.
  */
 
 export * from "./tipos";
