@@ -4,6 +4,16 @@
 > pedidos de 06/08 no cofre: "Montagem v2 — ajustes do Davi").
 > Atualizado em **06/08/2026**. Já mesclada na `main` e no ar em `/criar`.
 
+## 📌 O plano de alterações agora é um documento VIVO no cofre
+
+Os próximos pedidos do Davi e do Caio entram em **"Configurador — plano de alterações (vivo)"** (cofre Obsidian), com quadro de status, decisões e as perguntas que travam cada item. **Leia esse documento antes de mexer no configurador** — ele diz o que fazer, o que já foi feito e o que NÃO decidir sozinho. Este handoff continua sendo o registro técnico versionado.
+
+## Base estável no chão (item 1 do plano, 06/08)
+
+`src/blocos/base-estavel.ts` — "a primeira forma tem de ter área de contato que a sustente". Implementado como **regra geral, não como caso especial da esfera**: a peça mede a própria área de contato (`raioPlatoMm`, o raio inscrito da seção, que já existia por causa da Fatiar) e, se ela não sustenta, a regra devolve a fatia que dá o pé — mecanismo nenhum foi inventado. Alvo: raio ≥ 25% da largura ⚑ (numa esfera de 100 mm, pé chato de Ø 50 — a primeira camada da impressão adere de verdade). Cubo, cilindro e pirâmide em pé passam intactos porque a conta reconhece que já têm base cheia.
+
+Por que geral importa: quando entrarem a **borda de fundo** (item 2) e o **espelhar** (item 6), a peça que perder o pé cai nesta mesma regra sozinha — a pirâmide de ponta-cabeça vai nascer com base sem uma linha nova. A cena decide QUANDO aplicar (na entrada, quando a peça pousa no chão; nunca durante um arrasto), e o corte aparece no painel da Fatiar como qualquer outro: o usuário pode removê-lo.
+
 ## Ferramentas novas (pedido do Davi, 06/08 — depois de ver a `/criar` no ar)
 
 Quatro capacidades, todas com teste e todas no ar em `/criar`:
@@ -57,6 +67,10 @@ Se os sócios quiserem outra leitura para pirâmide/esfera, a topologia do túne
 - `RESPIRO_ANGULO_GRAUS = 69,5` (inclusive numa oca achatada), `MOLDURA_FURO_MM = 2`, `TIRA_BANDA_MM = 1`, `FURO_PONTE_MAX_MM = 20` (□ tem teto reto = ponte pura).
 - Heurística `furoMaximoMm` da pirâmide mede a face externa; o polígono encolhe para caber na casca interna (clamp geométrico) — se apertar demais no impresso, endurecer em `limites.ts`.
 - Mapeamento meridional linearizado da esfera (`v = c·φ`): furo levemente distorcido em esferoides extremos (só visual).
+
+## Rodar os testes
+
+`npm test` na raiz. São ~300 testes e levam ~1,5 min: não são testes de unidade rápidos, são **varreduras de geometria** (as 32 combinações forma × variação, os 576 cortes da Fatiar, as matrizes de borda), cada uma verificando estanqueidade aresta por aresta. `packages/nucleo/vitest.config.ts` sobe o teto por teste para 30 s de propósito — no teto padrão de 5 s, máquina ocupada (a do sócio com o navegador aberto, ou runner de CI compartilhado) dava vermelho por falta de CPU e não por defeito, que é o pior tipo de teste vermelho. Se algum dia precisar cortar tempo, o gasto está concentrado em `test/blocos-fatiar.test.ts`.
 
 ## Dívida técnica declarada
 
