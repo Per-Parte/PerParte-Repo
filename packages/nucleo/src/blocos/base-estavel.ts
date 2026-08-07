@@ -91,5 +91,13 @@ export function fatiaDeBaseEstavel(
       return { eixo: "z", posicaoMm: z, lado: "maior" };
     }
   }
+  // O alvo cheio não coube no orçamento de altura (a pirâmide de
+  // ponta-cabeça precisaria perder METADE para ter pé de 25% da
+  // largura). Fallback honesto: o MELHOR pé que o orçamento permite,
+  // desde que atinja o mínimo absoluto — um pé pequeno sustenta; ápice
+  // no chão não sustenta nada.
+  if (platoEm(p, teto) >= BASE_ESTAVEL_MINIMO_MM) {
+    return { eixo: "z", posicaoMm: teto, lado: "maior" };
+  }
   return null;
 }

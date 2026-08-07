@@ -23,6 +23,7 @@ export * from "./esfera";
 export * from "./cubo";
 export * from "./cilindro";
 export * from "./piramide";
+export * from "./espelhar";
 export * from "./fatiar";
 
 import type {
@@ -36,6 +37,7 @@ import { primitivoEsfera } from "./esfera";
 import { primitivoCubo } from "./cubo";
 import { primitivoCilindro } from "./cilindro";
 import { primitivoPiramide } from "./piramide";
+import { apoioEspelhado, espelharMalhaBloco } from "./espelhar";
 import { apoioComFatia, fatiarMalhaBloco } from "./fatiar";
 
 /** Registro das quatro formas-base — a porta de entrada da F2/F3. */
@@ -47,23 +49,26 @@ export const PRIMITIVOS_BLOCO: Record<FormaBloco, PrimitivoBloco> = {
 };
 
 /**
- * A malha do bloco — a porta de entrada de preview e STL. Gera a forma
- * (já com a borda encurvada, que é do primitivo) e aplica a fatia.
- * Espera params grampeados: chame `grampearBloco` antes.
+ * A malha do bloco — a porta de entrada de preview e STL. O pipeline é
+ * primitivo (com as bordas encurvadas) → ESPELHAR → FATIAR, nesta ordem
+ * de propósito: a fatia corta a peça JÁ invertida, então o pé que a
+ * regra de base estável dá a uma pirâmide de ponta-cabeça funciona sem
+ * caso especial. Espera params grampeados: chame `grampearBloco` antes.
  */
 export function gerarMalhaBloco(
   p: ParametrosBloco,
   segmentos?: number
 ): MalhaBloco {
   const inteira = PRIMITIVOS_BLOCO[p.forma].gerarMalha(p, segmentos);
-  return fatiarMalhaBloco(inteira, p);
+  return fatiarMalhaBloco(espelharMalhaBloco(inteira, p), p);
 }
 
 /**
  * Resolve o apoio de uma forma (injete em tangencia.ts — tipo ApoioDe).
- * Já vem embrulhado na fatia: quando o bloco está cortado, as cotas e os
- * platôs são os da peça cortada (A1 — nada flutua, nada atravessa).
+ * Embrulhado na MESMA ordem do pipeline da malha (espelho por dentro,
+ * fatia por fora): quando o bloco está invertido e/ou cortado, as cotas
+ * e os platôs são os da peça real (A1 — nada flutua, nada atravessa).
  */
 export function apoioDaForma(forma: FormaBloco): ApoioBloco {
-  return apoioComFatia(PRIMITIVOS_BLOCO[forma].apoio);
+  return apoioComFatia(apoioEspelhado(PRIMITIVOS_BLOCO[forma].apoio));
 }

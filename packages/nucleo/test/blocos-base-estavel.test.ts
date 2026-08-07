@@ -136,6 +136,30 @@ describe("base estável — quem já tem pé não é tocado", () => {
   });
 });
 
+describe("base estável — pirâmide de ponta-cabeça (composição com Espelhar)", () => {
+  it("invertida no chão ganha o melhor pé que o orçamento de altura permite", () => {
+    const invertida = grampearBloco({
+      forma: "piramide",
+      tamanhoMm: 100,
+      invertido: true,
+    });
+    // Sem pé, ela equilibra no ápice: contato ~0.
+    expect(apoioDaForma("piramide").raioPlatoMm!(invertida, 0)).toBeLessThan(
+      BASE_ESTAVEL_MINIMO_MM
+    );
+    const fatia = fatiaDeBaseEstavel(invertida, apoioDaForma("piramide"));
+    // O alvo cheio (25% da largura) exigiria cortar metade da peça — o
+    // fallback corta no teto do orçamento e entrega um pé ≥ mínimo.
+    expect(fatia).not.toBeNull();
+    const estavel = grampearBloco({ ...invertida, fatia });
+    const malha = gerarMalhaBloco(estavel);
+    esperarEstanque(malha, "pirâmide invertida com pé");
+    expect(raioDoPeMm(malha)).toBeGreaterThanOrEqual(
+      0.95 * BASE_ESTAVEL_MINIMO_MM
+    );
+  });
+});
+
 describe("base estável — não atropela nem se repete", () => {
   it("corte do usuário vence: peça já fatiada passa intacta", () => {
     const comCorteProprio = grampearBloco({
