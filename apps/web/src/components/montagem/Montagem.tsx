@@ -26,12 +26,16 @@ import {
   apagarItem,
   atualizarParams,
   ehPontoDeLuz,
+  espelharItem,
   girarItem,
   moverItem,
   pontosDeLuz,
   type Cena,
 } from "./cena";
-import Viewport3D from "./Viewport3D";
+import Viewport3D, {
+  FUNDOS_ESTUDIO,
+  type FundoEstudioId,
+} from "./Viewport3D";
 import { ManivelaCena } from "./ManivelaCena";
 import { BarraFerramentas, type Ferramenta } from "./ferramentas";
 import { BarraFormas } from "./BarraFormas";
@@ -48,6 +52,8 @@ export default function Montagem() {
   const [giroCenaGraus, setGiroCenaGraus] = useState(0);
   /** Cor na ponta do balde de tinta. */
   const [corAtualIdx, setCorAtualIdx] = useState(0);
+  /** Fundo do estúdio (item 4 do plano) — vista, não faz parte da obra. */
+  const [fundoId, setFundoId] = useState<FundoEstudioId>("gelo");
 
   // Cena de antes de um gesto contínuo (arrasto/slider) — vira UM passo
   // de undo quando o gesto fecha.
@@ -107,6 +113,11 @@ export default function Montagem() {
     setSelecionadoId(null);
   }, [selecionadoId, comHistorico]);
 
+  const espelharSelecionado = useCallback(() => {
+    if (selecionadoId == null) return;
+    comHistorico((c) => espelharItem(c, selecionadoId));
+  }, [selecionadoId, comHistorico]);
+
   // Atalhos: Ctrl/Cmd+Z (desfazer), +Shift (refazer), Delete (apagar).
   useEffect(() => {
     const aoTeclar = (e: KeyboardEvent) => {
@@ -158,6 +169,7 @@ export default function Montagem() {
         selecionadoId={selecionadoId}
         ferramenta={ferramenta}
         giroCenaGraus={giroCenaGraus}
+        fundoId={fundoId}
         onSelecionar={setSelecionadoId}
         onMover={(id, dx, dy) => aplicarVivo((c) => moverItem(c, id, dx, dy))}
         onRedimensionar={(id, delta) =>
@@ -201,6 +213,7 @@ export default function Montagem() {
           aoEscolher={setFerramenta}
           temSelecao={selecionadoId != null}
           aoApagar={apagarSelecionado}
+          aoEspelhar={espelharSelecionado}
           podeDesfazer={passado.length > 0}
           podeRefazer={futuro.length > 0}
           aoDesfazer={desfazer}
@@ -238,6 +251,24 @@ export default function Montagem() {
             setSelecionadoId(cenaRef.current.proximoId);
           }}
         />
+      </div>
+
+      {/* Fundos do estúdio (item 4): vista, não entra na obra nem no undo. */}
+      <div className="absolute bottom-4 right-3 z-10 flex items-center gap-1.5 rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur">
+        {FUNDOS_ESTUDIO.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            title={`Estúdio ${f.nome.toLowerCase()}`}
+            onClick={() => setFundoId(f.id)}
+            style={{ backgroundColor: f.hex }}
+            className={`h-8 w-8 rounded-full border-2 transition ${
+              fundoId === f.id
+                ? "border-neutral-900 scale-110"
+                : "border-white/60 hover:scale-105"
+            }`}
+          />
+        ))}
       </div>
 
       {/* Direita: variações ↔ propriedades ↔ paleta ↔ fatiar. */}

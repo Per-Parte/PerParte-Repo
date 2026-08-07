@@ -151,6 +151,33 @@ export function girarItem(cena: Cena, id: number, deltaGraus: number): Cena {
 }
 
 /**
+ * Espelha o item na vertical (item 6 do plano — pirâmide de concavidade
+ * para baixo vira concavidade para cima). Depois de virar, se a peça
+ * está no chão e perdeu o pé (pirâmide de ponta-cabeça apoia no ápice),
+ * a regra de base estável do item 1 reage sozinha — como o plano
+ * prometeu. Re-assenta o próprio contato e a cadeia de dependentes
+ * (a superfície de cima mudou de forma).
+ */
+export function espelharItem(cena: Cena, id: number): Cena {
+  const item = cena.itens.find((b) => b.id === id);
+  if (!item || ehPontoDeLuz(item)) return cena;
+  let params = grampearBloco({
+    ...item.params,
+    invertido: !item.params.invertido,
+  });
+  if (item.contato.sobre == null && !params.fatia) {
+    const fatia = fatiaDeBaseEstavel(params, apoioDeCena(params.forma));
+    if (fatia) params = grampearBloco({ ...params, fatia });
+  }
+  let itens = cena.itens.map((b) => (b.id === id ? { ...b, params } : b));
+  const atualizado = itens.find((b) => b.id === id)!;
+  const contato = deslizarContato(atualizado, itens, 0, 0, apoioDeCena);
+  itens = itens.map((b) => (b.id === id ? { ...b, contato } : b));
+  itens = reassentarDependentes(itens, id);
+  return { ...cena, itens };
+}
+
+/**
  * Troca os params de um bloco (já passa por grampearBloco aqui — fonte
  * única) e re-assenta o próprio contato e a cadeia de quem depende dele.
  */

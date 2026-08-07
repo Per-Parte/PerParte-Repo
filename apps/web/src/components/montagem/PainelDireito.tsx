@@ -26,6 +26,7 @@ import {
   type FormaBloco,
   type FormaFuro,
   type ParametrosBloco,
+  type PosicaoBorda,
   type SentidoBorda,
 } from "@per-parte/nucleo";
 import { ehPontoDeLuz, type ItemCena } from "./cena";
@@ -375,55 +376,53 @@ const FORMAS_FURO_UI: { forma: FormaFuro; simbolo: string; nome: string }[] = [
 
 function SecaoBorda({
   p,
+  posicao,
   aoAtualizar,
   aoFecharGesto,
 }: {
   p: ParametrosBloco;
+  posicao: PosicaoBorda;
   aoAtualizar(parciais: Partial<ParametrosBloco>): void;
   aoFecharGesto(): void;
 }) {
   // A esfera é curva inteira: não tem borda reta para encurvar.
   if (p.forma === "esfera") return null;
-  const sentido: SentidoBorda | "reta" = p.borda?.sentido ?? "reta";
-  const tetoDe = (s: SentidoBorda) => bordaTamanhoMaxMm({ ...p, sentido: s });
+  const campo = posicao === "topo" ? "bordaTopo" : "bordaFundo";
+  const atual = posicao === "topo" ? p.bordaTopo : p.bordaFundo;
+  const sentido: SentidoBorda | "reta" = atual?.sentido ?? "reta";
+  const tetoDe = (s: SentidoBorda) =>
+    bordaTamanhoMaxMm({ ...p, sentido: s, posicao });
   const tetoFora = tetoDe("fora");
   const tetoDentro = tetoDe("dentro");
   const semEspaco = tetoFora <= 0 && tetoDentro <= 0;
-  const teto = p.borda ? tetoDe(p.borda.sentido) : 0;
+  const teto = atual ? tetoDe(atual.sentido) : 0;
+  const dicas =
+    posicao === "topo"
+      ? { fora: "A borda abre como uma aba de abajur", dentro: "A borda fecha como um lábio" }
+      : { fora: "A base abre como um pé de cálice", dentro: "A base recolhe para dentro" };
 
   return (
     <div className="rounded-xl bg-neutral-50 p-3">
       <span className="text-sm font-medium text-neutral-800">
-        Borda do topo
+        {posicao === "topo" ? "Borda do topo" : "Borda do fundo"}
       </span>
       <BotoesEmLinha
         opcoes={[
           { valor: "reta", rotulo: "Reta", dica: "Sem curva na borda" },
-          {
-            valor: "fora",
-            rotulo: "Pra fora",
-            dica: "A borda abre como uma aba de abajur",
-          },
-          {
-            valor: "dentro",
-            rotulo: "Pra dentro",
-            dica: "A borda fecha como um lábio",
-          },
+          { valor: "fora", rotulo: "Pra fora", dica: dicas.fora },
+          { valor: "dentro", rotulo: "Pra dentro", dica: dicas.dentro },
         ]}
         valor={sentido}
         desabilitado={semEspaco}
         aoEscolher={(v) => {
           if (v === "reta") {
-            aoAtualizar({ borda: null });
+            aoAtualizar({ [campo]: null });
           } else {
             const novoTeto = tetoDe(v);
             aoAtualizar({
-              borda: {
+              [campo]: {
                 sentido: v,
-                tamanhoMm: Math.min(
-                  p.borda?.tamanhoMm ?? novoTeto / 2,
-                  novoTeto
-                ),
+                tamanhoMm: Math.min(atual?.tamanhoMm ?? novoTeto / 2, novoTeto),
               },
             });
           }
@@ -436,18 +435,16 @@ function SecaoBorda({
           tamanho dela.
         </p>
       )}
-      {p.borda && teto > 0 && (
+      {atual && teto > 0 && (
         <div className="mt-3">
           <Slider
             rotulo="Tamanho da borda"
-            valor={p.borda.tamanhoMm}
+            valor={atual.tamanhoMm}
             min={LIMITES_BLOCO.bordaTamanhoMm.min}
             max={teto}
             passo={LIMITES_BLOCO.bordaTamanhoMm.passo}
             sufixo=" mm"
-            aoMudar={(v) =>
-              aoAtualizar({ borda: { ...p.borda!, tamanhoMm: v } })
-            }
+            aoMudar={(v) => aoAtualizar({ [campo]: { ...atual, tamanhoMm: v } })}
             aoSoltar={aoFecharGesto}
           />
         </div>
@@ -523,7 +520,18 @@ function Propriedades({
         aoSoltar={aoFecharGesto}
       />
 
-      <SecaoBorda p={p} aoAtualizar={aoAtualizar} aoFecharGesto={aoFecharGesto} />
+      <SecaoBorda
+        p={p}
+        posicao="topo"
+        aoAtualizar={aoAtualizar}
+        aoFecharGesto={aoFecharGesto}
+      />
+      <SecaoBorda
+        p={p}
+        posicao="fundo"
+        aoAtualizar={aoAtualizar}
+        aoFecharGesto={aoFecharGesto}
+      />
 
       <div className="rounded-xl bg-neutral-50 p-3">
         <label className="flex items-center justify-between text-sm font-medium text-neutral-800">

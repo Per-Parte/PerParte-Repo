@@ -87,6 +87,7 @@ export function BarraFerramentas({
   aoEscolher,
   temSelecao,
   aoApagar,
+  aoEspelhar,
   podeDesfazer,
   podeRefazer,
   aoDesfazer,
@@ -96,6 +97,7 @@ export function BarraFerramentas({
   aoEscolher(f: Ferramenta): void;
   temSelecao: boolean;
   aoApagar(): void;
+  aoEspelhar(): void;
   podeDesfazer: boolean;
   podeRefazer: boolean;
   aoDesfazer(): void;
@@ -121,6 +123,21 @@ export function BarraFerramentas({
       ))}
 
       <div className="my-1 h-px w-10 bg-neutral-200" />
+
+      <button
+        type="button"
+        title="Virar a forma selecionada de cabeça para baixo"
+        onClick={aoEspelhar}
+        disabled={!temSelecao}
+        className="flex min-h-[52px] w-[64px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[11px] font-medium text-neutral-700 transition enabled:hover:bg-neutral-100 disabled:opacity-30"
+      >
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M4 12h16" strokeLinecap="round" strokeDasharray="2.5 2.5" />
+          <path d="M8 9V4h8l-4 5z" strokeLinejoin="round" />
+          <path d="M8 15v5h8l-4-5z" strokeLinejoin="round" opacity="0.45" />
+        </svg>
+        Espelhar
+      </button>
 
       <button
         type="button"

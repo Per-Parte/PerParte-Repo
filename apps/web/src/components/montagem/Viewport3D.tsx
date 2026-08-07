@@ -1,25 +1,54 @@
 "use client";
 
 /**
- * Montagem v2 · F2/F3 — viewport central: a obra fica no centro e a
- * câmera só aproxima/afasta. Quem gira a cena é a manivela do canto
- * (ManivelaCena — pedido do Davi de 06/08): a órbita livre com o cursor
- * saiu, então o cursor fica inteiro para as ferramentas. Os gestos viram
- * chamadas do modelo de cena, que só devolve contatos válidos (A1).
+ * Montagem v2 — viewport central, agora um ESTÚDIO FOTOGRÁFICO (itens 4
+ * e 5 do plano de alterações):
+ *
+ * — Câmera SEM controle nenhum do usuário (zoom saiu; órbita e pan já
+ *   tinham saído com a manivela): o enquadramento é AUTOMÁTICO — a
+ *   câmera recua suavemente conforme a obra cresce, mantendo-a sempre
+ *   inteira e do mesmo tamanho na tela. Quem gira a obra é a manivela.
+ * — Fundo de estúdio conforme as referências do cofre (mood-estudio-*):
+ *   ciclorama sem horizonte (névoa dissolve o chão na parede), gradiente
+ *   radial de luz atrás da peça, cor saturada selecionável, sombra de
+ *   contato macia e reflexo discreto no chão. Como a câmera é fixa, o
+ *   gradiente é um plano atrás da obra — o "pool de luz" das fotos.
+ *
+ * Os gestos das ferramentas viram chamadas do modelo de cena (A1).
  */
 
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { PALETA, PONTO_DE_LUZ } from "@per-parte/nucleo";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { ContactShadows, MeshReflectorMaterial } from "@react-three/drei";
+import {
+  PALETA,
+  PONTO_DE_LUZ,
+  alturaPontoDeLuzMm,
+  apoioDaForma,
+  larguraBrutaMm,
+} from "@per-parte/nucleo";
 import { ehPontoDeLuz, type ItemCena } from "./cena";
 import { MM, geometriaDoBloco, geometriasDoPontoDeLuz } from "./geometria";
 import type { Ferramenta } from "./ferramentas";
 
 /** Cor do bulbo aceso — a mesma 2700K real da cena do configurador. */
 const COR_LUZ = "#FFC478";
+
+/**
+ * Fundos do estúdio — as cores das referências do cofre (vinho, laranja,
+ * índigo, oliva) mais o branco-gelo do estúdio v1. ⚑ provisório até a
+ * paleta v1 do branding decidir as cores oficiais do estúdio.
+ */
+export const FUNDOS_ESTUDIO = [
+  { id: "gelo", nome: "Gelo", hex: "#E9EAE8" },
+  { id: "terracota", nome: "Terracota", hex: "#A44A28" },
+  { id: "vinho", nome: "Vinho", hex: "#571E2C" },
+  { id: "indigo", nome: "Índigo", hex: "#2B3160" },
+  { id: "oliva", nome: "Oliva", hex: "#5F6247" },
+] as const;
+
+export type FundoEstudioId = (typeof FUNDOS_ESTUDIO)[number]["id"];
 
 export interface GestosViewport {
   onSelecionar(id: number | null): void;
@@ -40,6 +69,7 @@ interface Props extends GestosViewport {
   ferramenta: Ferramenta;
   /** Giro da cena inteira (graus), vindo da manivela. */
   giroCenaGraus: number;
+  fundoId: FundoEstudioId;
 }
 
 interface Arrasto {
@@ -51,6 +81,181 @@ interface Arrasto {
   ultimoPy: number;
   mexeu: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Estúdio
+// ---------------------------------------------------------------------------
+
+/** Gradiente radial do fundo: pool de luz que escurece nas bordas. */
+function texturaGradiente(hex: string): THREE.CanvasTexture {
+  const tela = document.createElement("canvas");
+  tela.width = 512;
+  tela.height = 512;
+  const ctx = tela.getContext("2d")!;
+  const cor = new THREE.Color(hex);
+  const claro = cor.clone().lerp(new THREE.Color("#FFFFFF"), 0.32);
+  const escuro = cor.clone().multiplyScalar(0.42);
+  // Centro do pool um pouco acima do meio — onde a obra recorta.
+  const g = ctx.createRadialGradient(256, 290, 40, 256, 290, 420);
+  g.addColorStop(0, `#${claro.getHexString()}`);
+  g.addColorStop(0.55, `#${cor.getHexString()}`);
+  g.addColorStop(1, `#${escuro.getHexString()}`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 512, 512);
+  // A base do pano escurece até o MESMO valor da névoa (0,42×): é onde
+  // o chão esfumado encosta no plano — sem isso a emenda vira uma linha.
+  const rodape = ctx.createLinearGradient(0, 265, 0, 330);
+  rodape.addColorStop(0, `#${escuro.getHexString()}00`);
+  rodape.addColorStop(1, `#${escuro.getHexString()}ff`);
+  ctx.fillStyle = rodape;
+  ctx.fillRect(0, 265, 512, 512 - 265);
+  const textura = new THREE.CanvasTexture(tela);
+  textura.colorSpace = THREE.SRGBColorSpace;
+  return textura;
+}
+
+function Estudio({ fundoId }: { fundoId: FundoEstudioId }) {
+  const fundo = FUNDOS_ESTUDIO.find((f) => f.id === fundoId)!;
+  const textura = useMemo(() => texturaGradiente(fundo.hex), [fundo.hex]);
+  const corChao = useMemo(
+    () => new THREE.Color(fundo.hex).multiplyScalar(0.82),
+    [fundo.hex]
+  );
+  // A névoa dissolve o chão exatamente no VALOR da borda do gradiente
+  // (0,42× — o mesmo `escuro` da textura): sem costura visível entre o
+  // chão esfumado e o pano de fundo.
+  const corNevoa = useMemo(
+    () => new THREE.Color(fundo.hex).multiplyScalar(0.42),
+    [fundo.hex]
+  );
+  const corSombra = useMemo(
+    () =>
+      `#${new THREE.Color(fundo.hex).multiplyScalar(0.22).getHexString()}`,
+    [fundo.hex]
+  );
+
+  return (
+    <>
+      {/* O vazio além do pano tem a MESMA cor da névoa — nenhum ângulo
+          de enquadramento revela aresta de plano contra fundo preto. */}
+      <color attach="background" args={[corNevoa]} />
+      {/* Névoa na cor do fundo: o chão dissolve na parede sem horizonte. */}
+      <fog attach="fog" args={[corNevoa, 14, 42]} />
+
+      {/* Fill fraco: sombra com detalhe, nunca buraco preto (receita v1). */}
+      <hemisphereLight args={["#FFFFFF", "#B9B2A4", 0.5]} />
+      {/* Key alta e lateral: desenha a sombra principal, borda macia VSM. */}
+      <directionalLight
+        castShadow
+        position={[4.8, 7.2, 3.4]}
+        intensity={1.5}
+        color="#FFEEDA"
+        shadow-mapSize={[2048, 2048]}
+        shadow-radius={7}
+        shadow-blurSamples={16}
+        shadow-camera-near={1}
+        shadow-camera-far={70}
+        shadow-camera-left={-30}
+        shadow-camera-right={30}
+        shadow-camera-top={30}
+        shadow-camera-bottom={-30}
+      />
+      {/* Contraluz fria discreta: recorta a obra contra o fundo. */}
+      <directionalLight position={[-5.5, 2.5, -3.5]} intensity={0.3} color="#CFD8E2" />
+
+      {/* O pool de luz atrás da obra — câmera fixa, o plano não denuncia.
+          Grande o bastante para o recuo máximo do enquadramento automático
+          nunca revelar a aresta. */}
+      <mesh position={[0, 14, -30]}>
+        <planeGeometry args={[260, 140]} />
+        <meshBasicMaterial map={textura} fog={false} toneMapped={false} />
+      </mesh>
+
+      {/* Chão-ciclorama: fosco na cor do fundo, reflexo discreto e
+          desfocado (superfície de estúdio, não espelho — receita v1). */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.004, 0]} receiveShadow>
+        <circleGeometry args={[90, 64]} />
+        <MeshReflectorMaterial
+          color={corChao}
+          roughness={0.9}
+          metalness={0}
+          mirror={0}
+          mixStrength={0.25}
+          mixBlur={1}
+          blur={[400, 130]}
+          resolution={1024}
+          depthScale={0.8}
+          minDepthThreshold={0.4}
+          maxDepthThreshold={1.4}
+        />
+      </mesh>
+
+      {/* Sombra de contato macia logo abaixo da obra (as referências). */}
+      <ContactShadows
+        position={[0, -0.001, 0]}
+        opacity={0.5}
+        scale={9}
+        blur={2.6}
+        far={3}
+        color={corSombra}
+      />
+    </>
+  );
+}
+
+/**
+ * Enquadramento automático (item 5): a câmera não tem controle nenhum —
+ * ela recua/avança sozinha, com amortecimento, para a obra caber sempre
+ * com a mesma folga. O usuário nunca "perde" a luminária.
+ */
+function CameraEnquadrada({ itens }: { itens: ItemCena[] }) {
+  const { camera } = useThree();
+  const distancia = useRef(7);
+  const alvoY = useRef(0.9);
+
+  // Esfera envolvente da obra, em unidades da cena. O ponto de luz não
+  // tem primitivo registrado — as medidas dele vêm das constantes.
+  let alturaMax = 1.2;
+  let raioMax = 0.8;
+  for (const item of itens) {
+    const luz = ehPontoDeLuz(item);
+    const topo = luz
+      ? item.contato.zBaseMm + alturaPontoDeLuzMm()
+      : item.contato.zBaseMm +
+        apoioDaForma(item.params.forma).alturaTopoMm(item.params);
+    const meiaLargura = luz
+      ? PONTO_DE_LUZ.bulboRaioMm
+      : (larguraBrutaMm(item.params) / 2) * Math.SQRT2;
+    const raio =
+      Math.hypot(item.contato.xMm, item.contato.yMm) + meiaLargura;
+    alturaMax = Math.max(alturaMax, topo / MM);
+    raioMax = Math.max(raioMax, raio / MM);
+  }
+
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.1);
+    const raioCena = Math.max(alturaMax * 0.62, raioMax * 1.15);
+    const alvoDist = Math.max(4.2, raioCena * 3.6);
+    const alvoAltura = Math.max(0.7, alturaMax * 0.5);
+    distancia.current = THREE.MathUtils.damp(
+      distancia.current,
+      alvoDist,
+      3,
+      dt
+    );
+    alvoY.current = THREE.MathUtils.damp(alvoY.current, alvoAltura, 3, dt);
+    // Ângulo fixo de catálogo: ~32° de elevação, levemente à direita.
+    const d = distancia.current;
+    camera.position.set(d * 0.52, alvoY.current + d * 0.5, d * 0.75);
+    camera.lookAt(0, alvoY.current, 0);
+  });
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Peças
+// ---------------------------------------------------------------------------
 
 function BlocoMesh({
   item,
@@ -79,6 +284,8 @@ function BlocoMesh({
         geometry={geometria}
         rotation={[-Math.PI / 2, 0, 0]}
         onPointerDown={aoPressionar}
+        castShadow
+        receiveShadow
       >
         <meshStandardMaterial
           color={cor}
@@ -116,6 +323,7 @@ function PontoDeLuzMesh({
         geometry={base}
         rotation={[-Math.PI / 2, 0, 0]}
         onPointerDown={aoPressionar}
+        castShadow
       >
         <meshStandardMaterial
           color="#F4F1E8"
@@ -148,11 +356,16 @@ function PontoDeLuzMesh({
   );
 }
 
+// ---------------------------------------------------------------------------
+// A cena
+// ---------------------------------------------------------------------------
+
 function CenaMontagem({
   itens,
   selecionadoId,
   ferramenta,
   giroCenaGraus,
+  fundoId,
   onSelecionar,
   onMover,
   onRedimensionar,
@@ -161,7 +374,6 @@ function CenaMontagem({
   onFimDeGesto,
 }: Props) {
   const { camera, gl } = useThree();
-  const controles = useRef<OrbitControlsImpl>(null);
   const arrasto = useRef<Arrasto | null>(null);
   const giroRad = (giroCenaGraus * Math.PI) / 180;
 
@@ -182,10 +394,9 @@ function CenaMontagem({
   };
 
   /**
-   * Deslocamento do MUNDO para as coordenadas do núcleo. A cena inteira
-   * está girada pela manivela, então o arrasto precisa voltar ao
-   * referencial local antes de virar (dx, dy) em mm — senão empurrar
-   * para a direita move a peça de través.
+   * Deslocamento do MUNDO para as coordenadas do núcleo (a cena inteira
+   * gira pela manivela — o arrasto volta ao referencial local antes de
+   * virar mm, senão empurrar para a direita move a peça de través).
    */
   const paraNucleoMm = (
     mundoDx: number,
@@ -223,7 +434,6 @@ function CenaMontagem({
   const aoSoltarPonteiro = () => {
     const mexeu = arrasto.current?.mexeu ?? false;
     arrasto.current = null;
-    if (controles.current) controles.current.enabled = true;
     window.removeEventListener("pointermove", aoMoverPonteiro);
     window.removeEventListener("pointerup", aoSoltarPonteiro);
     if (mexeu) onFimDeGesto();
@@ -253,29 +463,16 @@ function CenaMontagem({
         ultimoPy: e.clientY,
         mexeu: false,
       };
-      if (controles.current) controles.current.enabled = false;
       window.addEventListener("pointermove", aoMoverPonteiro);
       window.addEventListener("pointerup", aoSoltarPonteiro);
     };
 
   return (
     <>
-      <ambientLight intensity={0.65} />
-      <directionalLight position={[4, 6, 5]} intensity={1.15} />
-      <directionalLight position={[-5, 3, -4]} intensity={0.35} color="#dfe8f0" />
+      <Estudio fundoId={fundoId} />
+      <CameraEnquadrada itens={itens} />
 
-      {/* Chão do estúdio — recebe a poça de luz do bulbo. Fica FORA do
-          giro: a mesa não gira, a obra gira sobre ela. */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.001, 0]}
-        onPointerDown={() => onSelecionar(null)}
-      >
-        <circleGeometry args={[30, 64]} />
-        <meshStandardMaterial color="#ECEAE4" roughness={0.92} metalness={0} />
-      </mesh>
-
-      {/* Todas as peças giram JUNTAS, no mesmo grupo (pedido do Davi). */}
+      {/* Todas as peças giram JUNTAS, no mesmo grupo (manivela). */}
       <group rotation={[0, giroRad, 0]}>
         {itens.map((item) =>
           ehPontoDeLuz(item) ? (
@@ -295,18 +492,6 @@ function CenaMontagem({
           )
         )}
       </group>
-
-      {/* Sem órbita e sem pan: a obra não sai do centro (espec §2) e o
-          giro é da manivela. Sobra o zoom, que é seguro para leigo. */}
-      <OrbitControls
-        ref={controles}
-        target={[0, 0.9, 0]}
-        enablePan={false}
-        enableRotate={false}
-        minDistance={1.2}
-        maxDistance={18}
-        makeDefault
-      />
     </>
   );
 }
@@ -314,12 +499,12 @@ function CenaMontagem({
 export default function Viewport3D(props: Props) {
   return (
     <Canvas
+      shadows="variance"
       camera={{ fov: 32, position: [4.2, 3.2, 5.4], near: 0.05, far: 120 }}
       dpr={[1, 2]}
       onPointerMissed={() => props.onSelecionar(null)}
       className="h-full w-full touch-none"
     >
-      <color attach="background" args={["#F6F5F1"]} />
       <CenaMontagem {...props} />
     </Canvas>
   );
