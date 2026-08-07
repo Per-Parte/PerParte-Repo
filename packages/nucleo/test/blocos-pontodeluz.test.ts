@@ -47,7 +47,7 @@ describe("gerarMalhaPontoDeLuz", () => {
     }
   });
 
-  it("base: caixa exata de 50 × 50 × 12 mm centrada no eixo", () => {
+  it("base: coluna exata de 20 × 20 × 40 mm centrada no eixo (item 3 do plano)", () => {
     const meio = PONTO_DE_LUZ.baseLadoMm / 2;
     const caixa = caixaEnvolvente(base);
     expect(caixa.xMin).toBeCloseTo(-meio);
@@ -71,10 +71,16 @@ describe("gerarMalhaPontoDeLuz", () => {
     expect(caixa.yMin).toBeCloseTo(-PONTO_DE_LUZ.bulboRaioMm);
   });
 
-  it("bulbo: volume perto da cápsula analítica (discretização ≤ 5%)", () => {
+  it("bulbo: volume perto do analítico (ombro + pescoço + cúpula, ≤ 5%)", () => {
     const r = PONTO_DE_LUZ.bulboRaioMm;
-    const pescoco = PONTO_DE_LUZ.bulboAlturaMm - r;
-    const analitico = Math.PI * r * r * pescoco + (2 / 3) * Math.PI * r ** 3;
+    const rColuna = PONTO_DE_LUZ.baseLadoMm / 2;
+    const ombro = PONTO_DE_LUZ.ombroAlturaMm;
+    const pescoco = PONTO_DE_LUZ.bulboAlturaMm - r - ombro;
+    // Tronco de cone (ombro 45°) + cilindro (pescoço) + semiesfera.
+    const analitico =
+      ((Math.PI * ombro) / 3) * (rColuna ** 2 + rColuna * r + r ** 2) +
+      Math.PI * r * r * pescoco +
+      (2 / 3) * Math.PI * r ** 3;
     const volume = volumeAssinadoMm3(bulbo);
     expect(volume).toBeGreaterThan(analitico * 0.95);
     expect(volume).toBeLessThan(analitico * 1.001);
@@ -91,42 +97,49 @@ describe("gerarMalhaPontoDeLuz", () => {
 });
 
 describe("constantes e apoio do ponto de luz", () => {
-  it("altura total = base + bulbo (52 mm)", () => {
+  it("altura total = coluna + conjunto luminoso (80 mm)", () => {
     expect(alturaPontoDeLuzMm()).toBeCloseTo(
       PONTO_DE_LUZ.baseAlturaMm + PONTO_DE_LUZ.bulboAlturaMm
     );
-    expect(alturaPontoDeLuzMm()).toBeCloseTo(52);
+    expect(alturaPontoDeLuzMm()).toBeCloseTo(80);
+    // As dimensões pedidas pelo Davi (item 3): 4 cm × 2 cm × 2 cm.
+    expect(PONTO_DE_LUZ.baseAlturaMm).toBe(40);
+    expect(PONTO_DE_LUZ.baseLadoMm).toBe(20);
   });
 
   it("apoio coerente com a geometria gerada", () => {
     const p = null as never; // o apoio ignora os params (peça padronizada)
     expect(apoioPontoDeLuz.alturaTopoMm(p)).toBeCloseTo(alturaPontoDeLuzMm());
-    // Assenta-se no ANEL da base ao redor do bulbo…
+    // O bulbo (Ø 40) é mais largo que a coluna (20 × 20): o anel de
+    // pouso da base antiga deixou de existir — além do raio do bulbo,
+    // nada pousa.
     expect(
       apoioPontoDeLuz.zSuperficieTopoMm(p, PONTO_DE_LUZ.bulboRaioMm + 1)
-    ).toBeCloseTo(PONTO_DE_LUZ.baseAlturaMm);
-    // …e sobre o bulbo o pouso é na CÁPSULA (revisão de 06/08: devolver
-    // null deixava um bloco de fundo fechado "pousar" no anel
-    // atravessando o bulbo inteiro): no eixo, o topo do bulbo.
+    ).toBeNull();
+    // Sobre o bulbo o pouso é na CÁPSULA (revisão de 06/08: devolver
+    // null deixava um bloco de fundo fechado atravessá-lo): no eixo, o
+    // topo do bulbo.
     expect(apoioPontoDeLuz.zSuperficieTopoMm(p, 0)).toBeCloseTo(
       alturaPontoDeLuzMm()
     );
-    // Meio caminho da cúpula: base + pescoço + √(r² − d²).
+    // Meio caminho da cúpula: coluna + (ombro + pescoço) + √(r² − d²).
     const r = PONTO_DE_LUZ.bulboRaioMm;
     expect(apoioPontoDeLuz.zSuperficieTopoMm(p, r / 2)).toBeCloseTo(
       PONTO_DE_LUZ.baseAlturaMm +
         (PONTO_DE_LUZ.bulboAlturaMm - r) +
         Math.sqrt(r * r - (r / 2) ** 2)
     );
-    // Fora da base, nada pousa.
-    expect(
-      apoioPontoDeLuz.zSuperficieTopoMm(p, PONTO_DE_LUZ.baseLadoMm / 2 + 1)
-    ).toBeNull();
-    // Degraus declarados para a varredura da tangência (borda do bulbo
-    // e borda da base).
+    // Cúpula: pouso com offset escorrega — apoio superior é coaxial.
+    expect(apoioPontoDeLuz.raioApoioSuperiorMm(p)).toBe(0);
+    // O envelope conta o ombro cônico: no meio dele, raio intermediário.
+    const meioOmbro =
+      PONTO_DE_LUZ.baseAlturaMm + PONTO_DE_LUZ.ombroAlturaMm / 2;
+    expect(apoioPontoDeLuz.raioEnvelopeMm(p, meioOmbro)).toBeCloseTo(
+      PONTO_DE_LUZ.baseLadoMm / 2 + PONTO_DE_LUZ.ombroAlturaMm / 2
+    );
+    // Degrau declarado para a varredura da tangência: a borda do bulbo.
     expect(apoioPontoDeLuz.raiosNotaveisMm?.(p)).toEqual([
       PONTO_DE_LUZ.bulboRaioMm,
-      PONTO_DE_LUZ.baseLadoMm / 2,
     ]);
   });
 

@@ -1,9 +1,16 @@
 /**
- * Montagem v2 · F1 — PONTO DE LUZ padronizado.
+ * Montagem v2 — PONTO DE LUZ padronizado (dimensões do item 3 do plano
+ * de alterações, pedido do Davi de 06/08: altura 4 cm, largura 2 cm,
+ * profundidade 2 cm).
  *
- * A única peça NÃO paramétrica do sistema de blocos: base quadrada
- * 50 × 50 mm + bulbo de 40 mm de altura (cápsula: pescoço cilíndrico
- * Ø 40 × 20 mm + semiesfera r = 20). A base abrigará o soquete.
+ * A única peça NÃO paramétrica do sistema: uma COLUNA quadrada de
+ * 20 × 20 × 40 mm (a base, que abrigará o soquete e — quando o item 3b
+ * do plano destravar — vai penetrar na forma hospedeira) com o bulbo em
+ * cima. Entre a coluna de 20 e o bulbo de Ø 40 existe um OMBRO CÔNICO a
+ * 45°: sem ele, a barriga do bulbo pousaria em balanço de 90° sobre a
+ * coluna fina e pediria suporte na impressão. ⚑ o ombro é decisão de
+ * engenharia proposta (as alternativas eram afinar o bulbo ou aceitar
+ * suporte) — validar com Davi + Caio no impresso.
  *
  * Para a F2/F3: o BULBO é o único emissivo (o material da cena acende
  * ele, como o difusor aceso de hoje); a base é opaca na cor do bloco.
@@ -11,8 +18,8 @@
  * colore cada uma; o STL une as duas (unirMalhas) num sólido só.
  *
  * ⚑ TODO soquete/fixação (fase posterior, decisão elétrica pendente —
- * kernel E27 vs. LED integrado): cavidade do soquete na base, furo de
- * cabo e fixação ao bloco de baixo. A F1 gera o sólido CHEIO.
+ * kernel E27 vs. LED integrado): cavidade do soquete na coluna, furo de
+ * cabo e a penetração do item 3b. Por ora o sólido é CHEIO.
  */
 
 import type { Ponto2D } from "../geometria";
@@ -20,14 +27,19 @@ import { malhaRevolucao, transladarMalha } from "../malha";
 import type { ApoioBloco, MalhaBloco, ParametrosBloco } from "./tipos";
 
 export const PONTO_DE_LUZ = {
-  /** Lado da base quadrada, em mm (decisão dos sócios). */
-  baseLadoMm: 50,
-  /** Altura da base, em mm. ⚑ proposto — precisa caber o soquete. */
-  baseAlturaMm: 12,
-  /** Altura total do bulbo acima da base, em mm (decisão dos sócios). */
+  /** Lado da coluna quadrada, em mm (decisão do Davi, item 3 do plano). */
+  baseLadoMm: 20,
+  /** Altura da coluna, em mm (decisão do Davi, item 3 do plano). */
+  baseAlturaMm: 40,
+  /**
+   * Altura do conjunto luminoso acima da coluna, em mm: ombro cônico
+   * (10) + pescoço (10) + cúpula (20). ⚑ derivado do ombro a 45°.
+   */
   bulboAlturaMm: 40,
-  /** Raio do bulbo (cápsula Ø 40): pescoço 20 mm + semiesfera r = 20. */
+  /** Raio do bulbo, em mm (o Ø 40 dos sócios, preservado). */
   bulboRaioMm: 20,
+  /** Altura do ombro cônico coluna→bulbo, em mm (45° exatos: 10→20). ⚑ */
+  ombroAlturaMm: 10,
 } as const;
 
 /** Altura total do ponto de luz (base + bulbo), em mm. */
@@ -85,13 +97,18 @@ function malhaCaixa(ladoMm: number, alturaMm: number): MalhaBloco {
 export function gerarMalhaPontoDeLuz(segmentos = 48): MalhaPontoDeLuz {
   const base = malhaCaixa(PONTO_DE_LUZ.baseLadoMm, PONTO_DE_LUZ.baseAlturaMm);
 
-  // Bulbo: cápsula de revolução — pescoço cilíndrico (Ø 40 × 20 mm) +
-  // cúpula semiesférica (r = 20) — pelo MESMO caminho de todo o núcleo
-  // (malhaRevolucao fecha fundo e topo no eixo com leques de ápice).
+  // Conjunto luminoso, por revolução (o MESMO caminho de todo o núcleo;
+  // malhaRevolucao fecha fundo e topo no eixo com leques de ápice):
+  // OMBRO cônico a 45° (raio da coluna → raio do bulbo — sem ele a
+  // barriga do bulbo pousaria em balanço de 90° sobre a coluna fina) +
+  // pescoço cilíndrico curto + cúpula semiesférica.
   const r = PONTO_DE_LUZ.bulboRaioMm;
+  const rColuna = PONTO_DE_LUZ.baseLadoMm / 2;
+  const ombro = PONTO_DE_LUZ.ombroAlturaMm;
   const alturaPescocoMm = PONTO_DE_LUZ.bulboAlturaMm - r;
   const perfil: Ponto2D[] = [
-    { x: r, y: 0 },
+    { x: rColuna, y: 0 },
+    { x: r, y: ombro },
     { x: r, y: alturaPescocoMm },
   ];
   const passosCupula = 12;
@@ -115,48 +132,52 @@ export function gerarMalhaPontoDeLuz(segmentos = 48): MalhaPontoDeLuz {
 }
 
 /**
- * Apoio do ponto de luz para a tangência (A1). O anel da base recebe
- * pouso ao redor do bulbo, mas quem chega POR CIMA encontra primeiro a
- * cápsula do bulbo — devolver null para d < raio do bulbo deixava um
- * bloco de fundo fechado "pousar" no anel atravessando o bulbo inteiro
- * (achado da revisão de 06/08; TODO bloco da F1 tem fundo fechado).
- * ⚑ Quando existir a abertura de encaixe (fase posterior), bloco oco
- * poderá envolver o bulbo e pousar no anel — condicionar aqui.
- * Ignora os params (peça padronizada).
+ * Apoio do ponto de luz para a tangência (A1), com a geometria nova:
+ * o BULBO (Ø 40) é mais largo que a coluna (20 × 20) — o anel de pouso
+ * da base antiga deixou de existir. Quem chega por cima encontra a
+ * cúpula do bulbo (devolver null ali deixaria um bloco de fundo fechado
+ * atravessá-lo — a classe de mentira que a revisão de 06/08 pegou);
+ * pousar sobre a cúpula só é estável coaxial, então o raio de apoio
+ * superior é 0, como na esfera. Ignora os params (peça padronizada).
  */
 export const apoioPontoDeLuz: ApoioBloco = {
   alturaTopoMm: () => alturaPontoDeLuzMm(),
-  raioApoioSuperiorMm: () => PONTO_DE_LUZ.baseLadoMm / 2,
+  // Cúpula: qualquer pouso com offset escorrega — só o coaxial fica.
+  raioApoioSuperiorMm: () => 0,
   raioApoioInferiorMm: () => PONTO_DE_LUZ.baseLadoMm / 2,
   raioEnvelopeMm(_p: ParametrosBloco, zMm: number) {
+    const colunaMm = PONTO_DE_LUZ.baseAlturaMm;
+    const r = PONTO_DE_LUZ.bulboRaioMm;
+    const rColuna = PONTO_DE_LUZ.baseLadoMm / 2;
+    const ombroMm = PONTO_DE_LUZ.ombroAlturaMm;
+    const pescocoTopoMm =
+      colunaMm + PONTO_DE_LUZ.bulboAlturaMm - r;
     if (zMm < 0 || zMm > alturaPontoDeLuzMm()) return 0;
-    if (zMm <= PONTO_DE_LUZ.baseAlturaMm) {
-      return (PONTO_DE_LUZ.baseLadoMm / 2) * Math.SQRT2;
-    }
-    return PONTO_DE_LUZ.bulboRaioMm;
+    // Coluna quadrada: circunscrito (convenção das plantas quadradas).
+    if (zMm <= colunaMm) return rColuna * Math.SQRT2;
+    // Ombro cônico 45°: o raio cresce 1:1 com a cota.
+    if (zMm <= colunaMm + ombroMm) return rColuna + (zMm - colunaMm);
+    // Pescoço cilíndrico.
+    if (zMm <= pescocoTopoMm) return r;
+    // Cúpula semiesférica.
+    const acima = zMm - pescocoTopoMm;
+    return Math.sqrt(Math.max(0, r * r - acima * acima));
   },
   zSuperficieTopoMm(_p: ParametrosBloco, dMm: number) {
-    if (dMm > PONTO_DE_LUZ.baseLadoMm / 2) return null;
     const r = PONTO_DE_LUZ.bulboRaioMm;
-    if (dMm < r) {
-      // Cápsula do bulbo: cúpula semiesférica sobre o pescoço.
-      return (
-        PONTO_DE_LUZ.baseAlturaMm +
-        (PONTO_DE_LUZ.bulboAlturaMm - r) +
-        Math.sqrt(Math.max(0, r * r - dMm * dMm))
-      );
-    }
-    // Anel da base ao redor do bulbo.
-    return PONTO_DE_LUZ.baseAlturaMm;
+    // O bulbo é a silhueta de cima inteira: além dele, nada pousa.
+    if (dMm > r) return null;
+    return (
+      PONTO_DE_LUZ.baseAlturaMm +
+      (PONTO_DE_LUZ.bulboAlturaMm - r) +
+      Math.sqrt(Math.max(0, r * r - dMm * dMm))
+    );
   },
   zSuperficieBaseMm(_p: ParametrosBloco, dMm: number) {
     if (dMm > PONTO_DE_LUZ.baseLadoMm / 2) return null;
     return 0;
   },
-  // Degraus da superfície superior: borda do bulbo (cápsula → anel) e
-  // borda da base — a varredura de tangencia.ts amostra os raios exatos.
-  raiosNotaveisMm: () => [
-    PONTO_DE_LUZ.bulboRaioMm,
-    PONTO_DE_LUZ.baseLadoMm / 2,
-  ],
+  // Degrau da superfície superior: a borda do bulbo (cúpula → nada) —
+  // a varredura de tangencia.ts amostra o raio exato.
+  raiosNotaveisMm: () => [PONTO_DE_LUZ.bulboRaioMm],
 };
