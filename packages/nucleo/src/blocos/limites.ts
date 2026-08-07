@@ -23,6 +23,7 @@ import {
   type FormaFuro,
   type FurosBloco,
   type ParametrosBloco,
+  type PosicaoBorda,
   type SentidoBorda,
 } from "./tipos";
 
@@ -159,12 +160,17 @@ export function espessuraParedeMaxMm(p: {
 }
 
 /**
- * Teto do raio do arco da borda, em mm. A borda é limite-como-controle:
- * — a faixa do arco nunca come mais que 1/3 da altura (sobra corpo);
+ * Teto do raio do arco da borda, em mm, numa extremidade. A borda é
+ * limite-como-controle:
+ * — a faixa do arco nunca come mais que 1/3 da altura (as DUAS faixas
+ *   juntas ficam em ≤ 2/3: sobra sempre lateral reta no meio);
  * — para FORA, o alargamento respeita o prato (F1) e não passa de 1/4 da
  *   largura (aba de abajur, não guarda-sol);
  * — para DENTRO, o encolhimento nunca fecha a boca nem engole a parede.
  * Devolve 0 quando nem o arco mínimo cabe (o grampeador zera a borda).
+ * O ângulo θ vem de anguloBordaRad e INVERTE entre topo e fundo — o teto
+ * de uma direção parece "generoso" e o da outra apertado, e está certo:
+ * é a física da impressão, não gosto.
  */
 export function bordaTamanhoMaxMm(p: {
   tamanhoMm: number;
@@ -173,10 +179,11 @@ export function bordaTamanhoMaxMm(p: {
   oca: boolean;
   espessuraParedeMm: number;
   sentido: SentidoBorda;
+  posicao: PosicaoBorda;
 }): number {
   const H = alturaBrutaMm(p);
   const W = larguraBrutaMm(p);
-  const theta = anguloBordaRad(p.sentido, p.oca);
+  const theta = anguloBordaRad(p.posicao, p.sentido, p.oca);
   const sen = Math.sin(theta);
   const versseno = 1 - Math.cos(theta); // offset = raio × versseno
   // Altura: a faixa do arco (raio × sen θ) ≤ 1/3 da altura.
@@ -233,8 +240,10 @@ export function furoMaximoMm(p: ParametrosBloco): number {
   const W = larguraBrutaMm(p);
   const H = alturaBrutaMm(p);
   const wInterna = Math.max(0, W - 2 * p.espessuraParedeMm);
-  // A faixa da borda encurvada não hospeda furo: ela é o arco do topo.
-  const alturaBorda = arcoBorda(p, H).alturaMm;
+  // As faixas de borda encurvada não hospedam furo: são os arcos das
+  // extremidades (topo e fundo, cada um com o próprio alcance).
+  const alturaBorda =
+    arcoBorda(p, H, "topo").alturaMm + arcoBorda(p, H, "fundo").alturaMm;
   /**
    * Banda hospedeira REAL de cubo e cilindro (as duas cascas de parede
    * reta): vai do piso da cavidade ao pé da borda, menos a moldura do
@@ -244,8 +253,13 @@ export function furoMaximoMm(p: ParametrosBloco): number {
    * revisão de 06/08 pegou: o clamp promete, a malha entrega menos).
    */
   const bandaDeParedeReta = () => {
-    const zPiso = Math.min(p.espessuraParedeMm, H / 3);
-    const zTeto = H - Math.max(zPiso, alturaBorda);
+    const faixaTopo = arcoBorda(p, H, "topo").alturaMm;
+    const faixaFundo = arcoBorda(p, H, "fundo").alturaMm;
+    const zPiso = Math.max(
+      Math.min(p.espessuraParedeMm, H / 3),
+      faixaFundo
+    );
+    const zTeto = H - Math.max(Math.min(p.espessuraParedeMm, H / 3), faixaTopo);
     return zTeto - zPiso - 2 * (MOLDURA_FURO_MM + TIRA_BANDA_MM);
   };
   let porBanda: number;
@@ -283,7 +297,9 @@ export const BLOCO_PADRAO: ParametrosBloco = {
   oca: false,
   espessuraParedeMm: 2,
   furos: null,
-  borda: null,
+  bordaTopo: null,
+  bordaFundo: null,
+  invertido: false,
   fatia: null,
   corIdx: 0,
 };
@@ -346,13 +362,16 @@ export function grampearBloco(v: unknown): ParametrosBloco {
     espessuraParedeMaxMm(base)
   );
 
-  // BORDA antes dos furos: a faixa do arco não hospeda furo, então o teto
-  // de furoMaximoMm depende dela (e ela não depende dos furos — só de oca,
-  // que já está decidido acima). A esfera nunca tem borda: é curva inteira.
-  let borda: BordaBloco | null = null;
-  const bordaBruta =
-    bruto.borda && typeof bruto.borda === "object" ? bruto.borda : null;
-  if (bordaBruta && forma !== "esfera") {
+  // BORDAS antes dos furos: as faixas dos arcos não hospedam furo, então
+  // o teto de furoMaximoMm depende delas (e elas não dependem dos furos —
+  // só de oca, já decidido acima). A esfera nunca tem borda: curva inteira.
+  const grampearBorda = (
+    posicao: PosicaoBorda,
+    crua: unknown
+  ): BordaBloco | null => {
+    const bordaBruta =
+      crua && typeof crua === "object" ? (crua as Partial<BordaBloco>) : null;
+    if (!bordaBruta || forma === "esfera") return null;
     const sentido: SentidoBorda = SENTIDOS_BORDA.includes(
       bordaBruta.sentido as SentidoBorda
     )
@@ -363,16 +382,19 @@ export function grampearBloco(v: unknown): ParametrosBloco {
       oca,
       espessuraParedeMm,
       sentido,
+      posicao,
     });
     const pedido = num(bordaBruta.tamanhoMm, 0);
     // teto 0 = nem o arco mínimo cabe nesta peça → borda some (nunca erro).
-    if (teto > 0 && pedido > 0) {
-      borda = {
-        sentido,
-        tamanhoMm: clamp(pedido, L.bordaTamanhoMm.min, teto),
-      };
-    }
-  }
+    if (teto <= 0 || pedido <= 0) return null;
+    return { sentido, tamanhoMm: clamp(pedido, L.bordaTamanhoMm.min, teto) };
+  };
+  const bordaTopo = grampearBorda("topo", bruto.bordaTopo);
+  const bordaFundo = grampearBorda("fundo", bruto.bordaFundo);
+
+  // Espelhar (item 6 do plano): booleano coagido — qualquer lixo vira
+  // false; a inversão em si é pós-processo da malha/apoio (espelhar.ts).
+  const invertido = bruto.invertido === true;
 
   let furos: FurosBloco | null = null;
   if (temFuros) {
@@ -394,7 +416,8 @@ export function grampearBloco(v: unknown): ParametrosBloco {
         ...base,
         oca: true,
         espessuraParedeMm,
-        borda,
+        bordaTopo,
+        bordaFundo,
         furos: { forma: formaFuro, quantidade: q, tamanhoMm: 0 },
       }) >= L.furoTamanhoMm.min;
     while (quantidade > 0 && !cabe(quantidade)) quantidade--;
@@ -405,7 +428,8 @@ export function grampearBloco(v: unknown): ParametrosBloco {
         ...base,
         oca: true,
         espessuraParedeMm,
-        borda,
+        bordaTopo,
+        bordaFundo,
         furos: { forma: formaFuro, quantidade, tamanhoMm: 0 },
       });
       furos = {
@@ -457,7 +481,9 @@ export function grampearBloco(v: unknown): ParametrosBloco {
     oca: furos ? true : oca,
     espessuraParedeMm,
     furos,
-    borda,
+    bordaTopo,
+    bordaFundo,
+    invertido,
     fatia,
     corIdx,
   };

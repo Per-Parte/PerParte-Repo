@@ -297,9 +297,9 @@ describe("fatiar — a malha de entrada não importa", () => {
             forma,
             oca,
             espessuraParedeMm: 3,
-            borda: { sentido, tamanhoMm: 999 },
+            bordaTopo: { sentido, tamanhoMm: 999 },
           });
-          expect(params.borda, `${forma}/${sentido}`).not.toBeNull();
+          expect(params.bordaTopo, `${forma}/${sentido}`).not.toBeNull();
           const inteira = PRIMITIVOS_BLOCO[forma].gerarMalha(params);
           for (const eixo of EIXOS_FATIA) {
             for (const posicaoMm of posicoesDaFaixa(params, eixo)) {

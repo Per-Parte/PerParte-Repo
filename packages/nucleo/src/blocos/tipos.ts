@@ -41,7 +41,7 @@ export interface FurosBloco {
   tamanhoMm: number;
 }
 
-/** Para onde a borda do topo se encurva. */
+/** Para onde a borda se encurva. */
 export type SentidoBorda = "dentro" | "fora";
 
 export const SENTIDOS_BORDA: readonly SentidoBorda[] = [
@@ -49,14 +49,24 @@ export const SENTIDOS_BORDA: readonly SentidoBorda[] = [
   "dentro",
 ] as const;
 
+/** Em qual extremidade da peça a borda vive. */
+export type PosicaoBorda = "topo" | "fundo";
+
+export const POSICOES_BORDA: readonly PosicaoBorda[] = [
+  "topo",
+  "fundo",
+] as const;
+
 /**
- * Borda encurvada no TOPO do bloco (pedido do Davi, 06/08): a faixa de
- * cima da silhueta vira um arco que abre para fora (aba de abajur) ou
- * fecha para dentro (lábio). Vale para cubo, cilindro e pirâmide — a
+ * Borda encurvada numa extremidade do bloco (pedidos do Davi, 06/08 e
+ * 07/08 — itens do plano de alterações): a faixa da silhueta vira um
+ * arco que abre para fora (aba de abajur no topo, pé de cálice no fundo)
+ * ou fecha para dentro (lábio). Vale para cubo, cilindro e pirâmide — a
  * esfera é curva inteira e não tem borda reta para encurvar (o
- * grampeador zera `borda` nela). Quando o bloco é OCO a parede inteira
- * acompanha o arco: a espessura fica constante e o topo vira um anel.
- * A matemática (e o ângulo que F4 permite) mora em blocos/borda.ts.
+ * grampeador zera as duas nela). Quando o bloco é OCO a parede inteira
+ * acompanha o arco: a espessura fica constante e a extremidade vira um
+ * anel. A matemática (e o ângulo que F4 permite, que INVERTE entre topo
+ * e fundo) mora em blocos/borda.ts.
  */
 export interface BordaBloco {
   sentido: SentidoBorda;
@@ -115,8 +125,16 @@ export interface ParametrosBloco {
    * ilumina e pediria túneis compridos — não existe no catálogo).
    */
   furos: FurosBloco | null;
-  /** Borda encurvada no topo (null = borda reta). Nunca na esfera. */
-  borda: BordaBloco | null;
+  /** Borda encurvada no topo (null = reta). Nunca na esfera. */
+  bordaTopo: BordaBloco | null;
+  /** Borda encurvada no fundo (null = reta). Nunca na esfera. */
+  bordaFundo: BordaBloco | null;
+  /**
+   * Peça de ponta-cabeça (ferramenta Espelhar — item 6 do plano): o
+   * espelhamento é aplicado SOBRE a peça pronta (bordas e furos em
+   * coordenadas locais normais; a fatia corta a peça JÁ invertida).
+   */
+  invertido: boolean;
   /** Corte plano da ferramenta Fatiar (null = bloco inteiro). */
   fatia: FatiaBloco | null;
   /** Índice na PALETA do catálogo. */

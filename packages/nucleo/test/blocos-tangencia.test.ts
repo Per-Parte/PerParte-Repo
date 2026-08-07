@@ -196,19 +196,22 @@ describe("cotaAssentamentoMm (varredura radial)", () => {
     );
   });
 
-  it("ponto de luz real: anel da base segue recebendo pouso fora do bulbo", () => {
-    // Cubo pequeno afastado o bastante para o footprint cair só no anel
-    // (d entre o raio do bulbo e a borda da base): assenta na base.
+  it("ponto de luz real: fora do bulbo não há pouso (a coluna é mais fina)", () => {
+    // Na geometria nova (coluna 20 × 20 sob bulbo Ø 40, item 3 do plano)
+    // o anel de pouso da base antiga deixou de existir: um cubo afastado
+    // o bastante para o footprint cair além do bulbo não encontra
+    // superfície nenhuma — não assenta no ponto de luz (cai para a mesa
+    // ou outro bloco; a chamadora trata o null).
     const apoioComPonto: ApoioDe = (forma) =>
       forma === "cilindro" ? apoioPontoDeLuz : apoioPlato;
     const cota = cotaAssentamentoMm(
       params("cubo", 40),
       params("cilindro", 50),
-      40,
+      45,
       0,
       apoioComPonto
     );
-    expect(cota).toBeCloseTo(PONTO_DE_LUZ.baseAlturaMm);
+    expect(cota).toBeNull();
   });
 });
 

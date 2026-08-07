@@ -23,26 +23,41 @@
  */
 
 import { REGRAS } from "../regras";
-import type { ParametrosBloco, SentidoBorda } from "./tipos";
+import type { ParametrosBloco, PosicaoBorda, SentidoBorda } from "./tipos";
 
 /**
  * Ângulo de varredura do arco da borda, em rad — o quanto a superfície
- * chega a se afastar da vertical no topo. Derivado de F4 (importado, não
- * copiado); 90° só no caso sem balanço (para dentro e sólido).
+ * chega a se afastar da vertical na extremidade. Derivado de F4
+ * (importado, não copiado). A regra INVERTE entre topo e fundo, porque a
+ * impressão só conhece uma direção (de baixo para cima):
+ * — OCA sempre paga F4: as duas paredes deslocam juntas, e uma delas
+ *   sempre fica pairando (sobre o vazio no topo, sobre a cavidade no
+ *   fundo);
+ * — sólida é LIVRE (90°) quando a peça CONVERGE subindo (topo pra
+ *   dentro = cúpula; fundo pra fora = pé de cálice: cada camada assenta
+ *   inteira na de baixo) e paga F4 quando DIVERGE subindo (topo pra
+ *   fora = aba; fundo pra dentro = barriga em balanço).
  */
-export function anguloBordaRad(sentido: SentidoBorda, oca: boolean): number {
-  if (sentido === "fora" || oca) {
+export function anguloBordaRad(
+  posicao: PosicaoBorda,
+  sentido: SentidoBorda,
+  oca: boolean
+): number {
+  const convergeSubindo =
+    (posicao === "topo" && sentido === "dentro") ||
+    (posicao === "fundo" && sentido === "fora");
+  if (oca || !convergeSubindo) {
     return (REGRAS.F.balancoMaximoGraus * Math.PI) / 180;
   }
   return Math.PI / 2;
 }
 
 export interface ArcoBorda {
-  /** Altura da faixa que o arco ocupa, medida do topo para baixo (mm). */
+  /** Altura da faixa que o arco ocupa, medida da extremidade (mm). */
   alturaMm: number;
-  /** Offset radial NO TOPO, assinado (+ para fora, − para dentro), em mm. */
+  /** Offset radial NA EXTREMIDADE, assinado (+ fora, − dentro), em mm. */
   offsetTopoMm: number;
-  /** Offset radial assinado numa cota z do bloco (0 abaixo da faixa). */
+  /** Offset radial assinado numa cota z do bloco (0 fora da faixa). */
   offsetEmMm(zMm: number): number;
   /**
    * Inverso: a cota z da superfície da borda que tem o offset dado
@@ -61,35 +76,43 @@ const SEM_BORDA: ArcoBorda = {
 };
 
 /**
- * O arco da borda de um bloco. Geometria: círculo de raio R tangente à
- * lateral vertical no pé da faixa, varrido até o ângulo θ. Numa cota z
- * da faixa, o ângulo φ sai de `R·sen φ = z − zInicial`, e o offset é
- * `R·(1 − cos φ)` — logo `dr/dz = tan φ ≤ tan θ`: o balanço da borda é
+ * O arco da borda de um bloco, numa das extremidades. Geometria: círculo
+ * de raio R tangente à lateral vertical onde a faixa começa, varrido até
+ * o ângulo θ. Numa cota da faixa a uma distância h da extremidade
+ * oposta ao início, o ângulo φ sai de `R·sen φ = h`, e o offset é
+ * `R·(1 − cos φ)` — logo `dr/dh = tan φ ≤ tan θ`: o balanço da borda é
  * o ângulo do arco, por construção (é o que torna o teto F4 exato).
+ * No FUNDO o arco é o espelho do topo: a faixa vive em z ∈ [0, altura
+ * da faixa] e o offset máximo fica em z = 0.
  */
 export function arcoBorda(
   p: ParametrosBloco,
-  alturaTotalMm: number
+  alturaTotalMm: number,
+  posicao: PosicaoBorda = "topo"
 ): ArcoBorda {
-  const borda = p.borda;
+  const borda = posicao === "topo" ? p.bordaTopo : p.bordaFundo;
   if (!borda || borda.tamanhoMm <= 0 || alturaTotalMm <= 0) return SEM_BORDA;
 
   const raio = borda.tamanhoMm;
-  const theta = anguloBordaRad(borda.sentido, p.oca);
+  const theta = anguloBordaRad(posicao, borda.sentido, p.oca);
   const sinal = borda.sentido === "fora" ? 1 : -1;
   const senTheta = Math.sin(theta);
   // Defensivo: a faixa nunca engole o bloco inteiro (os clamps de
-  // limites.ts já a mantêm em ≤ 1/3 da altura).
+  // limites.ts já a mantêm em ≤ 1/3 da altura, e as DUAS faixas juntas
+  // em ≤ 2/3 — sobra sempre um terço de lateral reta no meio).
   const alturaMm = Math.min(raio * senTheta, alturaTotalMm);
-  const zInicial = alturaTotalMm - alturaMm;
+  // Distância da cota z à extremidade onde o arco NASCE (o pé da faixa).
+  const dentroDaFaixaMm = (zMm: number) =>
+    posicao === "topo" ? zMm - (alturaTotalMm - alturaMm) : alturaMm - zMm;
   const offsetTopoMm = sinal * raio * (1 - Math.cos(theta));
 
   return {
     alturaMm,
     offsetTopoMm,
     offsetEmMm(zMm) {
-      if (alturaMm <= 0 || zMm <= zInicial) return 0;
-      const u = Math.min(1, (zMm - zInicial) / alturaMm);
+      const h = dentroDaFaixaMm(zMm);
+      if (alturaMm <= 0 || h <= 0) return 0;
+      const u = Math.min(1, h / alturaMm);
       const phi = Math.asin(Math.min(1, u * senTheta));
       return sinal * raio * (1 - Math.cos(phi));
     },
@@ -101,7 +124,8 @@ export function arcoBorda(
       }
       const cosPhi = Math.min(1, Math.max(-1, 1 - magnitude / raio));
       const senPhi = Math.sqrt(Math.max(0, 1 - cosPhi * cosPhi));
-      return zInicial + (senPhi / senTheta) * alturaMm;
+      const h = (senPhi / senTheta) * alturaMm;
+      return posicao === "topo" ? alturaTotalMm - alturaMm + h : alturaMm - h;
     },
   };
 }
