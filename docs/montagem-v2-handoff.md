@@ -8,6 +8,16 @@
 
 Os próximos pedidos do Davi e do Caio entram em **"Configurador — plano de alterações (vivo)"** (cofre Obsidian), com quadro de status, decisões e as perguntas que travam cada item. **Leia esse documento antes de mexer no configurador** — ele diz o que fazer, o que já foi feito e o que NÃO decidir sozinho. Este handoff continua sendo o registro técnico versionado.
 
+## Rodada de 07/08 — itens 2, 3a, 4, 5 e 6 do plano de alterações
+
+O plano vivo do cofre ("Configurador — plano de alterações (vivo)") guiou esta rodada; o item 3b (ponto de luz que penetra) segue TRAVADO nas 5 perguntas de produção de lá.
+
+- **Borda em PAR** (`bordaTopo` + `bordaFundo` — o campo `borda` foi renomeado enquanto a persistência não existe): a regra F4 INVERTE entre as extremidades — oca sempre paga; sólida é livre a 90° quando converge subindo (topo pra dentro; fundo pra fora = pé de cálice) e paga F4 quando diverge. `anguloBordaRad(posicao, sentido, oca)` é a fonte única.
+- **Espelhar** (`espelhar.ts`): inversão vertical como pós-processo (primitivo → espelhar → fatiar, composto no barrel); apoio espelhado troca topo↔fundo. A pirâmide de ponta-cabeça expôs um caso da base estável: quando o alvo cheio não cabe no orçamento de altura, a regra agora corta o MELHOR pé que o orçamento permite (≥ mínimo absoluto).
+- **Ponto de luz 2×2×4 cm** com ombro cônico a 45° entre coluna e bulbo ⚑ (proposta de engenharia; alternativas eram afinar o bulbo ou aceitar suporte). O anel de pouso da base antiga deixou de existir (bulbo mais largo que a coluna) — apoio atualizado.
+- **Estúdio fotográfico** no `/criar`: ciclorama + pool de luz + sombras VSM macias + reflexo + 5 fundos ⚑. Armadilhas registradas: a fronteira da shadow-camera desenhava uma linha diagonal no chão (frustum alargado); a costura chão×pano some quando a névoa termina no MESMO valor da borda do gradiente; o vazio além do pano precisa do background na cor da névoa.
+- **Câmera sem controle**: enquadramento automático amortecido (decisão registrada no plano: enquadramento, não distância cravada).
+
 ## Base estável no chão (item 1 do plano, 06/08)
 
 `src/blocos/base-estavel.ts` — "a primeira forma tem de ter área de contato que a sustente". Implementado como **regra geral, não como caso especial da esfera**: a peça mede a própria área de contato (`raioPlatoMm`, o raio inscrito da seção, que já existia por causa da Fatiar) e, se ela não sustenta, a regra devolve a fatia que dá o pé — mecanismo nenhum foi inventado. Alvo: raio ≥ 25% da largura ⚑ (numa esfera de 100 mm, pé chato de Ø 50 — a primeira camada da impressão adere de verdade). Cubo, cilindro e pirâmide em pé passam intactos porque a conta reconhece que já têm base cheia.
