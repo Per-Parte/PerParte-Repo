@@ -21,6 +21,7 @@ import {
   primitivoCilindro,
   type MalhaBloco,
   type ParametrosBloco,
+  type PosicaoBorda,
   type SentidoBorda,
 } from "../src";
 import { verificarEstanque, volumeAssinadoMm3 } from "./apoio";
@@ -248,12 +249,16 @@ function cilindroComBorda(
     tamanhoMm: 100,
     espessuraParedeMm: 2,
     ...extra,
-    borda: { sentido, tamanhoMm: tamanhoBordaMm },
+    bordaTopo: { sentido, tamanhoMm: tamanhoBordaMm },
   });
 }
 
 /** Teto do slider da borda para estes params já grampeados. */
-function tetoBordaMm(p: ParametrosBloco, sentido: SentidoBorda): number {
+function tetoBordaMm(
+  p: ParametrosBloco,
+  sentido: SentidoBorda,
+  posicao: PosicaoBorda = "topo"
+): number {
   return bordaTamanhoMaxMm({
     tamanhoMm: p.tamanhoMm,
     escalaAltura: p.escalaAltura,
@@ -261,6 +266,7 @@ function tetoBordaMm(p: ParametrosBloco, sentido: SentidoBorda): number {
     oca: p.oca,
     espessuraParedeMm: p.espessuraParedeMm,
     sentido,
+    posicao,
   });
 }
 
@@ -346,16 +352,16 @@ describe("cilindro — borda encurvada", () => {
               const nome = `${sentido}/${rotulo}/${tamanhoMm}mm/×${escala}/borda ${pedido}`;
               if (teto > 0) {
                 // Clamp geométrico: o slider encosta no teto, nunca erra.
-                expect(params.borda, nome).not.toBeNull();
-                expect(params.borda!.tamanhoMm, nome).toBeLessThanOrEqual(
+                expect(params.bordaTopo, nome).not.toBeNull();
+                expect(params.bordaTopo!.tamanhoMm, nome).toBeLessThanOrEqual(
                   teto + 1e-9
                 );
                 if (pedido === 999) {
-                  expect(params.borda!.tamanhoMm, nome).toBeCloseTo(teto, 6);
+                  expect(params.bordaTopo!.tamanhoMm, nome).toBeCloseTo(teto, 6);
                 }
               } else {
                 // Nem o arco mínimo cabe: a borda simplesmente some.
-                expect(params.borda, nome).toBeNull();
+                expect(params.bordaTopo, nome).toBeNull();
               }
               esperarEstanque(gerarMalhaCilindro(params), nome);
             }
@@ -566,7 +572,7 @@ describe("cilindro — borda encurvada", () => {
           espessuraParedeMm: 2,
           oca,
         }),
-        borda: { sentido: "dentro", tamanhoMm: 400 },
+        bordaTopo: { sentido: "dentro", tamanhoMm: 400 },
       };
       const malha = gerarMalhaCilindro(params);
       const nome = `absurdo/${oca ? "oca" : "sólida"}`;
@@ -598,5 +604,412 @@ describe("cilindro — borda encurvada", () => {
     expect(volumeFora).toBeGreaterThan(volumeSem);
     expect(volumeDentro).toBeLessThan(volumeSem);
     expect(volumeDentro).toBeGreaterThan(0);
+  });
+});
+
+/* ---------------------------------------------------------------------
+ * BORDA DE FUNDO (item 2 do plano, 07/08) — a mesma borda encurvada, na
+ * OUTRA extremidade e independente da do topo: para FORA abre como pé de
+ * cálice, para DENTRO recolhe como barriga. O que estes testes protegem:
+ * estanqueidade nos dois sentidos × sólida/oca/furada × piso/meio/teto do
+ * slider (posicao "fundo"), coexistência com a borda do TOPO, o F4 medido
+ * NA MALHA (a regra INVERTE em relação ao topo — ver blocos/borda.ts), a
+ * caixa envolvente ("fora" alarga a PLANTA DA BASE) e o apoio dizendo a
+ * verdade sobre a malha real (A1): superfície inferior, raio da base e
+ * raioPlatoMm em z = 0 — é ele que a regra de base estável lê.
+ * ------------------------------------------------------------------- */
+
+/** Miolo comum: params grampeados de um cilindro com borda de FUNDO. */
+function cilindroComBordaFundo(
+  sentido: SentidoBorda,
+  tamanhoBordaMm: number,
+  extra: Record<string, unknown> = {}
+): ParametrosBloco {
+  return grampearBloco({
+    forma: "cilindro",
+    tamanhoMm: 100,
+    espessuraParedeMm: 2,
+    ...extra,
+    bordaFundo: { sentido, tamanhoMm: tamanhoBordaMm },
+  });
+}
+
+/** Maior |Δr|/Δz entre anéis consecutivos DENTRO da faixa do FUNDO. */
+function inclinacaoMaximaNoFundo(
+  malha: MalhaBloco,
+  zTetoFaixaMm: number
+): number {
+  const aneis = aneisDaMalha(malha).filter((a) => a.z <= zTetoFaixaMm + 1e-6);
+  let pior = 0;
+  for (let i = 1; i < aneis.length; i++) {
+    const dz = aneis[i].z - aneis[i - 1].z;
+    if (dz <= 1e-9) continue;
+    pior = Math.max(pior, Math.abs(aneis[i].raio - aneis[i - 1].raio) / dz);
+  }
+  return pior;
+}
+
+describe("cilindro — borda de fundo", () => {
+  it("estanque nos dois sentidos × sólida/oca/furada × piso/meio/teto do slider", () => {
+    const variantes = [
+      { rotulo: "sólida", extra: { oca: false, furos: null } },
+      { rotulo: "oca", extra: { oca: true, furos: null } },
+      {
+        rotulo: "oca com furos",
+        extra: {
+          furos: { forma: "circulo" as const, quantidade: 6, tamanhoMm: 10 },
+        },
+      },
+    ];
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const { rotulo, extra } of variantes) {
+        const semBorda = grampearBloco({
+          forma: "cilindro",
+          tamanhoMm: 100,
+          espessuraParedeMm: 2,
+          ...extra,
+        });
+        const teto = tetoBordaMm(semBorda, sentido, "fundo");
+        expect(teto, `${sentido}/${rotulo}: teto existe`).toBeGreaterThan(0);
+        const pedidos = [
+          LIMITES_BLOCO.bordaTamanhoMm.min,
+          (LIMITES_BLOCO.bordaTamanhoMm.min + teto) / 2,
+          999,
+        ];
+        for (const pedido of pedidos) {
+          const params = cilindroComBordaFundo(sentido, pedido, extra);
+          const nome = `fundo ${sentido}/${rotulo}/borda ${pedido}`;
+          // Clamp geométrico: o slider encosta no teto, nunca erra.
+          expect(params.bordaFundo, nome).not.toBeNull();
+          expect(params.bordaFundo!.tamanhoMm, nome).toBeLessThanOrEqual(
+            teto + 1e-9
+          );
+          if (pedido === 999) {
+            expect(params.bordaFundo!.tamanhoMm, nome).toBeCloseTo(teto, 6);
+          }
+          esperarEstanque(gerarMalhaCilindro(params), nome);
+        }
+      }
+    }
+  });
+
+  it("coexiste com a borda do TOPO: as quatro combinações de sentidos, sólida/oca/furada", () => {
+    for (const sentidoTopo of ["fora", "dentro"] as const) {
+      for (const sentidoFundo of ["fora", "dentro"] as const) {
+        for (const extra of [
+          { oca: false, furos: null },
+          { oca: true, furos: null },
+          {
+            furos: {
+              forma: "quadrado" as const,
+              quantidade: 4,
+              tamanhoMm: 10,
+            },
+          },
+        ]) {
+          const params = grampearBloco({
+            forma: "cilindro",
+            tamanhoMm: 100,
+            espessuraParedeMm: 2,
+            ...extra,
+            bordaTopo: { sentido: sentidoTopo, tamanhoMm: 999 },
+            bordaFundo: { sentido: sentidoFundo, tamanhoMm: 999 },
+          });
+          const nome = `topo ${sentidoTopo} + fundo ${sentidoFundo}${
+            params.furos ? "/furada" : params.oca ? "/oca" : "/sólida"
+          }`;
+          expect(params.bordaTopo, nome).not.toBeNull();
+          expect(params.bordaFundo, nome).not.toBeNull();
+          const altura = params.tamanhoMm * params.escalaAltura;
+          const arcoTopo = arcoBorda(params, altura, "topo");
+          const arcoFundo = arcoBorda(params, altura, "fundo");
+          // As duas faixas juntas ≤ 2/3 da altura: sobra lateral reta.
+          expect(
+            arcoTopo.alturaMm + arcoFundo.alturaMm,
+            `${nome}: sobra lateral reta`
+          ).toBeLessThanOrEqual((2 * altura) / 3 + 1e-6);
+          const malha = gerarMalhaCilindro(params);
+          esperarEstanque(malha, nome);
+          // Com furos: a banda sobreviveu ENTRE as duas faixas.
+          if (extra.furos) expect(params.furos, nome).not.toBeNull();
+          // Extremidades reais: topo no raio do topo, base no raio da base.
+          const aneis = aneisDaMalha(malha);
+          expect(
+            apoioCilindro.raioApoioInferiorMm(params),
+            `${nome}: raio da base`
+          ).toBeCloseTo(aneis[0].raio, 2);
+          expect(
+            apoioCilindro.raioApoioSuperiorMm(params),
+            `${nome}: raio do topo`
+          ).toBeCloseTo(aneis[aneis.length - 1].raio, 2);
+          expect(apoioCilindro.alturaTopoMm(params), nome).toBeCloseTo(
+            altura,
+            3
+          );
+        }
+      }
+    }
+  });
+
+  it("F4 medido na malha na faixa do fundo — a regra INVERTE em relação ao topo", () => {
+    // No fundo quem CONVERGE SUBINDO é o sentido FORA (pé de cálice: cada
+    // camada assenta inteira na de baixo) — a SÓLIDA pra fora é LIVRE.
+    // Pra DENTRO a peça DIVERGE subindo (barriga em balanço) e paga F4;
+    // a OCA paga sempre (uma das paredes paira sobre a cavidade).
+    const pagamF4 = [
+      { rotulo: "dentro sólida", sentido: "dentro" as const, oca: false },
+      { rotulo: "dentro oca", sentido: "dentro" as const, oca: true },
+      { rotulo: "fora oca", sentido: "fora" as const, oca: true },
+    ];
+    for (const { rotulo, sentido, oca } of pagamF4) {
+      const params = cilindroComBordaFundo(sentido, 999, { oca });
+      const altura = params.tamanhoMm * params.escalaAltura;
+      const arco = arcoBorda(params, altura, "fundo");
+      const inclinacao = inclinacaoMaximaNoFundo(
+        gerarMalhaCilindro(params),
+        arco.alturaMm
+      );
+      expect(inclinacao, rotulo).toBeLessThanOrEqual(TAN_F4 + 1e-6);
+      expect(inclinacao, `${rotulo}: a faixa realmente encurva`).toBeGreaterThan(
+        0.05
+      );
+    }
+
+    // FORA + SÓLIDA é a exceção documentada em blocos/borda.ts: é uma
+    // cúpula convergente DE CABEÇA PARA BAIXO — convergente na direção da
+    // impressão (cada camada assenta inteira na de baixo), então o arco
+    // fecha até 90° e a inclinação medida passa de F4 de propósito.
+    const foraSolida = cilindroComBordaFundo("fora", 999, { oca: false });
+    const alturaSolida = foraSolida.tamanhoMm * foraSolida.escalaAltura;
+    const arcoSolido = arcoBorda(foraSolida, alturaSolida, "fundo");
+    const inclinacaoSolida = inclinacaoMaximaNoFundo(
+      gerarMalhaCilindro(foraSolida),
+      arcoSolido.alturaMm
+    );
+    expect(inclinacaoSolida).toBeGreaterThan(TAN_F4);
+  });
+
+  it("fora ALARGA a planta na base; dentro mantém — altura e mesa intactas", () => {
+    for (const oca of [false, true]) {
+      const semBorda = grampearBloco({
+        forma: "cilindro",
+        tamanhoMm: 100,
+        espessuraParedeMm: 2,
+        oca,
+      });
+      const largura = semBorda.tamanhoMm * semBorda.escalaLargura;
+      const altura = semBorda.tamanhoMm * semBorda.escalaAltura;
+
+      const fora = cilindroComBordaFundo("fora", 999, { oca });
+      const arcoFora = arcoBorda(fora, altura, "fundo");
+      const caixaFora = caixaEnvolvente(gerarMalhaCilindro(fora));
+      // "Fora" ALARGA a planta exatamente o offset da BASE (pé de cálice).
+      expect(arcoFora.offsetTopoMm).toBeGreaterThan(0);
+      expect(caixaFora.maxX - caixaFora.minX, "fora alarga X").toBeCloseTo(
+        largura + 2 * arcoFora.offsetTopoMm,
+        2
+      );
+      expect(caixaFora.maxY - caixaFora.minY, "fora alarga Y").toBeCloseTo(
+        largura + 2 * arcoFora.offsetTopoMm,
+        2
+      );
+      expect(caixaFora.maxZ, "fora não mexe na altura").toBeCloseTo(altura, 3);
+      expect(caixaFora.minZ, "fora: nada abaixo da mesa").toBeCloseTo(0, 5);
+
+      const dentro = cilindroComBordaFundo("dentro", 999, { oca });
+      const caixaDentro = caixaEnvolvente(gerarMalhaCilindro(dentro));
+      // "Dentro" só recolhe a base: a caixa continua a do CORPO.
+      expect(caixaDentro.maxX - caixaDentro.minX, "dentro mantém X").toBeCloseTo(
+        largura,
+        2
+      );
+      expect(caixaDentro.maxY - caixaDentro.minY, "dentro mantém Y").toBeCloseTo(
+        largura,
+        2
+      );
+      expect(caixaDentro.maxZ, "dentro não mexe na altura").toBeCloseTo(
+        altura,
+        3
+      );
+      expect(caixaDentro.minZ, "dentro: nada abaixo da mesa").toBeCloseTo(0, 5);
+    }
+  });
+
+  it("o apoio conta a verdade sobre a malha com borda de fundo (A1)", () => {
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const oca of [false, true]) {
+        const params = cilindroComBordaFundo(sentido, 999, { oca });
+        const nome = `fundo ${sentido}/${oca ? "oca" : "sólida"}`;
+        const malha = gerarMalhaCilindro(params);
+        const caixa = caixaEnvolvente(malha);
+        const aneis = aneisDaMalha(malha);
+        const altura = params.tamanhoMm * params.escalaAltura;
+        const raioCorpo = (params.tamanhoMm * params.escalaLargura) / 2;
+        const arco = arcoBorda(params, altura, "fundo");
+
+        // A borda nunca muda a altura nem tira a peça da mesa.
+        expect(apoioCilindro.alturaTopoMm(params), nome).toBeCloseTo(
+          caixa.maxZ,
+          3
+        );
+        expect(caixa.minZ, nome).toBeCloseTo(0, 5);
+
+        // Base REAL: o anel de z = 0 é o raio deslocado — e é o que
+        // raioApoioInferiorMm e raioPlatoMm(p, 0) respondem (é o
+        // raioPlatoMm que a regra de base estável lê para reagir sozinha
+        // ao fundo recolhido).
+        const anelBase = aneis[0];
+        expect(anelBase.z, nome).toBeCloseTo(0, 5);
+        expect(
+          apoioCilindro.raioApoioInferiorMm(params),
+          `${nome}: raio da base`
+        ).toBeCloseTo(anelBase.raio, 2);
+        expect(
+          apoioCilindro.raioPlatoMm!(params, 0),
+          `${nome}: platô em z = 0`
+        ).toBeCloseTo(anelBase.raio, 2);
+        if (sentido === "fora") {
+          expect(anelBase.raio, nome).toBeGreaterThan(raioCorpo);
+        } else {
+          expect(anelBase.raio, nome).toBeLessThan(raioCorpo);
+        }
+
+        // Na faixa: envelope e platô batem com os anéis da malha.
+        const naFaixa = aneis.filter(
+          (a) => a.z > 1e-6 && a.z < arco.alturaMm - 1e-6
+        );
+        expect(
+          naFaixa.length,
+          `${nome}: a faixa tem linhas de grade`
+        ).toBeGreaterThanOrEqual(4);
+        const meio = naFaixa[Math.floor(naFaixa.length / 2)];
+        expect(
+          apoioCilindro.raioEnvelopeMm(params, meio.z),
+          `${nome}: envelope na faixa`
+        ).toBeCloseTo(meio.raio, 2);
+        expect(
+          apoioCilindro.raioPlatoMm!(params, meio.z),
+          `${nome}: platô na faixa`
+        ).toBeCloseTo(meio.raio, 2);
+
+        // Superfície INFERIOR: a tampa é plana em z = 0 até o raio da base…
+        expect(
+          apoioCilindro.zSuperficieBaseMm(params, anelBase.raio * 0.99),
+          `${nome}: tampa plana`
+        ).toBeCloseTo(0, 5);
+        if (sentido === "fora") {
+          // …e com pé de cálice a base ALARGOU: embaixo é tampa até o raio
+          // da base; o arco viceja ACIMA dela — a superfície de CIMA entre
+          // o corpo e a base é o arco, na cota exata da malha.
+          expect(
+            apoioCilindro.zSuperficieBaseMm(params, meio.raio),
+            `${nome}: embaixo da aba é tampa`
+          ).toBeCloseTo(0, 5);
+          expect(
+            apoioCilindro.zSuperficieTopoMm(params, meio.raio),
+            `${nome}: em cima da aba é o arco`
+          ).toBeCloseTo(meio.z, 1);
+          expect(
+            apoioCilindro.zSuperficieBaseMm(params, anelBase.raio + 1),
+            `${nome}: fora do envelope`
+          ).toBeNull();
+          // As duas quinas do pé (corpo e base) são raios NOTÁVEIS.
+          const notaveis = apoioCilindro.raiosNotaveisMm!(params);
+          expect(
+            notaveis.some((r) => Math.abs(r - anelBase.raio) < 1e-3),
+            `${nome}: raio da base entre os notáveis`
+          ).toBe(true);
+          expect(
+            notaveis.some((r) => Math.abs(r - raioCorpo) < 1e-3),
+            `${nome}: quina do corpo entre os notáveis`
+          ).toBe(true);
+        } else {
+          // Barriga recolhida: entre a base (menor) e o corpo a superfície
+          // de BAIXO é o arco (ela olha para baixo), na cota da malha.
+          expect(
+            apoioCilindro.zSuperficieBaseMm(params, meio.raio),
+            `${nome}: embaixo da barriga é o arco`
+          ).toBeCloseTo(meio.z, 1);
+          expect(
+            apoioCilindro.zSuperficieBaseMm(params, raioCorpo + 1),
+            `${nome}: fora do envelope`
+          ).toBeNull();
+        }
+      }
+    }
+  });
+
+  it("fundo pra dentro na oca: o piso da cavidade sai no raio deslocado e o funil assenta certo", () => {
+    const params = cilindroComBordaFundo("dentro", 999, { oca: true });
+    const altura = params.tamanhoMm * params.escalaAltura;
+    const largura = params.tamanhoMm * params.escalaLargura;
+    const arco = arcoBorda(params, altura, "fundo");
+    const zPiso = Math.min(params.espessuraParedeMm, altura / 3);
+    // O caso interessante: a faixa do fundo PASSA do piso da cavidade.
+    expect(arco.alturaMm).toBeGreaterThan(zPiso);
+
+    const malha = gerarMalhaCilindro(params);
+    esperarEstanque(malha, "fundo dentro oca");
+    const aneis = aneisDaMalha(malha);
+    const raioInterno = largura / 2 - params.espessuraParedeMm;
+    const raioBocaPiso = raioInterno + arco.offsetEmMm(zPiso);
+    expect(raioBocaPiso).toBeLessThan(raioInterno);
+
+    // O anel do piso NA MALHA vive no raio deslocado dessa cota.
+    const anelPiso = aneis.find((a) => Math.abs(a.z - zPiso) < 1e-4);
+    expect(anelPiso, "existe anel no piso").toBeDefined();
+    expect(anelPiso!.raioInterno, "piso deslocado").toBeCloseTo(
+      raioBocaPiso,
+      2
+    );
+
+    // Quem passa pelo GARGALO cai no piso; quem passa só pela boca pousa
+    // no FUNIL do arco — na cota que a própria malha mostra.
+    expect(
+      apoioCilindro.zSuperficieTopoMm(params, raioBocaPiso * 0.9),
+      "cai até o piso"
+    ).toBeCloseTo(zPiso, 3);
+    const dFunil = (raioBocaPiso + raioInterno) / 2;
+    const zFunil = apoioCilindro.zSuperficieTopoMm(params, dFunil);
+    expect(zFunil, "pousa no funil").not.toBeNull();
+    expect(zFunil!).toBeGreaterThan(zPiso);
+    expect(zFunil!).toBeLessThanOrEqual(arco.alturaMm + 1e-6);
+    // A cota é a do próprio arco: o raio interno da malha nela bate com d.
+    expect(raioInterno + arco.offsetEmMm(zFunil!)).toBeCloseTo(dFunil, 2);
+
+    // O gargalo é um raio NOTÁVEL (degrau piso → funil).
+    const notaveis = apoioCilindro.raiosNotaveisMm!(params);
+    expect(notaveis.some((r) => Math.abs(r - raioBocaPiso) < 1e-6)).toBe(true);
+  });
+
+  it("fundo pra fora desloca mais material que sem borda; pra dentro menos", () => {
+    const semBorda = grampearBloco({
+      forma: "cilindro",
+      tamanhoMm: 100,
+      oca: false,
+    });
+    const volumeSem = volumeAssinadoMm3(gerarMalhaCilindro(semBorda));
+    const volumeFora = volumeAssinadoMm3(
+      gerarMalhaCilindro(cilindroComBordaFundo("fora", 999, { oca: false }))
+    );
+    const volumeDentro = volumeAssinadoMm3(
+      gerarMalhaCilindro(cilindroComBordaFundo("dentro", 999, { oca: false }))
+    );
+    expect(volumeFora).toBeGreaterThan(volumeSem);
+    expect(volumeDentro).toBeLessThan(volumeSem);
+    expect(volumeDentro).toBeGreaterThan(0);
+  });
+
+  it("grampear com borda de fundo continua idempotente", () => {
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const oca of [false, true]) {
+        const params = cilindroComBordaFundo(sentido, 999, { oca });
+        expect(grampearBloco(params)).toEqual(params);
+        expect(params.bordaFundo!.tamanhoMm).toBeCloseTo(
+          tetoBordaMm(params, sentido, "fundo"),
+          6
+        );
+      }
+    }
   });
 });

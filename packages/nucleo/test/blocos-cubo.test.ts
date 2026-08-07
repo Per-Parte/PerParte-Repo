@@ -250,7 +250,7 @@ function cuboComBorda(
     tamanhoMm: 100,
     espessuraParedeMm: 2,
     ...extra,
-    borda: { sentido, tamanhoMm: tamanhoBordaMm },
+    bordaTopo: { sentido, tamanhoMm: tamanhoBordaMm },
   });
 }
 
@@ -263,6 +263,7 @@ function tetoBordaMm(p: ParametrosBloco, sentido: SentidoBorda): number {
     oca: p.oca,
     espessuraParedeMm: p.espessuraParedeMm,
     sentido,
+    posicao: "topo",
   });
 }
 
@@ -344,16 +345,16 @@ describe("cubo — borda encurvada", () => {
               const nome = `${sentido}/${rotulo}/${tamanhoMm}mm/×${escala}/borda ${pedido}`;
               if (teto > 0) {
                 // Clamp geométrico: o slider encosta no teto, nunca erra.
-                expect(params.borda, nome).not.toBeNull();
-                expect(params.borda!.tamanhoMm, nome).toBeLessThanOrEqual(
+                expect(params.bordaTopo, nome).not.toBeNull();
+                expect(params.bordaTopo!.tamanhoMm, nome).toBeLessThanOrEqual(
                   teto + 1e-9
                 );
                 if (pedido === 999) {
-                  expect(params.borda!.tamanhoMm, nome).toBeCloseTo(teto, 6);
+                  expect(params.bordaTopo!.tamanhoMm, nome).toBeCloseTo(teto, 6);
                 }
               } else {
                 // Nem o arco mínimo cabe: a borda simplesmente some.
-                expect(params.borda, nome).toBeNull();
+                expect(params.bordaTopo, nome).toBeNull();
               }
               esperarEstanque(gerarMalhaCubo(params), nome);
             }
@@ -539,6 +540,380 @@ describe("cubo — borda encurvada", () => {
     );
     const volumeDentro = volumeAssinadoMm3(
       gerarMalhaCubo(cuboComBorda("dentro", 999, { oca: false }))
+    );
+    expect(volumeFora).toBeGreaterThan(volumeSem);
+    expect(volumeDentro).toBeLessThan(volumeSem);
+    expect(volumeDentro).toBeGreaterThan(0);
+  });
+});
+
+/** Miolo comum: params grampeados de um cubo com borda de FUNDO. */
+function cuboComBordaFundo(
+  sentido: SentidoBorda,
+  tamanhoBordaMm: number,
+  extra: Record<string, unknown> = {}
+): ParametrosBloco {
+  return grampearBloco({
+    forma: "cubo",
+    tamanhoMm: 100,
+    espessuraParedeMm: 2,
+    ...extra,
+    bordaFundo: { sentido, tamanhoMm: tamanhoBordaMm },
+  });
+}
+
+/** Teto do slider da borda de FUNDO para estes params já grampeados. */
+function tetoBordaFundoMm(p: ParametrosBloco, sentido: SentidoBorda): number {
+  return bordaTamanhoMaxMm({
+    tamanhoMm: p.tamanhoMm,
+    escalaAltura: p.escalaAltura,
+    escalaLargura: p.escalaLargura,
+    oca: p.oca,
+    espessuraParedeMm: p.espessuraParedeMm,
+    sentido,
+    posicao: "fundo",
+  });
+}
+
+/** Maior |Δmeia|/Δz entre anéis consecutivos DENTRO da faixa do fundo. */
+function inclinacaoMaximaNaFaixaFundo(
+  malha: MalhaBloco,
+  zTetoMm: number
+): number {
+  const aneis = aneisDaMalha(malha).filter((a) => a.z <= zTetoMm + 1e-6);
+  let pior = 0;
+  for (let i = 1; i < aneis.length; i++) {
+    const dz = aneis[i].z - aneis[i - 1].z;
+    if (dz <= 1e-9) continue;
+    pior = Math.max(pior, Math.abs(aneis[i].meia - aneis[i - 1].meia) / dz);
+  }
+  return pior;
+}
+
+describe("cubo — borda de fundo", () => {
+  it("estanque nos dois sentidos × sólida/oca/furada × tamanhos × escalas", () => {
+    const variantes = [
+      { rotulo: "sólida", extra: { oca: false, furos: null } },
+      { rotulo: "oca", extra: { oca: true, furos: null } },
+      {
+        rotulo: "oca com furos",
+        extra: {
+          furos: { forma: "circulo" as const, quantidade: 6, tamanhoMm: 10 },
+        },
+      },
+    ];
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const { rotulo, extra } of variantes) {
+        for (const tamanhoMm of [40, 100, 200]) {
+          for (const escala of [0.5, 1, 1.5]) {
+            const dimensoes = {
+              tamanhoMm,
+              escalaAltura: escala,
+              escalaLargura: escala,
+              ...extra,
+            };
+            const semBorda = grampearBloco({
+              forma: "cubo",
+              espessuraParedeMm: 2,
+              ...dimensoes,
+            });
+            const teto = tetoBordaFundoMm(semBorda, sentido);
+            const pedidos =
+              teto > 0
+                ? [
+                    LIMITES_BLOCO.bordaTamanhoMm.min,
+                    (LIMITES_BLOCO.bordaTamanhoMm.min + teto) / 2,
+                    999,
+                  ]
+                : [999];
+            for (const pedido of pedidos) {
+              const params = cuboComBordaFundo(sentido, pedido, dimensoes);
+              const nome = `fundo ${sentido}/${rotulo}/${tamanhoMm}mm/×${escala}/borda ${pedido}`;
+              if (teto > 0) {
+                // Clamp geométrico: o slider encosta no teto, nunca erra.
+                expect(params.bordaFundo, nome).not.toBeNull();
+                expect(params.bordaFundo!.tamanhoMm, nome).toBeLessThanOrEqual(
+                  teto + 1e-9
+                );
+                if (pedido === 999) {
+                  expect(params.bordaFundo!.tamanhoMm, nome).toBeCloseTo(
+                    teto,
+                    6
+                  );
+                }
+              } else {
+                // Nem o arco mínimo cabe: a borda simplesmente some.
+                expect(params.bordaFundo, nome).toBeNull();
+              }
+              esperarEstanque(gerarMalhaCubo(params), nome);
+            }
+          }
+        }
+      }
+    }
+    // 162 malhas com a verificação de estanqueidade aresta por aresta:
+    // passa dos 5 s padrão do vitest.
+  }, 60000);
+
+  it("as duas bordas coexistem — topo × fundo em todos os pares de sentido", () => {
+    for (const sentidoTopo of ["fora", "dentro"] as const) {
+      for (const sentidoFundo of ["fora", "dentro"] as const) {
+        for (const oca of [false, true]) {
+          const params = grampearBloco({
+            forma: "cubo",
+            tamanhoMm: 100,
+            espessuraParedeMm: 2,
+            oca,
+            bordaTopo: { sentido: sentidoTopo, tamanhoMm: 999 },
+            bordaFundo: { sentido: sentidoFundo, tamanhoMm: 999 },
+          });
+          const nome = `topo ${sentidoTopo} + fundo ${sentidoFundo}/${oca ? "oca" : "sólida"}`;
+          expect(params.bordaTopo, nome).not.toBeNull();
+          expect(params.bordaFundo, nome).not.toBeNull();
+          const altura = params.tamanhoMm * params.escalaAltura;
+          const largura = params.tamanhoMm * params.escalaLargura;
+          const arcoTopo = arcoBorda(params, altura, "topo");
+          const arcoFundo = arcoBorda(params, altura, "fundo");
+          // As duas faixas juntas ficam em ≤ 2/3 da altura: sobra sempre
+          // um terço de lateral reta no meio (clamp de limites.ts).
+          expect(
+            arcoTopo.alturaMm + arcoFundo.alturaMm,
+            nome
+          ).toBeLessThanOrEqual((2 * altura) / 3 + 1e-6);
+          esperarEstanque(gerarMalhaCubo(params), nome);
+          // O apoio declara cada extremidade com o SEU arco (A1).
+          expect(apoioCubo.raioApoioSuperiorMm(params), nome).toBeCloseTo(
+            largura / 2 + arcoTopo.offsetTopoMm,
+            3
+          );
+          expect(apoioCubo.raioApoioInferiorMm(params), nome).toBeCloseTo(
+            largura / 2 + arcoFundo.offsetTopoMm,
+            3
+          );
+        }
+      }
+    }
+    // Com furos: a banda espremida entre as DUAS faixas ainda entrega
+    // furos de verdade (ou os derruba na cascata — nunca erro).
+    const furada = grampearBloco({
+      forma: "cubo",
+      tamanhoMm: 100,
+      espessuraParedeMm: 2,
+      furos: { forma: "circulo", quantidade: 4, tamanhoMm: 10 },
+      bordaTopo: { sentido: "fora", tamanhoMm: 999 },
+      bordaFundo: { sentido: "fora", tamanhoMm: 999 },
+    });
+    expect(furada.bordaTopo).not.toBeNull();
+    expect(furada.bordaFundo).not.toBeNull();
+    const comFuros = gerarMalhaCubo(furada);
+    esperarEstanque(comFuros, "duas bordas + furos");
+    if (furada.furos) {
+      const semFuros = gerarMalhaCubo({ ...furada, furos: null });
+      expect(volumeAssinadoMm3(comFuros)).toBeLessThan(
+        volumeAssinadoMm3(semFuros)
+      );
+    }
+  });
+
+  it("fora ALARGA a planta na base; dentro mantém a caixa — a altura nunca muda", () => {
+    for (const oca of [false, true]) {
+      const semBorda = grampearBloco({
+        forma: "cubo",
+        tamanhoMm: 100,
+        espessuraParedeMm: 2,
+        oca,
+      });
+      const largura = semBorda.tamanhoMm * semBorda.escalaLargura;
+      const altura = semBorda.tamanhoMm * semBorda.escalaAltura;
+
+      const fora = cuboComBordaFundo("fora", 999, { oca });
+      const arcoFora = arcoBorda(fora, altura, "fundo");
+      const caixaFora = caixaEnvolvente(gerarMalhaCubo(fora));
+      // "Fora" no FUNDO alarga a planta NA BASE (pé de cálice) — é o
+      // espelho da aba do topo.
+      expect(arcoFora.offsetTopoMm).toBeGreaterThan(0);
+      expect(caixaFora.maxX - caixaFora.minX, "fora alarga X").toBeCloseTo(
+        largura + 2 * arcoFora.offsetTopoMm,
+        2
+      );
+      expect(caixaFora.maxY - caixaFora.minY, "fora alarga Y").toBeCloseTo(
+        largura + 2 * arcoFora.offsetTopoMm,
+        2
+      );
+      expect(caixaFora.maxZ, "fora não mexe na altura").toBeCloseTo(altura, 3);
+      expect(caixaFora.minZ, "fora: nada abaixo da mesa").toBeCloseTo(0, 5);
+
+      const dentro = cuboComBordaFundo("dentro", 999, { oca });
+      const caixaDentro = caixaEnvolvente(gerarMalhaCubo(dentro));
+      // "Dentro" só recolhe a base: a caixa continua a do CORPO.
+      expect(caixaDentro.maxX - caixaDentro.minX, "dentro mantém X").toBeCloseTo(
+        largura,
+        2
+      );
+      expect(caixaDentro.maxY - caixaDentro.minY, "dentro mantém Y").toBeCloseTo(
+        largura,
+        2
+      );
+      expect(caixaDentro.maxZ, "dentro não mexe na altura").toBeCloseTo(
+        altura,
+        3
+      );
+      expect(caixaDentro.minZ, "dentro: nada abaixo da mesa").toBeCloseTo(0, 5);
+    }
+  });
+
+  it("F4 na faixa do fundo: a regra INVERTE — fora sólida é livre, dentro paga", () => {
+    // No FUNDO quem CONVERGE SUBINDO é o pé de cálice (fora): cada camada
+    // assenta inteira na de baixo, então a sólida é LIVRE (o arco fecha
+    // até 90°). Quem paga F4 é o "dentro" (barriga em balanço: a peça
+    // DIVERGE subindo e cada camada avança sobre o vazio) — e a oca paga
+    // sempre, porque uma das paredes fica pairando sobre a cavidade.
+    const pagantes = [
+      { rotulo: "fundo fora oca", sentido: "fora" as const, oca: true },
+      { rotulo: "fundo dentro sólida", sentido: "dentro" as const, oca: false },
+      { rotulo: "fundo dentro oca", sentido: "dentro" as const, oca: true },
+    ];
+    for (const { rotulo, sentido, oca } of pagantes) {
+      const params = cuboComBordaFundo(sentido, 999, { oca });
+      const altura = params.tamanhoMm * params.escalaAltura;
+      const arco = arcoBorda(params, altura, "fundo");
+      const inclinacao = inclinacaoMaximaNaFaixaFundo(
+        gerarMalhaCubo(params),
+        arco.alturaMm
+      );
+      // A lateral do cubo é VERTICAL: a inclinação da faixa é o próprio
+      // ângulo do arco.
+      expect(inclinacao, rotulo).toBeLessThanOrEqual(TAN_F4 + 1e-6);
+      expect(inclinacao, `${rotulo}: a faixa realmente encurva`).toBeGreaterThan(
+        0.05
+      );
+    }
+
+    // FORA + SÓLIDA é a exceção do fundo (o espelho do "dentro sólida" do
+    // topo): a faixa é uma cúpula convergente DE CABEÇA PARA BAIXO — na
+    // impressão ela converge subindo, sem balanço a pagar — e a
+    // inclinação medida passa de F4 de propósito.
+    const foraSolida = cuboComBordaFundo("fora", 999, { oca: false });
+    const alturaSolida = foraSolida.tamanhoMm * foraSolida.escalaAltura;
+    const arcoSolido = arcoBorda(foraSolida, alturaSolida, "fundo");
+    expect(
+      inclinacaoMaximaNaFaixaFundo(
+        gerarMalhaCubo(foraSolida),
+        arcoSolido.alturaMm
+      )
+    ).toBeGreaterThan(TAN_F4);
+  });
+
+  it("o apoio conta a verdade sobre a malha com borda de fundo (A1)", () => {
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const oca of [false, true]) {
+        const params = cuboComBordaFundo(sentido, 999, { oca });
+        const nome = `fundo ${sentido}/${oca ? "oca" : "sólida"}`;
+        const malha = gerarMalhaCubo(params);
+        const caixa = caixaEnvolvente(malha);
+        const aneis = aneisDaMalha(malha);
+        const altura = params.tamanhoMm * params.escalaAltura;
+        const meiaCorpo = (params.tamanhoMm * params.escalaLargura) / 2;
+        const arco = arcoBorda(params, altura, "fundo");
+
+        // A borda de fundo não mexe no TOPO: altura e platô superior são
+        // os de sempre.
+        expect(apoioCubo.alturaTopoMm(params), nome).toBeCloseTo(caixa.maxZ, 3);
+        expect(apoioCubo.raioApoioSuperiorMm(params), nome).toBeCloseTo(
+          meiaCorpo,
+          6
+        );
+
+        // BASE real: o anel de z = 0 da malha é o raio declarado — é o que
+        // a regra de base estável (base-estavel.ts) lê para decidir pé.
+        const anelBase = aneis[0];
+        expect(anelBase.z, nome).toBeCloseTo(0, 5);
+        expect(
+          apoioCubo.raioApoioInferiorMm(params),
+          `${nome}: raio real da base`
+        ).toBeCloseTo(anelBase.meia, 2);
+        expect(
+          apoioCubo.raioPlatoMm!(params, 0),
+          `${nome}: platô na cota 0 reflete o fundo`
+        ).toBeCloseTo(anelBase.meia, 2);
+        expect(
+          apoioCubo.raioEnvelopeMm(params, 0),
+          `${nome}: envelope na base`
+        ).toBeCloseTo(anelBase.meia * Math.SQRT2, 2);
+        if (sentido === "fora") {
+          expect(anelBase.meia, nome).toBeGreaterThan(meiaCorpo);
+        } else {
+          expect(anelBase.meia, nome).toBeLessThan(meiaCorpo);
+        }
+        // A quina da base é raio NOTÁVEL (tangencia.ts amostra lá).
+        const notaveis = apoioCubo.raiosNotaveisMm!(params);
+        expect(
+          notaveis.some((r) => Math.abs(r - anelBase.meia) < 1e-3),
+          `${nome}: raio da base entre os notáveis`
+        ).toBe(true);
+
+        // A faixa tem linhas de grade próprias e o platô da fatia bate.
+        const naFaixa = aneis.filter(
+          (a) => a.z > 1e-6 && a.z < arco.alturaMm - 1e-6
+        );
+        expect(
+          naFaixa.length,
+          `${nome}: a faixa tem linhas de grade próprias`
+        ).toBeGreaterThanOrEqual(4);
+        const meio = naFaixa[Math.floor(naFaixa.length / 2)];
+        expect(
+          apoioCubo.raioPlatoMm!(params, meio.z),
+          `${nome}: platô na faixa`
+        ).toBeCloseTo(meio.meia, 2);
+
+        // Superfície INFERIOR honesta (é ela que assenta a peça na cena).
+        if (sentido === "dentro") {
+          // Tampa plana até a base recolhida; entre ela e o corpo a
+          // superfície de baixo é o ARCO (a barriga olha para baixo).
+          expect(
+            apoioCubo.zSuperficieBaseMm(params, anelBase.meia * 0.99),
+            `${nome}: tampa plana`
+          ).toBeCloseTo(0, 6);
+          expect(
+            apoioCubo.zSuperficieBaseMm(params, meio.meia),
+            `${nome}: superfície de baixo é o arco`
+          ).toBeCloseTo(meio.z, 1);
+          expect(
+            apoioCubo.zSuperficieBaseMm(params, meiaCorpo + 1),
+            `${nome}: fora do corpo`
+          ).toBeNull();
+        } else {
+          // Base alargada: superfície inferior plana em 0 até o raio da
+          // saia — o arco viceja ACIMA dela e olha para CIMA.
+          expect(
+            apoioCubo.zSuperficieBaseMm(params, anelBase.meia - 0.1),
+            `${nome}: 0 até a base alargada`
+          ).toBeCloseTo(0, 6);
+          expect(
+            apoioCubo.zSuperficieBaseMm(params, anelBase.meia + 1),
+            `${nome}: além da saia`
+          ).toBeNull();
+          expect(
+            apoioCubo.zSuperficieTopoMm(params, meio.meia),
+            `${nome}: quem pousa na saia assenta no arco`
+          ).toBeCloseTo(meio.z, 1);
+        }
+      }
+    }
+  });
+
+  it("fundo fora desloca mais material; fundo dentro desloca menos", () => {
+    const semBorda = grampearBloco({
+      forma: "cubo",
+      tamanhoMm: 100,
+      oca: false,
+    });
+    const volumeSem = volumeAssinadoMm3(gerarMalhaCubo(semBorda));
+    const volumeFora = volumeAssinadoMm3(
+      gerarMalhaCubo(cuboComBordaFundo("fora", 999, { oca: false }))
+    );
+    const volumeDentro = volumeAssinadoMm3(
+      gerarMalhaCubo(cuboComBordaFundo("dentro", 999, { oca: false }))
     );
     expect(volumeFora).toBeGreaterThan(volumeSem);
     expect(volumeDentro).toBeLessThan(volumeSem);

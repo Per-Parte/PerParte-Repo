@@ -256,7 +256,7 @@ function piramideComBorda(
     tamanhoMm: 100,
     espessuraParedeMm: 2,
     ...extra,
-    borda: { sentido, tamanhoMm: tamanhoBordaMm },
+    bordaTopo: { sentido, tamanhoMm: tamanhoBordaMm },
   });
 }
 
@@ -269,6 +269,7 @@ function tetoBordaMm(p: ParametrosBloco, sentido: SentidoBorda): number {
     oca: p.oca,
     espessuraParedeMm: p.espessuraParedeMm,
     sentido,
+    posicao: "topo",
   });
 }
 
@@ -409,15 +410,15 @@ describe("pirâmide — borda encurvada", () => {
               const nome = `${sentido}/${rotulo}/${tamanhoMm}mm/×${escala}/borda ${pedido}`;
               if (teto > 0) {
                 // Clamp geométrico: o slider encosta no teto, nunca erra.
-                expect(params.borda, nome).not.toBeNull();
-                expect(params.borda!.tamanhoMm, nome).toBeLessThanOrEqual(
+                expect(params.bordaTopo, nome).not.toBeNull();
+                expect(params.bordaTopo!.tamanhoMm, nome).toBeLessThanOrEqual(
                   teto + 1e-9
                 );
                 if (pedido === 999) {
-                  expect(params.borda!.tamanhoMm, nome).toBeCloseTo(teto, 6);
+                  expect(params.bordaTopo!.tamanhoMm, nome).toBeCloseTo(teto, 6);
                 }
               } else {
-                expect(params.borda, nome).toBeNull();
+                expect(params.bordaTopo, nome).toBeNull();
               }
               esperarEstanque(gerarMalhaPiramide(params), nome);
             }
@@ -622,6 +623,458 @@ describe("pirâmide — borda encurvada", () => {
     );
     const volumeDentro = volumeAssinadoMm3(
       gerarMalhaPiramide(piramideComBorda("dentro", 999, { oca: false }))
+    );
+    expect(volumeFora).toBeGreaterThan(volumeSem);
+    expect(volumeDentro).toBeLessThan(volumeSem);
+    expect(volumeDentro).toBeGreaterThan(0);
+  });
+});
+
+/** Miolo comum: params grampeados de uma pirâmide com borda de FUNDO. */
+function piramideComBordaFundo(
+  sentido: SentidoBorda,
+  tamanhoBordaMm: number,
+  extra: Record<string, unknown> = {}
+): ParametrosBloco {
+  return grampearBloco({
+    forma: "piramide",
+    tamanhoMm: 100,
+    espessuraParedeMm: 2,
+    ...extra,
+    bordaFundo: { sentido, tamanhoMm: tamanhoBordaMm },
+  });
+}
+
+/** Teto do slider da borda de FUNDO para estes params já grampeados. */
+function tetoBordaFundoMm(p: ParametrosBloco, sentido: SentidoBorda): number {
+  return bordaTamanhoMaxMm({
+    tamanhoMm: p.tamanhoMm,
+    escalaAltura: p.escalaAltura,
+    escalaLargura: p.escalaLargura,
+    oca: p.oca,
+    espessuraParedeMm: p.espessuraParedeMm,
+    sentido,
+    posicao: "fundo",
+  });
+}
+
+/**
+ * BALANÇO na faixa do FUNDO — a mesma medida por NORMAL de balancoNaFaixa,
+ * olhando o PÉ da peça: só triângulos com centro abaixo de zTetoMm.
+ * Superfícies HORIZONTAIS viradas para baixo em cota ≤ zApoioMm não são
+ * balanço nenhum: são a TAMPA da base (assenta na mesa) e o PISO da
+ * cavidade (assenta no maciço de baixo — abaixo do piso a casca é sólida
+ * até a mesa) — ficam fora da medida.
+ */
+function balancoNaFaixaFundo(
+  malha: MalhaBloco,
+  zTetoMm: number,
+  zApoioMm: number
+): { tanMax: number; vaoPonteMm: number; facesParaBaixo: number } {
+  const p = malha.posicoes;
+  let tanMax = 0;
+  let vaoPonteMm = 0;
+  let facesParaBaixo = 0;
+  for (let t = 0; t < malha.indices.length; t += 3) {
+    const a = malha.indices[t] * 3;
+    const b = malha.indices[t + 1] * 3;
+    const c = malha.indices[t + 2] * 3;
+    const zCentro = (p[a + 2] + p[b + 2] + p[c + 2]) / 3;
+    if (zCentro > zTetoMm + 1e-6) continue;
+    const ux = p[b] - p[a];
+    const uy = p[b + 1] - p[a + 1];
+    const uz = p[b + 2] - p[a + 2];
+    const vx = p[c] - p[a];
+    const vy = p[c + 1] - p[a + 1];
+    const vz = p[c + 2] - p[a + 2];
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    const norma = Math.hypot(nx, ny, nz);
+    if (norma <= 1e-12) continue;
+    const cosZ = nz / norma;
+    if (cosZ >= -1e-6) continue; // olha para cima ou é parede vertical
+    // Tampa da base e piso da cavidade: planos apoiados, não balanço.
+    if (cosZ < -0.9999 && zCentro <= zApoioMm + 1e-6) continue;
+    facesParaBaixo++;
+    const tan =
+      cosZ <= -1 + 1e-12
+        ? Infinity
+        : Math.abs(cosZ) / Math.sqrt(1 - cosZ * cosZ);
+    if (tan > TAN_F4 + FOLGA_TAN) {
+      const lado = Math.max(
+        Math.abs(p[a]),
+        Math.abs(p[a + 1]),
+        Math.abs(p[b]),
+        Math.abs(p[b + 1]),
+        Math.abs(p[c]),
+        Math.abs(p[c + 1])
+      );
+      vaoPonteMm = Math.max(vaoPonteMm, 2 * lado);
+      continue;
+    }
+    tanMax = Math.max(tanMax, tan);
+  }
+  return { tanMax, vaoPonteMm, facesParaBaixo };
+}
+
+describe("pirâmide — borda de fundo", () => {
+  it("estanque nos dois sentidos × sólida/oca/furada × tamanhos × escalas", () => {
+    const variantes = [
+      { rotulo: "sólida", extra: { oca: false, furos: null } },
+      { rotulo: "oca", extra: { oca: true, furos: null } },
+      {
+        rotulo: "oca com furos",
+        extra: {
+          furos: { forma: "circulo" as const, quantidade: 4, tamanhoMm: 10 },
+        },
+      },
+    ];
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const { rotulo, extra } of variantes) {
+        for (const tamanhoMm of [40, 100, 200]) {
+          for (const escala of [0.5, 1, 1.5]) {
+            const dimensoes = {
+              tamanhoMm,
+              escalaAltura: escala,
+              escalaLargura: escala,
+              ...extra,
+            };
+            const semBorda = grampearBloco({
+              forma: "piramide",
+              espessuraParedeMm: 2,
+              ...dimensoes,
+            });
+            const teto = tetoBordaFundoMm(semBorda, sentido);
+            const pedidos =
+              teto > 0
+                ? [
+                    LIMITES_BLOCO.bordaTamanhoMm.min,
+                    (LIMITES_BLOCO.bordaTamanhoMm.min + teto) / 2,
+                    999,
+                  ]
+                : [999];
+            for (const pedido of pedidos) {
+              const params = piramideComBordaFundo(sentido, pedido, dimensoes);
+              const nome = `fundo ${sentido}/${rotulo}/${tamanhoMm}mm/×${escala}/borda ${pedido}`;
+              if (teto > 0) {
+                // Clamp geométrico: o slider encosta no teto, nunca erra.
+                expect(params.bordaFundo, nome).not.toBeNull();
+                expect(params.bordaFundo!.tamanhoMm, nome).toBeLessThanOrEqual(
+                  teto + 1e-9
+                );
+                if (pedido === 999) {
+                  expect(params.bordaFundo!.tamanhoMm, nome).toBeCloseTo(
+                    teto,
+                    6
+                  );
+                }
+              } else {
+                expect(params.bordaFundo, nome).toBeNull();
+              }
+              esperarEstanque(gerarMalhaPiramide(params), nome);
+            }
+          }
+        }
+      }
+    }
+    // 162 malhas com a verificação de estanqueidade aresta por aresta:
+    // passa dos 5 s padrão do vitest.
+  }, 60000);
+
+  it("as duas bordas coexistem — topo × fundo em todos os pares de sentido", () => {
+    for (const sentidoTopo of ["fora", "dentro"] as const) {
+      for (const sentidoFundo of ["fora", "dentro"] as const) {
+        for (const oca of [false, true]) {
+          const params = grampearBloco({
+            forma: "piramide",
+            tamanhoMm: 100,
+            espessuraParedeMm: 2,
+            oca,
+            bordaTopo: { sentido: sentidoTopo, tamanhoMm: 999 },
+            bordaFundo: { sentido: sentidoFundo, tamanhoMm: 999 },
+          });
+          const nome = `topo ${sentidoTopo} + fundo ${sentidoFundo}/${oca ? "oca" : "maciça"}`;
+          expect(params.bordaTopo, nome).not.toBeNull();
+          expect(params.bordaFundo, nome).not.toBeNull();
+          const altura = params.tamanhoMm * params.escalaAltura;
+          const arcoTopo = arcoBorda(params, altura, "topo");
+          const arcoFundo = arcoBorda(params, altura, "fundo");
+          // As duas faixas juntas em ≤ 2/3 da altura: sobra rampa reta.
+          expect(
+            arcoTopo.alturaMm + arcoFundo.alturaMm,
+            nome
+          ).toBeLessThanOrEqual((2 * altura) / 3 + 1e-6);
+          const malha = gerarMalhaPiramide(params);
+          esperarEstanque(malha, nome);
+          // Apoio honesto na base: o raio declarado é o do anel de z = 0
+          // da malha REAL (A1) — pela malha, não pelo arco cru (a oca
+          // freia a saia para o teto da cavidade caber em F4, e com
+          // "dentro" a caixa é o bojo, não a base).
+          const anelBase = aneisDaMalha(malha)[0];
+          expect(anelBase.z, nome).toBeCloseTo(0, 3);
+          expect(
+            apoioPiramide.raioApoioInferiorMm(params),
+            `${nome}: base real`
+          ).toBeCloseTo(anelBase.meia, 2);
+        }
+      }
+    }
+    // Com furos: a banda espremida entre as DUAS faixas ainda entrega
+    // furos de verdade (ou os derruba na cascata — nunca erro).
+    const furada = grampearBloco({
+      forma: "piramide",
+      tamanhoMm: 100,
+      espessuraParedeMm: 2,
+      furos: { forma: "circulo", quantidade: 4, tamanhoMm: 10 },
+      bordaTopo: { sentido: "fora", tamanhoMm: 999 },
+      bordaFundo: { sentido: "fora", tamanhoMm: 999 },
+    });
+    expect(furada.bordaTopo).not.toBeNull();
+    expect(furada.bordaFundo).not.toBeNull();
+    const comFuros = gerarMalhaPiramide(furada);
+    esperarEstanque(comFuros, "duas bordas + furos");
+    if (furada.furos) {
+      const semFuros = gerarMalhaPiramide({ ...furada, furos: null });
+      expect(volumeAssinadoMm3(comFuros)).toBeLessThan(
+        volumeAssinadoMm3(semFuros)
+      );
+    }
+  });
+
+  it("no fundo a caixa INVERTE em relação ao topo: 'fora' alarga a base (saia), 'dentro' recolhe", () => {
+    for (const oca of [false, true]) {
+      const semBorda = grampearBloco({
+        forma: "piramide",
+        tamanhoMm: 100,
+        espessuraParedeMm: 2,
+        oca,
+      });
+      const largura = semBorda.tamanhoMm * semBorda.escalaLargura;
+      const altura = semBorda.tamanhoMm * semBorda.escalaAltura;
+
+      // A BASE é o lado largo da pirâmide: a saia ("fora") ALARGA a caixa
+      // envolvente — o contrário do topo, onde a aba morre dentro dela.
+      const fora = piramideComBordaFundo("fora", 999, { oca });
+      const nomeFora = `fora/${oca ? "oca" : "maciça"}`;
+      const rBaseFora = apoioPiramide.raioApoioInferiorMm(fora);
+      const caixaFora = caixaEnvolvente(gerarMalhaPiramide(fora));
+      expect(rBaseFora, nomeFora).toBeGreaterThan(largura / 2);
+      expect(caixaFora.maxX - caixaFora.minX, `${nomeFora}: X`).toBeCloseTo(
+        2 * rBaseFora,
+        1
+      );
+      expect(caixaFora.maxY - caixaFora.minY, `${nomeFora}: Y`).toBeCloseTo(
+        2 * rBaseFora,
+        1
+      );
+      expect(caixaFora.maxZ, `${nomeFora}: altura intocada`).toBeCloseTo(
+        altura,
+        3
+      );
+      expect(caixaFora.minZ, `${nomeFora}: nada abaixo da mesa`).toBeCloseTo(
+        0,
+        5
+      );
+      if (!oca) {
+        // Na maciça a saia é o arco cru; na oca o freio de F4 achata a
+        // saia (bisel) e o offset da base fica menor que o do arco.
+        const arcoFora = arcoBorda(fora, altura, "fundo");
+        expect(rBaseFora, nomeFora).toBeCloseTo(
+          largura / 2 + arcoFora.offsetTopoMm,
+          3
+        );
+      }
+
+      // "Dentro" recolhe a base: cintura invertida perto do chão — o BOJO
+      // fica mais largo que a base, mas nunca mais que o corpo.
+      const dentro = piramideComBordaFundo("dentro", 999, { oca });
+      const nomeDentro = `dentro/${oca ? "oca" : "maciça"}`;
+      const rBaseDentro = apoioPiramide.raioApoioInferiorMm(dentro);
+      const malhaDentro = gerarMalhaPiramide(dentro);
+      const caixaDentro = caixaEnvolvente(malhaDentro);
+      expect(rBaseDentro, nomeDentro).toBeLessThan(largura / 2);
+      expect(
+        caixaDentro.maxX - caixaDentro.minX,
+        `${nomeDentro}: a caixa não passa do corpo`
+      ).toBeLessThan(largura);
+      expect(
+        caixaDentro.maxX - caixaDentro.minX,
+        `${nomeDentro}: o bojo é mais largo que a base`
+      ).toBeGreaterThan(2 * rBaseDentro + 0.5);
+      expect(caixaDentro.maxZ, `${nomeDentro}: altura intocada`).toBeCloseTo(
+        altura,
+        3
+      );
+      expect(caixaDentro.minZ, `${nomeDentro}: nada abaixo da mesa`).toBeCloseTo(
+        0,
+        5
+      );
+    }
+  });
+
+  it("F4 na faixa do fundo: a regra INVERTE — fora maciça é livre, dentro paga (e a oca sempre)", () => {
+    // Quem paga F4 no fundo: "dentro" (barriga em balanço — a peça
+    // DIVERGE subindo) e qualquer OCA (uma parede paira sobre a cavidade;
+    // na "fora" oca o teto da cavidade soma a saia à convergência da
+    // rampa, e o primitivo freia o arco num bisel ≤ F4).
+    const casos = [
+      { rotulo: "dentro maciça", sentido: "dentro" as const, oca: false },
+      { rotulo: "dentro oca", sentido: "dentro" as const, oca: true },
+      { rotulo: "fora oca", sentido: "fora" as const, oca: true },
+    ];
+    for (const { rotulo, sentido, oca } of casos) {
+      const params = piramideComBordaFundo(sentido, 999, { oca });
+      const altura = params.tamanhoMm * params.escalaAltura;
+      const arco = arcoBorda(params, altura, "fundo");
+      const medida = balancoNaFaixaFundo(
+        gerarMalhaPiramide(params),
+        arco.alturaMm + params.espessuraParedeMm,
+        oca ? params.espessuraParedeMm : 0
+      );
+      expect(medida.tanMax, rotulo).toBeLessThanOrEqual(TAN_F4 + FOLGA_TAN);
+      expect(medida.vaoPonteMm, `${rotulo}: vão de ponte`).toBeLessThanOrEqual(
+        FURO_PONTE_MAX_MM
+      );
+      // A barriga/o teto da cavidade existem de verdade na malha.
+      expect(medida.facesParaBaixo, rotulo).toBeGreaterThan(0);
+    }
+
+    // FORA + MACIÇA é a exceção do fundo: pé de cálice CONVERGE SUBINDO
+    // (cúpula de cabeça para baixo — cada camada assenta inteira na de
+    // baixo), então o arco é livre até 90° e a faixa não tem UMA face
+    // virada para baixo (a tampa da base assenta na mesa e fica fora).
+    const foraMacica = piramideComBordaFundo("fora", 999, { oca: false });
+    const alturaMacica = foraMacica.tamanhoMm * foraMacica.escalaAltura;
+    const arcoMacico = arcoBorda(foraMacica, alturaMacica, "fundo");
+    const medidaMacica = balancoNaFaixaFundo(
+      gerarMalhaPiramide(foraMacica),
+      arcoMacico.alturaMm,
+      0
+    );
+    expect(medidaMacica.facesParaBaixo).toBe(0);
+  });
+
+  it("o apoio conta a verdade sobre a malha com borda de fundo (A1)", () => {
+    for (const sentido of ["fora", "dentro"] as const) {
+      for (const oca of [false, true]) {
+        const params = piramideComBordaFundo(sentido, 999, { oca });
+        const nome = `fundo ${sentido}/${oca ? "oca" : "maciça"}`;
+        const malha = gerarMalhaPiramide(params);
+        const caixa = caixaEnvolvente(malha);
+        const aneis = aneisDaMalha(malha);
+        const altura = params.tamanhoMm * params.escalaAltura;
+        const largura = params.tamanhoMm * params.escalaLargura;
+        const arco = arcoBorda(params, altura, "fundo");
+
+        // O topo é intocado pela borda de fundo: ápice ponto, altura igual.
+        expect(apoioPiramide.alturaTopoMm(params), nome).toBeCloseTo(
+          caixa.maxZ,
+          3
+        );
+        expect(apoioPiramide.raioApoioSuperiorMm(params), nome).toBe(0);
+
+        // BASE real: o anel de z = 0 da malha é o raio declarado — é o
+        // que a regra de base estável (base-estavel.ts) lê para decidir pé.
+        const anelBase = aneis[0];
+        expect(anelBase.z, nome).toBeCloseTo(0, 3);
+        expect(
+          apoioPiramide.raioApoioInferiorMm(params),
+          `${nome}: raio real da base`
+        ).toBeCloseTo(anelBase.meia, 2);
+        expect(
+          apoioPiramide.raioPlatoMm!(params, 0),
+          `${nome}: platô na cota 0 reflete o fundo`
+        ).toBeCloseTo(anelBase.meia, 2);
+        // A quina da base deslocada é raio NOTÁVEL.
+        const notaveis = apoioPiramide.raiosNotaveisMm!(params);
+        expect(
+          notaveis.some((r) => Math.abs(r - anelBase.meia) < 1e-2),
+          `${nome}: raio da base entre os notáveis`
+        ).toBe(true);
+
+        // Envelope honesto: NENHUMA seção da malha passa do declarado
+        // (vale para as duas cascas — a da cavidade é sempre menor).
+        for (const anel of aneis) {
+          expect(
+            anel.meia,
+            `${nome}: seção em z=${anel.z.toFixed(2)} dentro do envelope`
+          ).toBeLessThanOrEqual(
+            apoioPiramide.raioPlatoMm!(params, anel.z) + 0.2
+          );
+        }
+
+        const naFaixa = aneis.filter(
+          (a) => a.z > 1e-6 && a.z < arco.alturaMm - 1e-6
+        );
+        expect(
+          naFaixa.length,
+          `${nome}: a faixa tem linhas de grade próprias`
+        ).toBeGreaterThanOrEqual(4);
+
+        if (!oca) {
+          // Maciça: uma casca só — a meia-largura medida numa cota da
+          // faixa é a silhueta, e o platô da fatia bate com ela.
+          const meio = naFaixa[Math.floor(naFaixa.length / 2)];
+          expect(
+            apoioPiramide.raioPlatoMm!(params, meio.z),
+            `${nome}: platô na faixa`
+          ).toBeCloseTo(meio.meia, 2);
+          expect(
+            apoioPiramide.raioEnvelopeMm(params, meio.z),
+            `${nome}: envelope na faixa`
+          ).toBeCloseTo(meio.meia * Math.SQRT2, 2);
+
+          if (sentido === "dentro") {
+            // A superfície de BAIXO é o arco da barriga: um anel no ramo
+            // de baixo da faixa assenta na própria cota (zSuperficieBaseMm
+            // varre de baixo para cima e devolve a cota mais BAIXA).
+            const baixo = naFaixa[1];
+            expect(
+              apoioPiramide.zSuperficieBaseMm(params, anelBase.meia * 0.99),
+              `${nome}: tampa plana`
+            ).toBeCloseTo(0, 6);
+            expect(
+              apoioPiramide.zSuperficieBaseMm(params, baixo.meia),
+              `${nome}: superfície de baixo é o arco`
+            ).toBeCloseTo(baixo.z, 1);
+            expect(
+              apoioPiramide.zSuperficieBaseMm(params, largura / 2 + 1),
+              `${nome}: fora do corpo`
+            ).toBeNull();
+          } else {
+            // Base alargada: superfície inferior plana em 0 até o raio da
+            // saia; a saia olha para CIMA — quem pousa nela assenta no arco.
+            expect(
+              apoioPiramide.zSuperficieBaseMm(params, anelBase.meia - 0.5),
+              `${nome}: 0 até a base alargada`
+            ).toBeCloseTo(0, 6);
+            expect(
+              apoioPiramide.zSuperficieBaseMm(params, anelBase.meia + 1),
+              `${nome}: além da saia`
+            ).toBeNull();
+            expect(
+              apoioPiramide.zSuperficieTopoMm(params, meio.meia),
+              `${nome}: quem pousa na saia assenta no arco`
+            ).toBeCloseTo(meio.z, 1);
+          }
+        }
+      }
+    }
+  });
+
+  it("fundo fora desloca mais material; fundo dentro desloca menos", () => {
+    const semBorda = grampearBloco({
+      forma: "piramide",
+      tamanhoMm: 100,
+      oca: false,
+    });
+    const volumeSem = volumeAssinadoMm3(gerarMalhaPiramide(semBorda));
+    const volumeFora = volumeAssinadoMm3(
+      gerarMalhaPiramide(piramideComBordaFundo("fora", 999, { oca: false }))
+    );
+    const volumeDentro = volumeAssinadoMm3(
+      gerarMalhaPiramide(piramideComBordaFundo("dentro", 999, { oca: false }))
     );
     expect(volumeFora).toBeGreaterThan(volumeSem);
     expect(volumeDentro).toBeLessThan(volumeSem);

@@ -20,10 +20,15 @@
  *   NORMAL da face ligando o polígono externo ao interno. △ sempre com o
  *   vértice apontando para o ápice (F4 de graça).
  *
- * — BORDA ENCURVADA (pedido do Davi, 06/08): a meia-largura da pirâmide já
- *   é função de z — a(z) = a0·(1 − z/H) — então o ARCO da borda
- *   (blocos/borda.ts) entra somado nela: a(z) + offset(z). Consequências
- *   que a geometria assume de propósito:
+ * — BORDA ENCURVADA (pedidos do Davi, 06/08 e 07/08): a meia-largura da
+ *   pirâmide já é função de z — a(z) = a0·(1 − z/H) — então os ARCOS das
+ *   bordas (blocos/borda.ts) entram somados nela: a(z) + offsetTopo(z) +
+ *   offsetFundo(z) — as faixas nunca se sobrepõem (clamps de limites.ts),
+ *   então somar é exato. No FUNDO: "fora" alarga a base como SAIA (pé de
+ *   cálice — e a base é o lado largo, então a caixa envolvente cresce);
+ *   "dentro" recolhe a base e a peça ganha cintura invertida perto do
+ *   chão (barriga em balanço, que paga F4). Consequências que a geometria
+ *   assume de propósito:
  *   · para FORA o ÁPICE deixa de ser um ponto e vira um PLATÔ de
  *     meia-largura offsetTopoMm (pináculo alargado) — e o apoio passa a
  *     dizer isso (raioApoioSuperiorMm era 0);
@@ -56,6 +61,7 @@ import type {
   FormaFuro,
   MalhaBloco,
   ParametrosBloco,
+  PosicaoBorda,
   PrimitivoBloco,
 } from "./tipos";
 import {
@@ -106,17 +112,20 @@ const MEIO_VAO_PONTE_MM = FURO_PONTE_MAX_MM / 2;
 
 /**
  * A silhueta EXTERNA da pirâmide: meia-largura da planta em função de z,
- * com a borda encurvada JÁ grampeada à geometria. Fonte única da malha e
- * do apoio — o apoio tem de dizer a verdade sobre a malha real (A1).
+ * com as bordas encurvadas (topo E fundo) JÁ grampeadas à geometria.
+ * Fonte única da malha e do apoio — o apoio tem de dizer a verdade sobre
+ * a malha real (A1).
  */
 interface SilhuetaPiramide {
   /** Meia-aresta da base, altura e rampa da RETA da face. */
   a0: number;
   H: number;
   s: number;
-  /** Altura da faixa do arco (0 = borda reta) e a cota do PÉ dela. */
+  /** Altura da faixa do arco do TOPO (0 = reta) e a cota do PÉ dela. */
   alturaBordaMm: number;
   zPeMm: number;
+  /** Altura da faixa do arco do FUNDO (0 = reta) — o pé dela é a própria. */
+  alturaBordaFundoMm: number;
   /** Meia-largura externa numa cota z. */
   meiaLarguraEmMm(zMm: number): number;
   /** Meia-largura no TOPO: 0 (ápice) ou o platô do pináculo (borda p/ fora). */
@@ -134,6 +143,7 @@ function silhuetaPiramide(p: ParametrosBloco): SilhuetaPiramide {
   const a0 = larguraBrutaMm(p) / 2;
   const s = Math.hypot(H, a0);
   const arco = arcoBorda(p, H);
+  const arcoFundo = arcoBorda(p, H, "fundo");
   const zPeMm = H - arco.alturaMm;
   const paraDentro = arco.offsetTopoMm < 0;
   // Freio de F4 do lábio na pirâmide OCA: as faces já convergem
@@ -153,7 +163,7 @@ function silhuetaPiramide(p: ParametrosBloco): SilhuetaPiramide {
   // cresce com z, então o freio entra na cota onde tan φ = teto e daí para
   // cima o lábio segue RETO nessa inclinação: um bisel TANGENTE ao arco
   // (perfil C1, inclinação ≤ teto em toda a faixa).
-  const raioArco = p.borda?.tamanhoMm ?? 0;
+  const raioArco = p.bordaTopo?.tamanhoMm ?? 0;
   const offNoFreio = Number.isFinite(tetoInclinacao)
     ? raioArco * (1 - 1 / Math.hypot(1, tetoInclinacao))
     : Infinity;
@@ -167,9 +177,35 @@ function silhuetaPiramide(p: ParametrosBloco): SilhuetaPiramide {
     }
     return arco.offsetEmMm(zMm);
   };
+  // O MESMO freio, espelhado, para a SAIA na pirâmide OCA (fundo para
+  // fora): descendo, a saia soma na convergência da rampa — a silhueta
+  // estreita tan φ + a0/H por mm ao subir, e o teto da cavidade (paralela
+  // à externa) pagaria além de F4 pairando sobre a cavidade. Na maciça a
+  // saia é livre (converge subindo: cúpula de cabeça para baixo), e o
+  // fundo para DENTRO nem chega perto (o arco DESFAZ a convergência).
+  // Abaixo de zFreioFundo a saia segue no bisel tangente. ⚑ proposto.
+  const paraForaFundo = arcoFundo.offsetTopoMm > 0;
+  const tetoInclinacaoFundo =
+    paraForaFundo && p.oca ? Math.max(0, TAN_F4 - a0 / H) : Infinity;
+  const raioArcoFundo = p.bordaFundo?.tamanhoMm ?? 0;
+  const offNoFreioFundo = Number.isFinite(tetoInclinacaoFundo)
+    ? raioArcoFundo * (1 - 1 / Math.hypot(1, tetoInclinacaoFundo))
+    : Infinity;
+  const zFreioFundo =
+    Number.isFinite(offNoFreioFundo) &&
+    offNoFreioFundo <= Math.abs(arcoFundo.offsetTopoMm)
+      ? arcoFundo.zDoOffsetMm(offNoFreioFundo)
+      : null;
+  const offsetFundoEmMm = (zMm: number): number => {
+    if (zFreioFundo !== null && zMm < zFreioFundo) {
+      return offNoFreioFundo + tetoInclinacaoFundo * (zFreioFundo - zMm);
+    }
+    return arcoFundo.offsetEmMm(zMm);
+  };
   const meiaLarguraEmMm = (zMm: number): number => {
     const reta = Math.max(0, a0 * (1 - zMm / H));
-    const off = offsetEmMm(zMm);
+    // As faixas nunca se sobrepõem (clamps): somar os dois offsets é exato.
+    const off = offsetEmMm(zMm) + offsetFundoEmMm(zMm);
     if (off >= 0) return reta + off;
     const comLabio = reta + off;
     const piso = FRACAO_MIOLO_BORDA * reta;
@@ -181,6 +217,7 @@ function silhuetaPiramide(p: ParametrosBloco): SilhuetaPiramide {
     s,
     alturaBordaMm: arco.alturaMm,
     zPeMm,
+    alturaBordaFundoMm: arcoFundo.alturaMm,
     meiaLarguraEmMm,
     meiaLarguraTopoMm: meiaLarguraEmMm(H),
     derivadaEmMm(zMm) {
@@ -193,15 +230,22 @@ function silhuetaPiramide(p: ParametrosBloco): SilhuetaPiramide {
 }
 
 /**
- * Cotas z das linhas de grade DENTRO da faixa do arco — o PÉ entra à parte
- * (linha exata da grade) e a última é o topo EXATO. Amostra em passos
- * iguais de ÂNGULO do arco (pelo inverso zDoOffsetMm, sem refazer a conta
- * do arco): comprimento de arco constante deixa a curva lisa nas pontas.
+ * Cotas z das linhas de grade DENTRO da faixa do arco — só o INTERIOR da
+ * faixa: as extremidades exatas (base/topo do bloco e o pé de cada faixa)
+ * entram como linhas exatas nos chamadores (o topo/base uniforme já está
+ * nos candidatos do casco). Amostra em passos iguais de ÂNGULO do arco
+ * (pelo inverso zDoOffsetMm, sem refazer a conta do arco): comprimento de
+ * arco constante deixa a curva lisa nas pontas.
  */
-function linhasBordaMm(p: ParametrosBloco, alturaTotalMm: number): number[] {
-  const arco = arcoBorda(p, alturaTotalMm);
-  if (arco.alturaMm <= 0 || !p.borda) return [];
-  const theta = anguloBordaRad(p.borda.sentido, p.oca);
+function linhasBordaMm(
+  p: ParametrosBloco,
+  alturaTotalMm: number,
+  posicao: PosicaoBorda
+): number[] {
+  const arco = arcoBorda(p, alturaTotalMm, posicao);
+  const params = posicao === "topo" ? p.bordaTopo : p.bordaFundo;
+  if (arco.alturaMm <= 0 || !params) return [];
+  const theta = anguloBordaRad(posicao, params.sentido, p.oca);
   const senTheta = Math.sin(theta);
   const versseno = 1 - Math.cos(theta);
   if (senTheta <= 0 || versseno <= 0) return [];
@@ -216,21 +260,30 @@ function linhasBordaMm(p: ParametrosBloco, alturaTotalMm: number): number[] {
       (arco.offsetTopoMm * (1 - Math.cos((theta * k) / segmentos))) / versseno;
     const z = arco.zDoOffsetMm(offset);
     if (z == null) continue;
-    const anterior = zs.length > 0 ? zs[zs.length - 1] : -Infinity;
-    if (z > anterior + 1e-6 && z < alturaTotalMm - 1e-6) zs.push(z);
+    if (z > 1e-6 && z < alturaTotalMm - 1e-6) zs.push(z);
   }
-  zs.push(alturaTotalMm);
-  return zs;
+  // No topo o inverso devolve z crescente com k; no fundo, decrescente.
+  zs.sort((a, b) => a - b);
+  const unicos: number[] = [];
+  for (const z of zs) {
+    if (unicos.length === 0 || z > unicos[unicos.length - 1] + 1e-6) {
+      unicos.push(z);
+    }
+  }
+  return unicos;
 }
 
 export const apoioPiramide: ApoioBloco = {
-  // A borda encurva a faixa do topo mas nunca muda a ALTURA do bloco.
+  // As bordas encurvam as faixas mas nunca mudam a ALTURA do bloco.
   alturaTopoMm: (p) => alturaBrutaMm(p),
   // O topo é o ápice: apoio pontual (como a esfera) — MENOS quando a borda
   // para FORA alarga o pináculo, e aí o platô é o apoio de verdade. O apoio
   // acompanha a geometria (A1: peça flutuando é estado impossível).
   raioApoioSuperiorMm: (p) => silhuetaPiramide(p).meiaLarguraTopoMm,
-  raioApoioInferiorMm: (p) => larguraBrutaMm(p) / 2,
+  // A meia-base REAL, deslocada pelo arco do fundo: maior na saia
+  // ("fora"), menor na barriga recolhida ("dentro") — é o que a regra de
+  // base estável e a tangência A1 leem.
+  raioApoioInferiorMm: (p) => silhuetaPiramide(p).meiaLarguraEmMm(0),
   raioEnvelopeMm(p, zMm) {
     const sil = silhuetaPiramide(p);
     if (zMm < 0 || zMm > sil.H) return 0;
@@ -263,20 +316,74 @@ export const apoioPiramide: ApoioBloco = {
         meiaAcima = meia;
       }
     }
-    // Abaixo da faixa: rampa ao ápice, aproximada pelo cone inscrito
-    // (documentado em tipos.ts).
-    if (dMm > sil.a0) return null;
-    return sil.H * (1 - dMm / sil.a0);
+    // Abaixo da faixa do topo: rampa ao ápice, aproximada pelo cone
+    // inscrito (documentado em tipos.ts) — até onde a rampa ainda é a
+    // superfície: acima do pé da faixa do FUNDO.
+    const retaPeFundo = sil.a0 * (1 - sil.alturaBordaFundoMm / sil.H);
+    if (dMm <= retaPeFundo) return sil.H * (1 - dMm / sil.a0);
+    if (sil.alturaBordaFundoMm > 0) {
+      // Faixa do FUNDO: a saia ("fora") ou o ramo de cima da barriga
+      // ("dentro") olham para cima — a mesma varredura de cima para baixo
+      // da aba devolve a cota mais alta onde a seção alcança d.
+      const passos = Math.max(
+        SEGMENTOS_MINIMOS_BORDA,
+        Math.ceil(sil.alturaBordaFundoMm / PASSO_VARREDURA_MM)
+      );
+      let zAcima = sil.alturaBordaFundoMm;
+      let meiaAcima = retaPeFundo;
+      for (let k = passos - 1; k >= 0; k--) {
+        const z = (sil.alturaBordaFundoMm * k) / passos;
+        const meia = sil.meiaLarguraEmMm(z);
+        if (meia >= dMm) {
+          const salto = meia - meiaAcima;
+          const fracao = salto > 1e-9 ? (meia - dMm) / salto : 0;
+          return z + (zAcima - z) * Math.min(1, Math.max(0, fracao));
+        }
+        zAcima = z;
+        meiaAcima = meia;
+      }
+    }
+    return null;
   },
   zSuperficieBaseMm(p, dMm) {
-    if (dMm > larguraBrutaMm(p) / 2) return null;
-    return 0;
+    const sil = silhuetaPiramide(p);
+    const rBase = sil.meiaLarguraEmMm(0);
+    // A TAMPA continua plana em z = 0, no raio deslocado pelo arco.
+    if (dMm <= rBase) return 0;
+    if (sil.alturaBordaFundoMm > 0 && rBase < sil.a0) {
+      // Fundo para DENTRO (barriga recolhida): entre a base e o bojo, a
+      // superfície de baixo é o ARCO — varre a faixa de BAIXO para cima e
+      // devolve a cota mais baixa onde a seção alcança d. (Para FORA a
+      // silhueta só encolhe subindo: nada além da tampa, cai no null.)
+      const passos = Math.max(
+        SEGMENTOS_MINIMOS_BORDA,
+        Math.ceil(sil.alturaBordaFundoMm / PASSO_VARREDURA_MM)
+      );
+      let zAbaixo = 0;
+      let meiaAbaixo = rBase;
+      for (let k = 1; k <= passos; k++) {
+        const z = (sil.alturaBordaFundoMm * k) / passos;
+        const meia = sil.meiaLarguraEmMm(z);
+        if (meia >= dMm) {
+          const salto = meia - meiaAbaixo;
+          const fracao = salto > 1e-9 ? (dMm - meiaAbaixo) / salto : 0;
+          return zAbaixo + (z - zAbaixo) * Math.min(1, Math.max(0, fracao));
+        }
+        zAbaixo = z;
+        meiaAbaixo = meia;
+      }
+    }
+    return null;
   },
-  // A QUINA do platô do pináculo é degrau da superfície (tangencia.ts
-  // amostra este raio exato); sem borda para fora o topo é um ponto.
+  // A QUINA do platô do pináculo e a da BASE deslocada são degraus da
+  // superfície (tangencia.ts amostra estes raios exatos); sem bordas o
+  // topo é um ponto e a base é a meia-aresta plena.
   raiosNotaveisMm(p) {
-    const topo = silhuetaPiramide(p).meiaLarguraTopoMm;
-    return topo > 1e-9 ? [topo] : [];
+    const sil = silhuetaPiramide(p);
+    const raios: number[] = [];
+    if (sil.meiaLarguraTopoMm > 1e-9) raios.push(sil.meiaLarguraTopoMm);
+    if (sil.alturaBordaFundoMm > 0) raios.push(sil.meiaLarguraEmMm(0));
+    return raios;
   },
   // Planta quadrada: o raio INSCRITO da seção é a MEIA-ARESTA (não a
   // diagonal) do contorno EXTERNO — é o platô que a fatia no eixo Z expõe.
@@ -561,6 +668,11 @@ function construirCascoPiramidal(
   };
 
   // — Grade da base: interior novo, perímetro REUSA os índices do anel 0.
+  //   A TAMPA é plana na cota do anel 0 e no raio REAL dele — a borda de
+  //   fundo desloca a base (saia alarga, lábio recolhe) e quem encurva é
+  //   a LATERAL: a grade acompanha o perímetro deslocado.
+  const aTampa = meiaEm(zsAnel[0]);
+  const zTampa = zsAnel[0];
   const base: number[][] = [];
   for (let gx = 0; gx <= S; gx++) {
     const coluna: number[] = [];
@@ -571,7 +683,11 @@ function construirCascoPiramidal(
       else if (gy === S) idx = anel[0][2 * S - gx];
       else if (gx === 0) idx = anel[0][3 * S - gy];
       else
-        idx = addV(-a0 + (2 * a0 * gx) / S, -a0 + (2 * a0 * gy) / S, zBase);
+        idx = addV(
+          -aTampa + (2 * aTampa * gx) / S,
+          -aTampa + (2 * aTampa * gy) / S,
+          zTampa
+        );
       coluna.push(idx);
     }
     base.push(coluna);
@@ -713,10 +829,15 @@ interface FaceParaAjuste {
   mV: number;
   /**
    * Teto da rampa que o furo pode ocupar (mm) — a rampa inteira menos a
-   * margem, ou o PÉ DA FAIXA DA BORDA quando ela desce mais: a faixa do
-   * arco não hospeda furo (furoMaximoMm já desconta a altura dela).
+   * margem, ou o PÉ DA FAIXA DA BORDA DO TOPO quando ela desce mais: a
+   * faixa do arco não hospeda furo (furoMaximoMm já desconta a altura).
    */
   wTeto: number;
+  /**
+   * Piso da rampa que o furo pode ocupar (mm) — a margem, ou o PÉ DA
+   * FAIXA DO FUNDO quando ela sobe mais (mesma regra do teto, espelhada).
+   */
+  wPiso: number;
   /** Divisa com o vizinho, como fração γ do meio-lado a(w) (null = sem). */
   gEsq: number | null;
   gDir: number | null;
@@ -729,7 +850,7 @@ function cabeNaFace(
   face: FaceParaAjuste,
   S: number
 ): boolean {
-  if (w < face.mV || w > face.wTeto) return false;
+  if (w < Math.max(face.mV, face.wPiso) || w > face.wTeto) return false;
   const aw = face.a0 * (1 - w / face.s);
   if (aw <= 0) return false;
   const cw = (2 * aw) / S;
@@ -848,20 +969,27 @@ export function gerarMalhaPiramide(
     Math.min(320, Math.max(8, Math.round((rampa * S) / (4 * meiaBase))));
 
   const posicoes: number[] = [];
-  // Silhueta externa (com a borda encurvada já grampeada) e as linhas de
-  // grade próprias da faixa do arco — o PÉ entra como linha exata.
+  // Silhueta externa (com as bordas encurvadas já grampeadas) e as linhas
+  // de grade próprias de cada faixa — o PÉ entra como linha exata.
   const sil = silhuetaPiramide(p);
-  const linhasBorda =
-    sil.alturaBordaMm > 0
-      ? [sil.zPeMm, ...linhasBordaMm(p, H)].filter((z) => z > 1e-6)
-      : [];
+  const temBordaTopo = sil.alturaBordaMm > 0;
+  const temBordaFundo = sil.alturaBordaFundoMm > 0;
+  const linhasBorda = temBordaTopo
+    ? [sil.zPeMm, ...linhasBordaMm(p, H, "topo")].filter((z) => z > 1e-6)
+    : [];
+  const linhasBordaFundo = temBordaFundo
+    ? [...linhasBordaMm(p, H, "fundo"), sil.alturaBordaFundoMm].filter(
+        (z) => z > 1e-6 && z < H - 1e-6
+      )
+    : [];
   const externo: CascoPiramidal = {
     a0,
     altura: H,
     zBase: 0,
     s,
-    meiaLarguraEm: sil.alturaBordaMm > 0 ? sil.meiaLarguraEmMm : undefined,
-    linhasExtra: linhasBorda,
+    meiaLarguraEm:
+      temBordaTopo || temBordaFundo ? sil.meiaLarguraEmMm : undefined,
+    linhasExtra: [...linhasBordaFundo, ...linhasBorda],
   };
 
   if (!p.oca) {
@@ -904,33 +1032,38 @@ export function gerarMalhaPiramide(
   // Abaixo do pé da faixa a conta é a reta da F1 (o deslocamento normal de
   // uma face plana É a face paralela, exatamente o que bi/hi/zi descrevem):
   // a malha sem borda fica idêntica à da F1.
-  const paralela: { r: number; z: number }[] = [];
-  if (sil.alturaBordaMm > 0) {
-    const zDe = Math.max(0, sil.zPeMm - t);
-    const passos = Math.max(8, Math.ceil((H - zDe) / PASSO_PARALELA_MM));
+  const amostrarParalela = (
+    zDeMm: number,
+    zAteMm: number
+  ): { r: number; z: number }[] => {
+    const pontos: { r: number; z: number }[] = [];
+    const passos = Math.max(
+      8,
+      Math.ceil((zAteMm - zDeMm) / PASSO_PARALELA_MM)
+    );
     for (let k = 0; k <= passos; k++) {
-      const z = zDe + ((H - zDe) * k) / passos;
+      const z = zDeMm + ((zAteMm - zDeMm) * k) / passos;
       // A silhueta CONVERGE (m < 0) fora da aba: o sinal vem da derivada.
       const m = sil.derivadaEmMm(z);
       const norma = Math.hypot(1, m);
-      paralela.push({
+      pontos.push({
         r: sil.meiaLarguraEmMm(z) - t / norma,
         z: z + (t * m) / norma,
       });
     }
-  }
-  const meiaCavidade = (zMm: number): number => {
-    // A troca de conta fica t ABAIXO do pé da faixa, não no pé: o ponto da
-    // cavidade em z nasce do ponto externo ~t·|m|/√(1+m²) mais ALTO, onde o
-    // arco já começou — a cavidade encurva antes da superfície externa. Na
-    // reta as duas contas coincidem, então a costura é lisa.
-    if (sil.alturaBordaMm <= 0 || zMm <= sil.zPeMm - t) {
-      return bi * (1 - (zMm - t) / hi);
-    }
+    return pontos;
+  };
+  // O menor r da polilinha nos segmentos que cobrem a cota (Infinity =
+  // cota descoberta). Onde a normal se cruza, o MENOR valor é o certo: a
+  // cavidade é o que sobra dos dois lados.
+  const minSobreParalela = (
+    pontos: { r: number; z: number }[],
+    zMm: number
+  ): number => {
     let menor = Infinity;
-    for (let i = 0; i + 1 < paralela.length; i++) {
-      const A = paralela[i];
-      const B = paralela[i + 1];
+    for (let i = 0; i + 1 < pontos.length; i++) {
+      const A = pontos[i];
+      const B = pontos[i + 1];
       if (zMm < Math.min(A.z, B.z) - 1e-9) continue;
       if (zMm > Math.max(A.z, B.z) + 1e-9) continue;
       const dz = B.z - A.z;
@@ -938,10 +1071,40 @@ export function gerarMalhaPiramide(
       const r = A.r + (B.r - A.r) * Math.min(1, Math.max(0, f));
       if (r < menor) menor = r;
     }
-    return menor === Infinity ? 0 : Math.max(0, menor);
+    return menor;
+  };
+  const paralela = temBordaTopo
+    ? amostrarParalela(Math.max(0, sil.zPeMm - t), H)
+    : [];
+  // A faixa do FUNDO recebe o mesmo tratamento na outra ponta: a paralela
+  // é amostrada de z = 0 até t ACIMA do pé da faixa (dali para cima o
+  // deslocamento normal da face plana É a pirâmide paralela da F1, então
+  // as duas contas coincidem e a costura é lisa).
+  const paralelaFundo = temBordaFundo
+    ? amostrarParalela(0, Math.min(H, sil.alturaBordaFundoMm + t))
+    : [];
+  const meiaCavidade = (zMm: number): number => {
+    // A troca de conta fica t ABAIXO do pé da faixa do topo, não no pé: o
+    // ponto da cavidade em z nasce do ponto externo ~t·|m|/√(1+m²) mais
+    // ALTO, onde o arco já começou — a cavidade encurva antes da
+    // superfície externa. Na reta as duas contas coincidem.
+    let meia: number;
+    if (temBordaTopo && zMm > sil.zPeMm - t) {
+      const m = minSobreParalela(paralela, zMm);
+      meia = m === Infinity ? 0 : m;
+    } else {
+      meia = bi * (1 - (zMm - t) / hi);
+    }
+    // A faixa do fundo aperta por baixo: onde a paralela dela cobre a
+    // cota, vale o menor dos dois (acima da cobertura ela não opina).
+    if (temBordaFundo) {
+      const m = minSobreParalela(paralelaFundo, zMm);
+      if (m < meia) meia = m;
+    }
+    return Math.max(0, meia);
   };
   const zApiceCav =
-    sil.alturaBordaMm > 0 && H - t > t
+    (temBordaTopo || temBordaFundo) && H - t > t
       ? zApiceCavidadeMm(meiaCavidade, t, H - t, sil.zPeMm)
       : zi;
   const interno: CascoPiramidal = {
@@ -949,13 +1112,20 @@ export function gerarMalhaPiramide(
     altura: hi,
     zBase: t,
     s: si,
-    meiaLarguraEm: sil.alturaBordaMm > 0 ? meiaCavidade : undefined,
+    meiaLarguraEm:
+      temBordaTopo || temBordaFundo ? meiaCavidade : undefined,
     // O ápice da cavidade entra como linha EXATA: quando ele é um platô (a
     // aba mantém a cavidade viva até z = H − t), o leque fecha o teto
     // horizontal — parede de espessura t sob a tampa do pináculo, PONTE
     // apoiada nas duas pontas. Sem a linha exata o leque sairia como um
     // cone rasíssimo, que é a mesma ponte com cara de balanço de 87°.
-    linhasExtra: [...linhasBorda, zApiceCav],
+    // As linhas da faixa do fundo abaixo do piso da cavidade ficam de
+    // fora (a cavidade nasce em z = t).
+    linhasExtra: [
+      ...linhasBordaFundo.filter((z) => z > t + 1e-6),
+      ...linhasBorda,
+      zApiceCav,
+    ],
     zApiceMm: zApiceCav,
   };
   // O mesmo (u, w) da face externa, deslizado −t·n̂, cai na face interna
@@ -1004,20 +1174,29 @@ export function gerarMalhaPiramide(
         });
       }
     }
-    // Teto da rampa: a faixa da borda não hospeda furo, então o furo para
-    // no PÉ dela (em w de cada casca — a mesma cota z global).
+    // Teto da rampa: a faixa da borda do TOPO não hospeda furo, então o
+    // furo para no PÉ dela (em w de cada casca — a mesma cota z global).
     const wTetoBordaExt =
       sil.alturaBordaMm > 0 ? (sil.zPeMm * s) / H : Infinity;
     const wTetoBordaInt =
       sil.alturaBordaMm > 0 && hi > 0
         ? ((sil.zPeMm - t) * si) / hi
         : Infinity;
+    // Piso da rampa: a faixa do FUNDO também não hospeda furo — o furo
+    // começa ACIMA do pé dela (a mesma regra, espelhada).
+    const wPisoBordaExt =
+      sil.alturaBordaFundoMm > 0 ? (sil.alturaBordaFundoMm * s) / H : 0;
+    const wPisoBordaInt =
+      sil.alturaBordaFundoMm > 0 && hi > 0
+        ? (Math.max(0, sil.alturaBordaFundoMm - t) * si) / hi
+        : 0;
     const ajusteExt = (fp: FuroPlanejado, mV: number): FaceParaAjuste => ({
       a0,
       s,
       wc: wcExt,
       mV,
       wTeto: Math.min(s - mV, wTetoBordaExt - mV),
+      wPiso: wPisoBordaExt + mV,
       gEsq: fp.uEsq === null ? null : fp.uEsq / bandaExt,
       gDir: fp.uDir === null ? null : fp.uDir / bandaExt,
     });
@@ -1027,6 +1206,7 @@ export function gerarMalhaPiramide(
       wc: wcInt,
       mV,
       wTeto: Math.min(si - mV, wTetoBordaInt - mV),
+      wPiso: wPisoBordaInt + mV,
       gEsq:
         fp.uEsq === null || bandaInt <= 0 ? null : fp.uEsq / bandaInt,
       gDir:
