@@ -17,19 +17,21 @@
  * Os gestos das ferramentas viram chamadas do modelo de cena (A1).
  */
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, MeshReflectorMaterial } from "@react-three/drei";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import {
-  PALETA,
   PONTO_DE_LUZ,
   alturaPontoDeLuzMm,
   apoioDaForma,
   larguraBrutaMm,
+  materialDoBloco,
 } from "@per-parte/nucleo";
 import { ehPontoDeLuz, type ItemCena } from "./cena";
 import { MM, geometriaDoBloco, geometriasDoPontoDeLuz } from "./geometria";
+import { superficieDoAcabamento } from "./superficie";
 import type { Ferramenta } from "./ferramentas";
 
 /** Cor do bulbo aceso — a mesma 2700K real da cena do configurador. */
@@ -114,6 +116,39 @@ function texturaGradiente(hex: string): THREE.CanvasTexture {
   return textura;
 }
 
+/**
+ * Ambiente de reflexo — entregue SÓ ao acabamento metálico, nunca à cena
+ * inteira. Metal precisa de mundo em volta para brilhar (sem reflexo ele
+ * lê como plástico escuro), mas o `RoomEnvironment` do three é uma sala
+ * com luminárias de valor ~50: como ambiente global ele injetava umas
+ * três vezes a irradiância pretendida, e aí o tone mapping ACES comprimia
+ * os canais altos e DESATURAVA a peça — o Limão (#E2E071) saía #EEEDCE,
+ * quase branco. Num configurador isso é mentira cara: o cliente escolhe
+ * o filamento pela cor que vê. Então o fosco fica só com as luzes (cor
+ * verdadeira) e o metálico ganha a sala como envMap próprio.
+ *
+ * É procedural: nenhum HDRI para baixar, nenhum asset no repo.
+ */
+function useAmbienteMetalico(): THREE.Texture | null {
+  const { gl } = useThree();
+  // A sala é gerada UMA vez, na primeira renderização com este renderer
+  // (useMemo e não efeito com setState: o valor já existe no primeiro
+  // quadro, então a peça metálica nunca pisca sem reflexo).
+  const ambiente = useMemo(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const sala = new RoomEnvironment();
+    const alvo = pmrem.fromScene(sala, 0.04);
+    pmrem.dispose();
+    sala.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.geometry) m.geometry.dispose();
+    });
+    return alvo.texture;
+  }, [gl]);
+  useEffect(() => () => ambiente.dispose(), [ambiente]);
+  return ambiente;
+}
+
 function Estudio({ fundoId }: { fundoId: FundoEstudioId }) {
   const fundo = FUNDOS_ESTUDIO.find((f) => f.id === fundoId)!;
   const textura = useMemo(() => texturaGradiente(fundo.hex), [fundo.hex]);
@@ -142,13 +177,20 @@ function Estudio({ fundoId }: { fundoId: FundoEstudioId }) {
       {/* Névoa na cor do fundo: o chão dissolve na parede sem horizonte. */}
       <fog attach="fog" args={[corNevoa, 14, 42]} />
 
-      {/* Fill fraco: sombra com detalhe, nunca buraco preto (receita v1). */}
-      <hemisphereLight args={["#FFFFFF", "#B9B2A4", 0.5]} />
-      {/* Key alta e lateral: desenha a sombra principal, borda macia VSM. */}
+      {/* Fill: sombra com detalhe, nunca buraco preto (receita v1). Como
+          nada além das luzes ilumina a peça (o ambiente é só do metálico),
+          os três valores abaixo foram CALIBRADOS medindo o pixel contra o
+          hex do filamento — não escolhidos a olho. */}
+      <hemisphereLight args={["#FFFFFF", "#B9B2A4", 0.95]} />
+      {/* Key alta e lateral: desenha a sombra principal, borda macia VSM.
+          A intensidade é CALIBRADA, não escolhida: com key alta a peça
+          estoura no tone mapping e a cor desbota (o Limão saía quase
+          branco) — e cor desbotada num configurador é mentira, porque o
+          cliente está escolhendo o filamento por ela. */}
       <directionalLight
         castShadow
         position={[4.8, 7.2, 3.4]}
-        intensity={1.5}
+        intensity={2.9}
         color="#FFEEDA"
         shadow-mapSize={[2048, 2048]}
         shadow-radius={7}
@@ -161,7 +203,7 @@ function Estudio({ fundoId }: { fundoId: FundoEstudioId }) {
         shadow-camera-bottom={-30}
       />
       {/* Contraluz fria discreta: recorta a obra contra o fundo. */}
-      <directionalLight position={[-5.5, 2.5, -3.5]} intensity={0.3} color="#CFD8E2" />
+      <directionalLight position={[-5.5, 2.5, -3.5]} intensity={0.6} color="#CFD8E2" />
 
       {/* O pool de luz atrás da obra — câmera fixa, o plano não denuncia.
           Grande o bastante para o recuo máximo do enquadramento automático
@@ -260,17 +302,25 @@ function CameraEnquadrada({ itens }: { itens: ItemCena[] }) {
 function BlocoMesh({
   item,
   selecionado,
+  ambienteMetalico,
   aoPressionar,
 }: {
   item: ItemCena;
   selecionado: boolean;
+  ambienteMetalico: THREE.Texture | null;
   aoPressionar(e: ThreeEvent<PointerEvent>): void;
 }) {
   const geometria = useMemo(
     () => geometriaDoBloco(item.params),
     [item.params]
   );
-  const cor = PALETA[item.params.corIdx]?.hex ?? PALETA[0].hex;
+  // Cor E acabamento vêm do material: a trama fina do plástico impresso
+  // (fosco) ou o cintilar das partículas (metálico) — item 7 do plano.
+  const material = materialDoBloco(item.params.corIdx);
+  const superficie = useMemo(
+    () => superficieDoAcabamento(material.acabamento),
+    [material.acabamento]
+  );
   return (
     <group
       position={[
@@ -288,9 +338,14 @@ function BlocoMesh({
         receiveShadow
       >
         <meshStandardMaterial
-          color={cor}
-          roughness={0.55}
-          metalness={0}
+          color={material.hex}
+          roughness={superficie.roughness}
+          roughnessMap={superficie.roughnessMap}
+          metalness={superficie.metalness}
+          normalMap={superficie.normalMap}
+          normalScale={superficie.normalScale}
+          envMap={material.acabamento === "metalico" ? ambienteMetalico : null}
+          envMapIntensity={superficie.envMapIntensity}
           emissive={selecionado ? "#3A6EA5" : "#000000"}
           emissiveIntensity={selecionado ? 0.28 : 0}
         />
@@ -376,6 +431,7 @@ function CenaMontagem({
   const { camera, gl } = useThree();
   const arrasto = useRef<Arrasto | null>(null);
   const giroRad = (giroCenaGraus * Math.PI) / 180;
+  const ambienteMetalico = useAmbienteMetalico();
 
   const pontoNoPlano = (
     clientX: number,
@@ -487,6 +543,7 @@ function CenaMontagem({
               key={item.id}
               item={item}
               selecionado={item.id === selecionadoId}
+              ambienteMetalico={ambienteMetalico}
               aoPressionar={pressionarItem(item)}
             />
           )

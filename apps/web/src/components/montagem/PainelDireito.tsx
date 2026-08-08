@@ -12,7 +12,7 @@
 import { useEffect, useState } from "react";
 import {
   LIMITES_BLOCO,
-  PALETA,
+  MATERIAIS_BLOCO,
   PAREDE_MINIMA_BLOCO_MM,
   PONTO_DE_LUZ,
   VARIACOES_BLOCO,
@@ -31,6 +31,7 @@ import {
 } from "@per-parte/nucleo";
 import { ehPontoDeLuz, type ItemCena } from "./cena";
 import { miniaturaDataUrl } from "./geometria";
+import { fundoDaAmostra } from "./superficie";
 import { FORMAS_BARRA } from "./BarraFormas";
 import type { Ferramenta } from "./ferramentas";
 
@@ -208,11 +209,15 @@ function PainelCores({
           : "Escolha uma cor e toque nas formas da cena para pintar."}
       </p>
       <div className="grid grid-cols-3 gap-2">
-        {PALETA.map((cor, i) => (
+        {MATERIAIS_BLOCO.map((material, i) => (
           <button
-            key={cor.nome}
+            key={material.nome}
             type="button"
-            title={cor.nome}
+            title={
+              material.acabamento === "metalico"
+                ? `${material.nome} — metálico, com brilho e partículas`
+                : `${material.nome} — fosco`
+            }
             onClick={() => aoEscolherCor(i)}
             className={`flex flex-col items-center gap-1 rounded-xl border-2 p-1.5 text-[11px] transition ${
               corIdx === i
@@ -221,15 +226,24 @@ function PainelCores({
             }`}
           >
             <span
-              style={{ backgroundColor: cor.hex }}
+              style={{ background: fundoDaAmostra(material.hex, material.acabamento) }}
               className="aspect-square w-full rounded-lg border border-black/10"
             />
-            <span className="text-neutral-600">{cor.nome}</span>
+            <span className="text-neutral-600">
+              {material.nome}
+              {material.acabamento === "metalico" && (
+                <span className="text-amber-600" title="metálico">
+                  {" "}
+                  ✦
+                </span>
+              )}
+            </span>
           </button>
         ))}
       </div>
       <p className="mt-3 text-[11px] text-neutral-500">
-        Cada forma imprime separada — cor é de graça na produção.
+        Cada forma imprime separada — cor é de graça na produção. ✦ é
+        filamento metálico, com partículas que brilham na luz.
       </p>
     </div>
   );
@@ -633,15 +647,21 @@ function Propriedades({
       </div>
 
       <div>
-        <span className="text-sm font-medium text-neutral-800">Cor</span>
+        <span className="text-sm font-medium text-neutral-800">
+          Cor e acabamento
+        </span>
         <div className="mt-2 grid grid-cols-6 gap-1.5">
-          {PALETA.map((cor, i) => (
+          {MATERIAIS_BLOCO.map((material, i) => (
             <button
-              key={cor.nome}
+              key={material.nome}
               type="button"
-              title={cor.nome}
+              title={
+                material.acabamento === "metalico"
+                  ? `${material.nome} — metálico`
+                  : material.nome
+              }
               onClick={() => aoAtualizar({ corIdx: i })}
-              style={{ backgroundColor: cor.hex }}
+              style={{ background: fundoDaAmostra(material.hex, material.acabamento) }}
               className={`h-8 w-full rounded-lg border-2 transition ${
                 p.corIdx === i
                   ? "border-neutral-900"

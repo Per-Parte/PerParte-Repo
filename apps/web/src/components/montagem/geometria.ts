@@ -7,6 +7,7 @@
 
 import * as THREE from "three";
 import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { assarUVsPorTriangulo } from "./superficie";
 import {
   VARIACOES_BLOCO,
   blocoDaVariacao,
@@ -41,6 +42,10 @@ export function geometriaDaMalha(m: Malha): THREE.BufferGeometry {
   // STL de produção sai da malha indexada do núcleo, intacta.
   const comArestas = toCreasedNormals(g, ANGULO_ARESTA_VIVA);
   g.dispose();
+  // As malhas do núcleo não têm UV (nascem para virar STL): a trama do
+  // material precisa que alguém as dê. Aproveita a geometria já não
+  // indexada para projetar cada triângulo pelo eixo dominante.
+  assarUVsPorTriangulo(comArestas);
   return comArestas;
 }
 
