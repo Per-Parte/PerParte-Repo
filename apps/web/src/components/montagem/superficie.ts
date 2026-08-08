@@ -22,11 +22,16 @@ import type { AcabamentoBloco } from "@per-parte/nucleo";
  * 100 mm). Com 16 células por repetição, dá célula de ~1 mm — a escala
  * da trama nas referências. ⚑ ajustável a olho no impresso.
  */
-const REPETICOES_POR_UNIDADE = 6;
+/**
+ * ⚑ Recalibrado em 08/08 (rodada dos cenários): a trama de ~1 mm virava
+ * MOIRÉ à distância da câmera — numa foto real ela nem seria visível.
+ * Célula de ~2,5 mm com relevo mais suave lê como plástico impresso sem
+ * virar padrão de interferência.
+ */
+const REPETICOES_POR_UNIDADE = 4;
 
-/** Lado do mapa gerado, em pixels, e quantas células ele contém. */
+/** Lado do mapa gerado, em pixels. */
 const LADO_PX = 256;
-const CELULAS = 16;
 
 // ---------------------------------------------------------------------------
 // Assamento de UV
@@ -73,8 +78,11 @@ export function assarUVsPorTriangulo(
     const eixo = ax > ay && ax > az ? 0 : ay > az ? 1 : 2;
     for (let k = 0; k < 3; k++) {
       const v = k === 0 ? a : k === 1 ? b : c;
-      const u = eixo === 0 ? v.z : v.x;
-      const w = eixo === 1 ? v.z : v.y;
+      // A SEGUNDA coordenada é sempre o eixo vertical do núcleo (z) nas
+      // faces laterais: é o que deixa as LINHAS DE CAMADA da textura
+      // horizontais em toda a lateral, como numa peça impressa real.
+      const u = eixo === 0 ? v.y : v.x;
+      const w = eixo === 2 ? v.y : v.z;
       uv[(i0 + k) * 2] = u * repeticoesPorUnidade;
       uv[(i0 + k) * 2 + 1] = w * repeticoesPorUnidade;
     }
@@ -129,26 +137,49 @@ function alturaParaNormal(altura: Float32Array, forca: number): THREE.CanvasText
 }
 
 /**
- * Trama do plástico: células levemente abauladas separadas por sulcos —
- * o mesmo desenho das quatro esferas foscas de referência.
+ * LINHAS DE CAMADA da impressão (1D, horizontais): é o que uma peça FDM
+ * tem de verdade — a grade xadrez anterior virava moiré e lia como "UV
+ * checker esquecido" (crítica visual de 08/08). A amplitude ondula com
+ * um ruído lento, porque camada real nunca é perfeitamente regular.
  */
 function gerarTramaNormal(): THREE.CanvasTexture {
-  const passo = LADO_PX / CELULAS;
+  const LINHAS = 40; // ~0,6 mm visual por camada ⚑ (0,2 real viraria moiré)
   const altura = new Float32Array(LADO_PX * LADO_PX);
   for (let y = 0; y < LADO_PX; y++) {
     for (let x = 0; x < LADO_PX; x++) {
-      // Distância ao centro da célula, em [0, 1] por eixo.
-      const u = Math.abs(((x % passo) / passo) * 2 - 1);
-      const v = Math.abs(((y % passo) / passo) * 2 - 1);
-      const borda = Math.max(u, v);
-      // Platô no meio, sulco suave na divisa das células.
-      const h = 1 - Math.pow(borda, 6);
-      // Grão fino por cima: nenhuma peça impressa é lisa de verdade.
-      const grao = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1) * 0.12;
-      altura[y * LADO_PX + x] = h + grao;
+      const fase = Math.sin(x * 0.045) * 0.7;
+      const onda = Math.sin(((y + fase) / LADO_PX) * Math.PI * 2 * LINHAS);
+      const variacao =
+        0.75 + 0.25 * Math.sin(x * 0.021 + y * 0.007 + Math.sin(y * 0.05));
+      const grao =
+        (((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1) - 0.5) * 0.1;
+      altura[y * LADO_PX + x] = 0.5 + 0.5 * onda * variacao + grao;
     }
   }
-  return alturaParaNormal(altura, 2.2);
+  return alturaParaNormal(altura, 1.1);
+}
+
+/** Rugosidade do fosco: manchas lentas — nenhuma superfície real é
+ * uniforme, e é a variação que devolve "matéria" ao plástico. */
+let foscoRugosidade: THREE.CanvasTexture | null = null;
+function gerarFoscoRugosidade(): THREE.CanvasTexture {
+  const ctx = telaVazia();
+  const img = ctx.createImageData(LADO_PX, LADO_PX);
+  for (let y = 0; y < LADO_PX; y++) {
+    for (let x = 0; x < LADO_PX; x++) {
+      const mancha =
+        Math.sin(x * 0.037 + Math.sin(y * 0.049) * 2) *
+        Math.sin(y * 0.031 + Math.sin(x * 0.043) * 2);
+      const v = 225 + mancha * 16;
+      const o = (y * LADO_PX + x) * 4;
+      img.data[o] = v;
+      img.data[o + 1] = v;
+      img.data[o + 2] = v;
+      img.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return comoTextura(ctx);
 }
 
 /**
@@ -214,6 +245,12 @@ export interface SuperficieBloco {
   roughnessMap: THREE.Texture | null;
   metalness: number;
   envMapIntensity: number;
+  /** Brilho rasante de tecido/plástico fosco (PLA tem, e as fotos mostram). */
+  sheen: number;
+  sheenRoughness: number;
+  /** Verniz do filamento metálico (a esfera de referência é envernizada). */
+  clearcoat: number;
+  clearcoatRoughness: number;
 }
 
 /** Os parâmetros de superfície de um acabamento (mapas em cache). */
@@ -225,25 +262,36 @@ export function superficieDoAcabamento(
     glitterRugosidade ??= gerarGlitterRugosidade();
     return {
       normalMap: glitterNormal,
-      normalScale: new THREE.Vector2(0.22, 0.22),
+      normalScale: new THREE.Vector2(0.16, 0.16),
       roughness: 0.32,
       roughnessMap: glitterRugosidade,
       metalness: 0.55,
       // O metálico VIVE do reflexo: o envMap dele é a sala procedural.
       envMapIntensity: 1.0,
+      sheen: 0,
+      sheenRoughness: 1,
+      clearcoat: 0.55,
+      clearcoatRoughness: 0.25,
     };
   }
   tramaNormal ??= gerarTramaNormal();
+  foscoRugosidade ??= gerarFoscoRugosidade();
   return {
     normalMap: tramaNormal,
-    normalScale: new THREE.Vector2(0.32, 0.32),
+    normalScale: new THREE.Vector2(0.18, 0.18),
     roughness: 0.88,
-    roughnessMap: null,
+    roughnessMap: foscoRugosidade,
     metalness: 0,
     // O fosco não recebe envMap nenhum (ver useAmbienteMetalico): fica
     // só com as luzes, e a cor sai verdadeira. Este valor só existe
     // porque o campo é obrigatório no tipo.
     envMapIntensity: 1,
+    // O falloff aveludado do PLA fosco nas bordas — sem ele a peça lê
+    // como render porque plástico real nunca apaga na luz rasante.
+    sheen: 0.35,
+    sheenRoughness: 0.85,
+    clearcoat: 0,
+    clearcoatRoughness: 1,
   };
 }
 

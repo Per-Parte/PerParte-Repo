@@ -62,7 +62,7 @@ export function geometriasDoPontoDeLuz(): {
   base: THREE.BufferGeometry;
   bulbo: THREE.BufferGeometry;
 } {
-  const malhas = gerarMalhaPontoDeLuz(32);
+  const malhas = gerarMalhaPontoDeLuz(64);
   return {
     base: geometriaDaMalha(malhas.base),
     bulbo: geometriaDaMalha(malhas.bulbo),

@@ -32,10 +32,8 @@ import {
   pontosDeLuz,
   type Cena,
 } from "./cena";
-import Viewport3D, {
-  FUNDOS_ESTUDIO,
-  type FundoEstudioId,
-} from "./Viewport3D";
+import Viewport3D from "./Viewport3D";
+import { CENARIOS_ESTUDIO, type CenarioId } from "./cenarios";
 import { ManivelaCena } from "./ManivelaCena";
 import { BarraFerramentas, type Ferramenta } from "./ferramentas";
 import { BarraFormas } from "./BarraFormas";
@@ -52,8 +50,8 @@ export default function Montagem() {
   const [giroCenaGraus, setGiroCenaGraus] = useState(0);
   /** Cor na ponta do balde de tinta. */
   const [corAtualIdx, setCorAtualIdx] = useState(0);
-  /** Fundo do estúdio (item 4 do plano) — vista, não faz parte da obra. */
-  const [fundoId, setFundoId] = useState<FundoEstudioId>("gelo");
+  /** Cenário do estúdio (item 8 do plano) — vista, não faz parte da obra. */
+  const [cenarioId, setCenarioId] = useState<CenarioId>("galeria");
 
   // Cena de antes de um gesto contínuo (arrasto/slider) — vira UM passo
   // de undo quando o gesto fecha.
@@ -169,7 +167,7 @@ export default function Montagem() {
         selecionadoId={selecionadoId}
         ferramenta={ferramenta}
         giroCenaGraus={giroCenaGraus}
-        fundoId={fundoId}
+        cenarioId={cenarioId}
         onSelecionar={setSelecionadoId}
         onMover={(id, dx, dy) => aplicarVivo((c) => moverItem(c, id, dx, dy))}
         onRedimensionar={(id, delta) =>
@@ -184,6 +182,26 @@ export default function Montagem() {
         onGirar={(id, graus) => aplicarVivo((c) => girarItem(c, id, graus))}
         onPintar={(id) => pintar(id, corAtualIdx)}
         onFimDeGesto={fecharGesto}
+      />
+
+      {/* O acabamento de FOTO por cima do render: vinheta de lente e um
+          grão fino. O grão também esconde banding de gradiente — outra
+          assinatura de imagem digital limpa demais. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[5]"
+        style={{
+          background:
+            "radial-gradient(115% 90% at 50% 42%, transparent 62%, rgba(0,0,0,0.16) 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[5] opacity-[0.05] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E\")",
+        }}
       />
 
       {/* Cabeçalho discreto. */}
@@ -253,21 +271,27 @@ export default function Montagem() {
         />
       </div>
 
-      {/* Fundos do estúdio (item 4): vista, não entra na obra nem no undo. */}
-      <div className="absolute bottom-4 right-3 z-10 flex items-center gap-1.5 rounded-2xl bg-white/90 p-2 shadow-lg backdrop-blur">
-        {FUNDOS_ESTUDIO.map((f) => (
+      {/* Cenários do estúdio (item 8): vista, não entra na obra nem no
+          undo. A Galeria é o cenário de COR FIEL; os outros são fotos. */}
+      <div className="absolute bottom-4 right-3 z-10 flex items-center gap-1 rounded-2xl bg-white/90 p-1.5 shadow-lg backdrop-blur">
+        {CENARIOS_ESTUDIO.map((c) => (
           <button
-            key={f.id}
+            key={c.id}
             type="button"
-            title={`Estúdio ${f.nome.toLowerCase()}`}
-            onClick={() => setFundoId(f.id)}
-            style={{ backgroundColor: f.hex }}
-            className={`h-8 w-8 rounded-full border-2 transition ${
-              fundoId === f.id
-                ? "border-neutral-900 scale-110"
-                : "border-white/60 hover:scale-105"
+            title={`Cenário ${c.nome}`}
+            onClick={() => setCenarioId(c.id)}
+            className={`flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[11px] font-medium transition ${
+              cenarioId === c.id
+                ? "bg-neutral-900 text-white"
+                : "text-neutral-700 hover:bg-neutral-100"
             }`}
-          />
+          >
+            <span
+              style={{ backgroundColor: c.chip }}
+              className="h-3.5 w-3.5 rounded-full border border-black/10"
+            />
+            {c.nome}
+          </button>
         ))}
       </div>
 

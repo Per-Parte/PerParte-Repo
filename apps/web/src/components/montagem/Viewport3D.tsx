@@ -1,18 +1,19 @@
 "use client";
 
 /**
- * Montagem v2 — viewport central, agora um ESTÚDIO FOTOGRÁFICO (itens 4
- * e 5 do plano de alterações):
+ * Montagem v2 — viewport central: um estúdio com CENÁRIOS fotográficos
+ * (item 8 do plano — as quatro referências do Davi de 08/08).
  *
- * — Câmera SEM controle nenhum do usuário (zoom saiu; órbita e pan já
- *   tinham saído com a manivela): o enquadramento é AUTOMÁTICO — a
- *   câmera recua suavemente conforme a obra cresce, mantendo-a sempre
- *   inteira e do mesmo tamanho na tela. Quem gira a obra é a manivela.
- * — Fundo de estúdio conforme as referências do cofre (mood-estudio-*):
- *   ciclorama sem horizonte (névoa dissolve o chão na parede), gradiente
- *   radial de luz atrás da peça, cor saturada selecionável, sombra de
- *   contato macia e reflexo discreto no chão. Como a câmera é fixa, o
- *   gradiente é um plano atrás da obra — o "pool de luz" das fotos.
+ * — Câmera SEM controle do usuário: enquadramento automático (item 5);
+ *   quem gira a obra é a manivela.
+ * — O cenário mora em cenarios.tsx: parede com a luz bakeada (estuque,
+ *   gobo de persiana/folhagem, fora-de-foco), chão de madeira com veio,
+ *   quina real, foco com gobo projetado atravessando a obra. O antigo
+ *   ciclorama de gradiente — a maior fonte da "cara de desenho 3D" —
+ *   morreu aqui.
+ * — As peças usam material FÍSICO: sheen (o falloff aveludado do PLA) e
+ *   clearcoat no metálico. A cor fiel de catálogo vive no cenário
+ *   Galeria; os demais têm licença artística de foto.
  *
  * Os gestos das ferramentas viram chamadas do modelo de cena (A1).
  */
@@ -20,7 +21,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { ContactShadows, MeshReflectorMaterial } from "@react-three/drei";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import {
   PONTO_DE_LUZ,
@@ -32,25 +32,11 @@ import {
 import { ehPontoDeLuz, type ItemCena } from "./cena";
 import { MM, geometriaDoBloco, geometriasDoPontoDeLuz } from "./geometria";
 import { superficieDoAcabamento } from "./superficie";
+import { Cenario, cenarioPorId, type CenarioId } from "./cenarios";
 import type { Ferramenta } from "./ferramentas";
 
 /** Cor do bulbo aceso — a mesma 2700K real da cena do configurador. */
 const COR_LUZ = "#FFC478";
-
-/**
- * Fundos do estúdio — as cores das referências do cofre (vinho, laranja,
- * índigo, oliva) mais o branco-gelo do estúdio v1. ⚑ provisório até a
- * paleta v1 do branding decidir as cores oficiais do estúdio.
- */
-export const FUNDOS_ESTUDIO = [
-  { id: "gelo", nome: "Gelo", hex: "#E9EAE8" },
-  { id: "terracota", nome: "Terracota", hex: "#A44A28" },
-  { id: "vinho", nome: "Vinho", hex: "#571E2C" },
-  { id: "indigo", nome: "Índigo", hex: "#2B3160" },
-  { id: "oliva", nome: "Oliva", hex: "#5F6247" },
-] as const;
-
-export type FundoEstudioId = (typeof FUNDOS_ESTUDIO)[number]["id"];
 
 export interface GestosViewport {
   onSelecionar(id: number | null): void;
@@ -71,7 +57,7 @@ interface Props extends GestosViewport {
   ferramenta: Ferramenta;
   /** Giro da cena inteira (graus), vindo da manivela. */
   giroCenaGraus: number;
-  fundoId: FundoEstudioId;
+  cenarioId: CenarioId;
 }
 
 interface Arrasto {
@@ -87,34 +73,6 @@ interface Arrasto {
 // ---------------------------------------------------------------------------
 // Estúdio
 // ---------------------------------------------------------------------------
-
-/** Gradiente radial do fundo: pool de luz que escurece nas bordas. */
-function texturaGradiente(hex: string): THREE.CanvasTexture {
-  const tela = document.createElement("canvas");
-  tela.width = 512;
-  tela.height = 512;
-  const ctx = tela.getContext("2d")!;
-  const cor = new THREE.Color(hex);
-  const claro = cor.clone().lerp(new THREE.Color("#FFFFFF"), 0.32);
-  const escuro = cor.clone().multiplyScalar(0.42);
-  // Centro do pool um pouco acima do meio — onde a obra recorta.
-  const g = ctx.createRadialGradient(256, 290, 40, 256, 290, 420);
-  g.addColorStop(0, `#${claro.getHexString()}`);
-  g.addColorStop(0.55, `#${cor.getHexString()}`);
-  g.addColorStop(1, `#${escuro.getHexString()}`);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 512, 512);
-  // A base do pano escurece até o MESMO valor da névoa (0,42×): é onde
-  // o chão esfumado encosta no plano — sem isso a emenda vira uma linha.
-  const rodape = ctx.createLinearGradient(0, 265, 0, 330);
-  rodape.addColorStop(0, `#${escuro.getHexString()}00`);
-  rodape.addColorStop(1, `#${escuro.getHexString()}ff`);
-  ctx.fillStyle = rodape;
-  ctx.fillRect(0, 265, 512, 512 - 265);
-  const textura = new THREE.CanvasTexture(tela);
-  textura.colorSpace = THREE.SRGBColorSpace;
-  return textura;
-}
 
 /**
  * Ambiente de reflexo — entregue SÓ ao acabamento metálico, nunca à cena
@@ -147,102 +105,6 @@ function useAmbienteMetalico(): THREE.Texture | null {
   }, [gl]);
   useEffect(() => () => ambiente.dispose(), [ambiente]);
   return ambiente;
-}
-
-function Estudio({ fundoId }: { fundoId: FundoEstudioId }) {
-  const fundo = FUNDOS_ESTUDIO.find((f) => f.id === fundoId)!;
-  const textura = useMemo(() => texturaGradiente(fundo.hex), [fundo.hex]);
-  const corChao = useMemo(
-    () => new THREE.Color(fundo.hex).multiplyScalar(0.82),
-    [fundo.hex]
-  );
-  // A névoa dissolve o chão exatamente no VALOR da borda do gradiente
-  // (0,42× — o mesmo `escuro` da textura): sem costura visível entre o
-  // chão esfumado e o pano de fundo.
-  const corNevoa = useMemo(
-    () => new THREE.Color(fundo.hex).multiplyScalar(0.42),
-    [fundo.hex]
-  );
-  const corSombra = useMemo(
-    () =>
-      `#${new THREE.Color(fundo.hex).multiplyScalar(0.22).getHexString()}`,
-    [fundo.hex]
-  );
-
-  return (
-    <>
-      {/* O vazio além do pano tem a MESMA cor da névoa — nenhum ângulo
-          de enquadramento revela aresta de plano contra fundo preto. */}
-      <color attach="background" args={[corNevoa]} />
-      {/* Névoa na cor do fundo: o chão dissolve na parede sem horizonte. */}
-      <fog attach="fog" args={[corNevoa, 14, 42]} />
-
-      {/* Fill: sombra com detalhe, nunca buraco preto (receita v1). Como
-          nada além das luzes ilumina a peça (o ambiente é só do metálico),
-          os três valores abaixo foram CALIBRADOS medindo o pixel contra o
-          hex do filamento — não escolhidos a olho. */}
-      <hemisphereLight args={["#FFFFFF", "#B9B2A4", 0.95]} />
-      {/* Key alta e lateral: desenha a sombra principal, borda macia VSM.
-          A intensidade é CALIBRADA, não escolhida: com key alta a peça
-          estoura no tone mapping e a cor desbota (o Limão saía quase
-          branco) — e cor desbotada num configurador é mentira, porque o
-          cliente está escolhendo o filamento por ela. */}
-      <directionalLight
-        castShadow
-        position={[4.8, 7.2, 3.4]}
-        intensity={2.9}
-        color="#FFEEDA"
-        shadow-mapSize={[2048, 2048]}
-        shadow-radius={7}
-        shadow-blurSamples={16}
-        shadow-camera-near={1}
-        shadow-camera-far={70}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={30}
-        shadow-camera-bottom={-30}
-      />
-      {/* Contraluz fria discreta: recorta a obra contra o fundo. */}
-      <directionalLight position={[-5.5, 2.5, -3.5]} intensity={0.6} color="#CFD8E2" />
-
-      {/* O pool de luz atrás da obra — câmera fixa, o plano não denuncia.
-          Grande o bastante para o recuo máximo do enquadramento automático
-          nunca revelar a aresta. */}
-      <mesh position={[0, 14, -30]}>
-        <planeGeometry args={[260, 140]} />
-        <meshBasicMaterial map={textura} fog={false} toneMapped={false} />
-      </mesh>
-
-      {/* Chão-ciclorama: fosco na cor do fundo, reflexo discreto e
-          desfocado (superfície de estúdio, não espelho — receita v1). */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.004, 0]} receiveShadow>
-        <circleGeometry args={[90, 64]} />
-        <MeshReflectorMaterial
-          color={corChao}
-          roughness={0.9}
-          metalness={0}
-          mirror={0}
-          mixStrength={0.25}
-          mixBlur={1}
-          blur={[400, 130]}
-          resolution={1024}
-          depthScale={0.8}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-        />
-      </mesh>
-
-      {/* Sombra de contato macia logo abaixo da obra (as referências). */}
-      <ContactShadows
-        position={[0, -0.001, 0]}
-        opacity={0.5}
-        scale={9}
-        blur={2.6}
-        far={3}
-        color={corSombra}
-      />
-    </>
-  );
 }
 
 /**
@@ -286,10 +148,12 @@ function CameraEnquadrada({ itens }: { itens: ItemCena[] }) {
       dt
     );
     alvoY.current = THREE.MathUtils.damp(alvoY.current, alvoAltura, 3, dt);
-    // Ângulo fixo de catálogo: ~32° de elevação, levemente à direita.
+    // Câmera de FOTO de produto: baixa (~14° de elevação), quase no
+    // nível da mesa — é o ângulo de todas as referências, e é ele que
+    // põe a PAREDE como fundo em vez de encher o quadro de chão.
     const d = distancia.current;
-    camera.position.set(d * 0.52, alvoY.current + d * 0.5, d * 0.75);
-    camera.lookAt(0, alvoY.current, 0);
+    camera.position.set(d * 0.42, alvoY.current + d * 0.26, d * 0.88);
+    camera.lookAt(0, alvoY.current + d * 0.02, 0);
   });
 
   return null;
@@ -337,7 +201,7 @@ function BlocoMesh({
         castShadow
         receiveShadow
       >
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           color={material.hex}
           roughness={superficie.roughness}
           roughnessMap={superficie.roughnessMap}
@@ -346,6 +210,11 @@ function BlocoMesh({
           normalScale={superficie.normalScale}
           envMap={material.acabamento === "metalico" ? ambienteMetalico : null}
           envMapIntensity={superficie.envMapIntensity}
+          sheen={superficie.sheen}
+          sheenRoughness={superficie.sheenRoughness}
+          sheenColor="#FFFFFF"
+          clearcoat={superficie.clearcoat}
+          clearcoatRoughness={superficie.clearcoatRoughness}
           emissive={selecionado ? "#3A6EA5" : "#000000"}
           emissiveIntensity={selecionado ? 0.28 : 0}
         />
@@ -400,12 +269,15 @@ function PontoDeLuzMesh({
         />
       </mesh>
       {/* A poça de luz no chão vem daqui. */}
+      {/* A luz REAL do bulbo: decay físico e intensidade para acender a
+          cúpula abaixo, o pedestal e a poça no chão — "emissivo que não
+          ilumina nada" foi o achado unânime da crítica visual. */}
       <pointLight
         position={[0, alturaBulboCentro, 0]}
         color={COR_LUZ}
-        intensity={6}
-        distance={12}
-        decay={1.6}
+        intensity={26}
+        distance={9}
+        decay={2}
       />
     </group>
   );
@@ -420,7 +292,7 @@ function CenaMontagem({
   selecionadoId,
   ferramenta,
   giroCenaGraus,
-  fundoId,
+  cenarioId,
   onSelecionar,
   onMover,
   onRedimensionar,
@@ -525,7 +397,7 @@ function CenaMontagem({
 
   return (
     <>
-      <Estudio fundoId={fundoId} />
+      <Cenario config={cenarioPorId(cenarioId)} />
       <CameraEnquadrada itens={itens} />
 
       {/* Todas as peças giram JUNTAS, no mesmo grupo (manivela). */}
