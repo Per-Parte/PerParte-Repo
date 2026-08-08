@@ -9,7 +9,7 @@
  */
 
 import { REGRAS } from "../regras";
-import { PALETA } from "../catalogo";
+import { MATERIAIS_BLOCO } from "./materiais";
 import { anguloBordaRad, arcoBorda } from "./borda";
 import {
   EIXOS_FATIA,
@@ -470,7 +470,7 @@ export function grampearBloco(v: unknown): ParametrosBloco {
   const corIdx = clamp(
     Math.round(num(bruto.corIdx, BLOCO_PADRAO.corIdx)),
     0,
-    PALETA.length - 1
+    MATERIAIS_BLOCO.length - 1
   );
 
   return {

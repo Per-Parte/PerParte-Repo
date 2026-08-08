@@ -14,6 +14,7 @@
 
 export * from "./tipos";
 export * from "./borda";
+export * from "./materiais";
 export * from "./limites";
 export * from "./base-estavel";
 export * from "./variacoes";
