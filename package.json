@@ -9,6 +9,7 @@
     "packages/*"
   ],
   "scripts": {
+    "quadro": "npm run dev --workspace @perparte/quadro",
     "tokens:gerar": "node packages/design-system/gerar.mjs",
     "tokens:verificar": "node packages/design-system/gerar.mjs --check"
   }

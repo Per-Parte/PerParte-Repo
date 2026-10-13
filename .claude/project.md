@@ -24,4 +24,4 @@ A constante visual é a **Luz Acesa** `#F6E7C4`; Brasa `#A90000` é a assinatura
 
 ## Limites desta etapa
 
-O monorepo define dois aplicativos separados e um pacote de tokens. Nenhum framework, backend, interface, preço, royalty ou contrato de API foi implementado. A pesquisa Gantri informa escolhas, sem substituir as decisões da revista. O recomeço está registrado em `.claude/adr/0001-reinicio-e-fonte-mestre.md`.
+O monorepo define site e configurador em workspaces separados, ainda vazios, um pacote de tokens e um quadro visual local em `apps/quadro` para organizar o contexto. O quadro não substitui a revista nem os documentos oficiais e ainda não sincroniza entre pessoas. Nenhum framework de produto, backend, preço, royalty ou contrato de API foi implementado. A pesquisa Gantri informa escolhas, sem substituir as decisões da revista. O recomeço está registrado em `.claude/adr/0001-reinicio-e-fonte-mestre.md`; a escolha inicial do quadro está em `.claude/adr/0002-quadro-local.md`.

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f2e9" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='12' r='11' fill='%23a90000'/%3E%3Crect x='5' y='24' width='9' height='7' rx='2' fill='%23a90000'/%3E%3C/svg%3E" />
+    <title>Quadro de projeto · Per Parte</title>
+    <link rel="stylesheet" href="/tokens.css" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Per Parte">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
+          <span class="brand-name">per parte<span class="brand-period">.</span></span>
+        </div>
+        <span class="topbar-rule" aria-hidden="true"></span>
+        <div class="board-heading">
+          <span class="eyebrow">ESPAÇO DE TRABALHO / 01</span>
+          <strong>Quadro do projeto</strong>
+        </div>
+        <div class="topbar-actions">
+          <span class="save-state" id="saveState"><span class="save-dot"></span> Salvo neste navegador</span>
+          <button class="button button-outline" id="exportButton" type="button">Exportar quadro <span aria-hidden="true">↗</span></button>
+        </div>
+      </header>
+
+      <aside class="sidebar" aria-label="Navegação do quadro">
+        <div class="sidebar-intro">
+          <span class="sidebar-index">01 — CONTEXTO VIVO</span>
+          <h1>Uma visão<br /><em>por partes.</em></h1>
+          <p>Tudo que orienta a Per Parte em um mesmo espaço. Arraste, conecte e construa.</p>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="section-heading"><span>ADICIONAR AO QUADRO</span><span>＋</span></div>
+          <div class="creation-grid">
+            <button type="button" data-create="note"><span class="creation-icon">✳</span><span>Nota</span></button>
+            <button type="button" data-create="link"><span class="creation-icon">↗</span><span>Link</span></button>
+            <button type="button" data-create="file"><span class="creation-icon">▤</span><span>Arquivo</span></button>
+            <button type="button" data-create="decision"><span class="creation-icon">✓</span><span>Decisão</span></button>
+          </div>
+          <input id="fileInput" type="file" multiple hidden />
+        </div>
+
+        <div class="sidebar-section sidebar-section-fill">
+          <div class="section-heading"><span>ENCONTRAR</span><span id="cardCount">00</span></div>
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="Buscar no quadro" aria-label="Buscar no quadro" />
+            <kbd>/</kbd>
+          </label>
+          <div id="itemList" class="item-list" aria-label="Itens do quadro"></div>
+        </div>
+
+        <div class="sidebar-footer">
+          <button id="importButton" type="button">Importar quadro <span aria-hidden="true">↗</span></button>
+          <input id="importInput" type="file" accept="application/json,.json" hidden />
+          <p>O quadro é salvo localmente. Exporte um arquivo para compartilhar ou guardar uma cópia.</p>
+        </div>
+      </aside>
+
+      <main class="board-main">
+        <div class="canvas-topline">
+          <span><span class="live-indicator"></span> MAPA VIVO DA PER PARTE</span>
+          <span id="boardHint">Arraste os cartões para organizar · arraste o fundo para navegar</span>
+        </div>
+        <div id="viewport" class="viewport" role="application" aria-label="Quadro visual interativo">
+          <div id="world" class="world">
+            <svg id="connections" class="connections" aria-hidden="true"></svg>
+            <div class="canvas-label label-foundation"><span>01 / A BASE</span><strong>Fundação da marca</strong></div>
+            <div class="canvas-label label-work"><span>02 / O QUE VAMOS FAZER</span><strong>Produto & construção</strong></div>
+            <div class="canvas-label label-reference"><span>03 / OLHAR PARA FORA</span><strong>Pesquisa & referências</strong></div>
+            <div id="cardsLayer"></div>
+          </div>
+          <div class="canvas-corner">CRIE • CONECTE • DECIDA</div>
+        </div>
+        <div class="canvas-controls">
+          <span>PER PARTE / QUADRO 01</span>
+          <div class="zoom-controls">
+            <button id="zoomOut" type="button" aria-label="Reduzir zoom">−</button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomIn" type="button" aria-label="Ampliar zoom">+</button>
+            <button id="fitBoard" type="button" aria-label="Enquadrar quadro">⌗</button>
+          </div>
+        </div>
+      </main>
+
+      <aside id="inspector" class="inspector" aria-label="Detalhes do item"></aside>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

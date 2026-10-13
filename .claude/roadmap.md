@@ -10,6 +10,7 @@
 - [x] Criar monorepo com workspaces separados para site e configurador, ambos vazios.
 - [x] Organizar contexto conforme projetos em `Desktop/fainow-projects`.
 - [x] Extrair tokens iniciais da revista e pesquisar Gantri como benchmark separado.
+- [x] Criar quadro visual local para navegar documentos, notas, links e decisões.
 
 ## Etapa 1 — Decisões antes do produto
 
@@ -17,6 +18,7 @@
 - [ ] Reconciliar as guardas elétricas e de fabricação com protótipos e ensaios.
 - [ ] Definir stack, infraestrutura e contrato compartilhado de domínio/produção em ADRs.
 - [ ] Escolher critérios de aceite da experiência Montar/Inventar com usuários novatos.
+- [ ] Definir se o quadro precisará de colaboração simultânea e armazenamento compartilhado; a versão inicial é local com exportação/importação.
 
 ## Etapa 2 — Aplicativos
 

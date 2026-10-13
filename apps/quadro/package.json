@@ -1,0 +1,10 @@
+{
+  "name": "@perparte/quadro",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Quadro visual local para o contexto do projeto Per Parte.",
+  "scripts": {
+    "dev": "node serve.mjs"
+  }
+}

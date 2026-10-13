@@ -2,7 +2,7 @@
 
 **Criado por você, feito por partes.** A Per Parte começa por luminárias de mesa impressas em 3D sob demanda. A pessoa compõe ou inventa a obra no configurador; a fabricação começa depois da criação. A marca fala da autoria do cliente com acabamento premium acessível.
 
-Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Ainda não há aplicação implementada.
+Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. O quadro de projeto é a primeira interface; site e configurador continuam reservados.
 
 ## Fonte de verdade
 
@@ -18,6 +18,7 @@ Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo
 apps/
   site/             Aplicação do site; ainda vazia
   configurador/     Aplicação de criação; ainda vazia
+  quadro/           Quadro visual interativo do projeto
 packages/
   design-system/    Tokens de cor, tipografia e regras; sem componentes
 docs/
@@ -26,7 +27,7 @@ docs/
 .claude/            Contexto de trabalho, requisitos, estado, fluxos e decisões
 ```
 
-Os workspaces npm estão declarados na raiz. Stack de aplicação, backend, hospedagem e contratos entre apps serão escolhidos em uma etapa posterior. Para verificar os artefatos de tokens: `npm run tokens:verificar`.
+Os workspaces npm estão declarados na raiz. Rode `npm run quadro` e abra `http://127.0.0.1:4173` para usar o quadro. Ele permite criar notas, links, decisões e cartões de arquivos, mover e conectar itens, pesquisar e importar/exportar cópias. Os arquivos adicionados e as edições ficam no navegador em que foram feitos; a exportação JSON serve para transporte e backup. Veja [instruções do quadro](apps/quadro/README.md). Site e configurador seguem sem stack definida. Para verificar os artefatos de tokens: `npm run tokens:verificar`.
 
 ## Estado das decisões
 

@@ -4,12 +4,12 @@
 
 1. Ative a skill `task-observer` no início de uma sessão com ferramentas e entregáveis. Ao carregar qualquer skill, leia as observações `OPEN` relacionadas em `skill-observations/log.md`, se existir.
 2. Leia `.claude/state.md` (somente o topo), `.claude/project.md` e `.claude/requirements.md` antes de alterar produto.
-3. Leia o fluxo da área: `.claude/fluxo-site.md`, `.claude/fluxo-configurador.md` ou `.claude/fluxo-design-system.md`.
+3. Leia o fluxo da área: `.claude/fluxo-site.md`, `.claude/fluxo-configurador.md`, `.claude/fluxo-design-system.md` ou `.claude/fluxo-quadro.md`.
 4. A fonte editorial e visual primária é `docs/fonte/Per-Parte-Revista-de-Marca.pdf`. A transcrição ao lado serve para busca; em conflito, confira a página do PDF.
 
 ## Estado do recomeço
 
-Este repositório foi reiniciado em 13/10/2026. `apps/site` e `apps/configurador` são workspaces vazios, sem framework escolhido. `packages/design-system` contém tokens iniciais da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
+Este repositório foi reiniciado em 13/10/2026. `apps/site` e `apps/configurador` são workspaces vazios, sem framework escolhido. `apps/quadro` é o quadro visual local do projeto; `packages/design-system` contém tokens iniciais da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
 
 ## Regras
 
