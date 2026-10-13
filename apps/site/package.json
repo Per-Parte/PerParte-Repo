@@ -2,6 +2,12 @@
   "name": "@perparte/site",
   "private": true,
   "version": "0.0.0",
-  "description": "Workspace reservado ao site da Per Parte.",
-  "type": "module"
+  "description": "Landing editorial da Per Parte, com coleção conceitual e interações locais.",
+  "type": "module",
+  "scripts": {
+    "dev": "node servidor.mjs",
+    "build": "node construir.mjs",
+    "preview": "node servidor.mjs --dist",
+    "check": "node verificar.mjs"
+  }
 }

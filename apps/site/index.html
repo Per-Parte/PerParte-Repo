@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#a90000">
+    <meta name="description" content="Conheça o universo Per Parte. Luminárias de mesa impressas em 3D, formas que se encontram e luz para ser sua.">
+    <title>
+      Per Parte — Luz para ser sua.
+    </title>
+    <link rel="stylesheet" href="/fonts.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="preload" as="image" href="/images/hero-duna.png" fetchpriority="high">
+    <script type="module" src="/app.js">
+    </script>
+  </head>
+  <body>
+    <svg class="icons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-arrow" viewBox="0 0 24 24">
+        <path d="M4 12h15M13 5l7 7-7 7"/>
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="10.8" cy="10.8" r="6.8"/>
+        <path d="m16 16 5 5"/>
+      </symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24">
+        <path d="M20.5 5.8c-2.1-2.2-5.5-1.6-8.5 1.7-3-3.3-6.4-3.9-8.5-1.7-2.1 2.2-1.8 5.1.3 7.3L12 21l8.2-7.9c2.1-2.2 2.4-5.1.3-7.3Z"/>
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M6 18 18 6"/>
+      </symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24">
+        <path d="M3 8h18M3 16h18"/>
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M4 12h16M12 4v16"/>
+      </symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24">
+        <path d="M9 6v12M15 6v12"/>
+      </symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="m9 5 10 7-10 7Z"/>
+      </symbol>
+    </svg>
+    <a class="skip-link" href="#conteudo">
+      Pular para o conteúdo
+    </a>
+    <header class="site-header" id="site-header">
+      <a class="wordmark" href="#inicio" aria-label="Per Parte, início">
+        Per Parte
+      </a>
+      <nav class="desktop-nav" aria-label="Principal">
+        <a href="#colecao">
+          Luminárias
+        </a>
+        <a href="#ambientes">
+          Inspire-se
+        </a>
+        <a href="#processo">
+          Como é feita
+        </a>
+        <a href="#essencia">
+          Nossa essência
+        </a>
+      </nav>
+      <div class="header-actions">
+        <a href="#colecao" class="header-pill">
+          Encontre sua luz
+          <svg>
+            <use href="#i-arrow"/>
+          </svg>
+        </a>
+        <button class="icon-button" data-open-search aria-label="Buscar luminárias">
+          <svg>
+            <use href="#i-search"/>
+          </svg>
+        </button>
+        <button class="icon-button favorites-trigger" data-open-favorites aria-label="Ver luminárias salvas">
+          <svg>
+            <use href="#i-heart"/>
+          </svg>
+          <span class="favorites-count" hidden>
+            0
+          </span>
+        </button>
+        <button class="icon-button menu-trigger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-nav">
+          <svg>
+            <use href="#i-menu"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação móvel" inert>
+      <a href="#colecao">
+        Luminárias
+        <span>
+          01
+        </span>
+      </a>
+      <a href="#ambientes">
+        Inspire-se
+        <span>
+          02
+        </span>
+      </a>
+      <a href="#processo">
+        Como é feita
+        <span>
+          03
+        </span>
+      </a>
+      <a href="#essencia">
+        Nossa essência
+        <span>
+          04
+        </span>
+      </a>
+      <p>
+        Criado por você,
+        <br>
+        feito por partes.
+      </p>
+    </nav>
+    <main id="conteudo">
+      <section class="hero" id="inicio" aria-label="Luz para ser sua">
+        <div class="hero-slide active" data-slide="0">
+          <img src="/images/hero-duna.png" alt="Duna acesa em uma cena editorial vermelha Brasa, ao lado de uma pessoa" fetchpriority="high">
+        </div>
+        <div class="hero-slide" data-slide="1">
+          <img src="/images/ambiente-duna.png" alt="Luminária Duna acesa em uma sala acolhedora" loading="eager">
+        </div>
+        <div class="hero-shade">
+        </div>
+        <div class="hero-content">
+          <p class="eyebrow">
+            Bem-vindo à era do criar
+          </p>
+          <h1>
+            Luz para
+            <br>
+            ser sua.
+          </h1>
+          <p class="hero-description">
+            Novas formas de iluminar.
+            <br>
+            Outros jeitos de ser você.
+          </p>
+          <div class="hero-ctas">
+            <a class="button button-light" href="#colecao">
+              Encontre sua luz
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </a>
+            <a class="button button-glass" href="#essencia">
+              Conheça a Per Parte
+            </a>
+          </div>
+        </div>
+        <button class="hero-product" data-product="duna">
+          <img src="/images/duna.png" alt="" width="52" height="58">
+          <span>
+            <strong>
+              Duna
+            </strong>
+            <small>
+              Uma pausa em forma de luz
+            </small>
+          </span>
+          <svg>
+            <use href="#i-arrow"/>
+          </svg>
+        </button>
+        <div class="hero-controls">
+          <div class="slide-dots" aria-label="Cena do destaque">
+            <button class="active" data-go-slide="0" aria-label="Mostrar cena Brasa" aria-pressed="true">
+            </button>
+            <button data-go-slide="1" aria-label="Mostrar Duna em casa" aria-pressed="false">
+            </button>
+          </div>
+          <button class="pause-button" aria-label="Pausar alternância de imagens" aria-pressed="false">
+            <svg>
+              <use href="#i-pause"/>
+            </svg>
+          </button>
+        </div>
+        <span class="hero-footnote">
+          Coleção em estudo · imagens conceituais
+        </span>
+      </section>
+      <div class="principles" aria-label="Princípios Per Parte">
+        <span>
+          Feito por partes
+        </span>
+        <span class="principle-cross">
+          +
+        </span>
+        <span>
+          Impresso em 3D
+        </span>
+        <span class="principle-cross">
+          +
+        </span>
+        <span>
+          Cor com intenção
+        </span>
+        <span class="principle-cross">
+          +
+        </span>
+        <span>
+          Luz com personalidade
+        </span>
+      </div>
+      <section class="intro section-pad" aria-labelledby="intro-title">
+        <div class="section-top reveal">
+          <p class="eyebrow">
+            Objetos para viver com você
+          </p>
+          <span class="tiny-index">
+            01 / A coleção
+          </span>
+        </div>
+        <h2 class="oversized reveal" id="intro-title">
+          Uma luz.
+          <br>
+          Seu jeito.
+        </h2>
+        <div class="intro-bottom reveal">
+          <p>
+            Uma curva, uma cor, um encontro.
+            <br>
+            Pequenas escolhas que mudam
+            <br>
+            o jeito de sentir a casa.
+          </p>
+          <a class="text-link" href="#colecao">
+            Explore as composições
+            <svg>
+              <use href="#i-arrow"/>
+            </svg>
+          </a>
+        </div>
+        <div class="story-grid">
+          <article class="story-card reveal">
+            <div class="image-wrap">
+              <img src="/images/marco.png" alt="Marco, com base verde, três anéis âmbar e difusor creme" loading="lazy">
+            </div>
+            <p>
+              <span>
+                01
+              </span>
+              Formas que se encontram.
+            </p>
+          </article>
+          <article class="story-card reveal">
+            <div class="image-wrap">
+              <img src="/images/detalhes-duna.png" alt="Textura e encontro entre as partes da Duna" loading="lazy">
+            </div>
+            <p>
+              <span>
+                02
+              </span>
+              Cada detalhe tem um porquê.
+            </p>
+          </article>
+          <article class="story-card reveal">
+            <div class="image-wrap">
+              <img src="/images/ambiente-farol.png" alt="Farol iluminando um espaço de criação" loading="lazy">
+            </div>
+            <p>
+              <span>
+                03
+              </span>
+              Um lugar que é só seu.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="mood" id="ambientes" aria-labelledby="mood-title">
+        <div class="mood-heading section-pad reveal">
+          <p class="eyebrow">
+            A luz muda tudo
+          </p>
+          <h2 id="mood-title">
+            Para cada momento,
+            <br>
+            uma nova atmosfera.
+          </h2>
+        </div>
+        <div class="mood-scene">
+          <img id="mood-image" src="/images/ambiente-duna.png" alt="Duna em uma sala acolhedora" loading="lazy">
+          <div class="mood-gradient">
+          </div>
+          <div class="mood-overlay">
+            <div class="mood-tabs" role="tablist" aria-label="Encontre seu momento">
+              <button role="tab" id="tab-habitar" aria-controls="mood-panel" aria-selected="true" data-mood="habitar">
+                Habitar
+              </button>
+              <button role="tab" id="tab-pausar" aria-controls="mood-panel" aria-selected="false" tabindex="-1" data-mood="pausar">
+                Pausar
+              </button>
+              <button role="tab" id="tab-criar" aria-controls="mood-panel" aria-selected="false" tabindex="-1" data-mood="criar">
+                Criar
+              </button>
+            </div>
+            <div class="mood-caption" id="mood-panel" role="tabpanel" aria-labelledby="tab-habitar">
+              <div>
+                <h3 id="mood-caption-title">
+                  Seu canto. Outra luz.
+                </h3>
+                <p id="mood-caption-text">
+                  Uma presença tranquila para os momentos que ficam.
+                </p>
+              </div>
+              <button class="button button-light" id="mood-product" data-product="duna">
+                Conheça Duna
+                <svg>
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="collection section-pad" id="colecao" aria-labelledby="collection-title">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">
+              Encontre sua composição
+            </p>
+            <h2 id="collection-title">
+              Três jeitos de acender.
+            </h2>
+          </div>
+          <div class="rail-controls">
+            <button class="circle-button" data-scroll="products" data-direction="-1" aria-label="Ver luminária anterior">
+              <svg class="reverse">
+                <use href="#i-arrow"/>
+              </svg>
+            </button>
+            <button class="circle-button" data-scroll="products" data-direction="1" aria-label="Ver próxima luminária">
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="product-grid" id="products">
+          <article class="product-card reveal">
+            <div class="product-image">
+              <button class="product-image-button" data-product="marco" aria-label="Conhecer Marco">
+                <img src="/images/marco.png" alt="Marco — luminária de mesa verde e âmbar" loading="lazy">
+              </button>
+              <span class="product-tag">
+                A primeira de muitas
+              </span>
+              <button class="save-button" data-save="marco" aria-label="Salvar Marco" aria-pressed="false">
+                <svg>
+                  <use href="#i-heart"/>
+                </svg>
+              </button>
+              <button class="product-quick" data-product="marco">
+                Conhecer a obra
+                <svg>
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
+            </div>
+            <div class="product-info">
+              <div>
+                <button data-product="marco" class="product-name">
+                  Marco
+                </button>
+                <p>
+                  Uma ideia, parte por parte.
+                </p>
+              </div>
+              <div class="swatches" aria-label="Verde Marco, Âmbar e Areia">
+                <i style="--swatch:var(--pp-cor-verde-marco)">
+                </i>
+                <i style="--swatch:var(--pp-cor-ambar-marco)">
+                </i>
+                <i style="--swatch:var(--pp-cor-areia)">
+                </i>
+              </div>
+            </div>
+          </article>
+          <article class="product-card reveal">
+            <div class="product-image">
+              <button class="product-image-button" data-product="duna" aria-label="Conhecer Duna">
+                <img src="/images/duna.png" alt="Duna — luminária baixa, com base Brasa e cúpula creme" loading="lazy">
+              </button>
+              <span class="product-tag">
+                Presença tranquila
+              </span>
+              <button class="save-button" data-save="duna" aria-label="Salvar Duna" aria-pressed="false">
+                <svg>
+                  <use href="#i-heart"/>
+                </svg>
+              </button>
+              <button class="product-quick" data-product="duna">
+                Conhecer a obra
+                <svg>
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
+            </div>
+            <div class="product-info">
+              <div>
+                <button data-product="duna" class="product-name">
+                  Duna
+                </button>
+                <p>
+                  Uma pausa em forma de luz.
+                </p>
+              </div>
+              <div class="swatches" aria-label="Brasa e Luz Acesa">
+                <i style="--swatch:var(--pp-cor-brasa)">
+                </i>
+                <i style="--swatch:var(--pp-cor-luz-acesa)">
+                </i>
+              </div>
+            </div>
+          </article>
+          <article class="product-card reveal">
+            <div class="product-image">
+              <button class="product-image-button" data-product="farol" aria-label="Conhecer Farol">
+                <img src="/images/farol.png" alt="Farol — luminária vertical creme sobre base Lago" loading="lazy">
+              </button>
+              <span class="product-tag">
+                Cor encontra luz
+              </span>
+              <button class="save-button" data-save="farol" aria-label="Salvar Farol" aria-pressed="false">
+                <svg>
+                  <use href="#i-heart"/>
+                </svg>
+              </button>
+              <button class="product-quick" data-product="farol">
+                Conhecer a obra
+                <svg>
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
+            </div>
+            <div class="product-info">
+              <div>
+                <button data-product="farol" class="product-name">
+                  Farol
+                </button>
+                <p>
+                  Outro ritmo para sua mesa.
+                </p>
+              </div>
+              <div class="swatches" aria-label="Lago e Luz Acesa">
+                <i style="--swatch:var(--pp-cor-lago)">
+                </i>
+                <i style="--swatch:var(--pp-cor-luz-acesa)">
+                </i>
+              </div>
+            </div>
+          </article>
+        </div>
+        <p class="collection-note">
+          Coleção em estudo. Imagens conceituais. Formas, cores e materiais serão confirmados com as peças físicas.
+        </p>
+      </section>
+      <section class="process section-pad" id="processo" aria-labelledby="process-title">
+        <div class="process-copy reveal">
+          <p class="eyebrow">
+            Do encontro à matéria
+          </p>
+          <h2 id="process-title">
+            Toda parte
+            <br>
+            tem um porquê.
+          </h2>
+          <div class="process-accordion">
+            <div class="process-item active">
+              <h3>
+                <button aria-expanded="true" aria-controls="process-panel-0" data-process="0">
+                  <span>
+                    01
+                  </span>
+                  Pensada em partes
+                  <svg>
+                    <use href="#i-plus"/>
+                  </svg>
+                </button>
+              </h3>
+              <div class="process-panel" id="process-panel-0">
+                <p>
+                  Base, corpo e difusor. Formas simples que, juntas, encontram uma personalidade. A beleza também está no encontro.
+                </p>
+                <button class="text-link" data-product="marco">
+                  Veja a composição
+                  <svg>
+                    <use href="#i-arrow"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="process-item">
+              <h3>
+                <button aria-expanded="false" aria-controls="process-panel-1" data-process="1">
+                  <span>
+                    02
+                  </span>
+                  Camada por camada
+                  <svg>
+                    <use href="#i-plus"/>
+                  </svg>
+                </button>
+              </h3>
+              <div class="process-panel" id="process-panel-1" hidden>
+                <p>
+                  A impressão 3D transforma a composição em matéria. As linhas e as junções fazem parte da expressão de cada obra.
+                </p>
+                <button class="text-link" data-product="duna">
+                  Olhe mais de perto
+                  <svg>
+                    <use href="#i-arrow"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="process-item">
+              <h3>
+                <button aria-expanded="false" aria-controls="process-panel-2" data-process="2">
+                  <span>
+                    03
+                  </span>
+                  Feita para fazer parte
+                  <svg>
+                    <use href="#i-plus"/>
+                  </svg>
+                </button>
+              </h3>
+              <div class="process-panel" id="process-panel-2" hidden>
+                <p>
+                  Acesa, a luminária ganha outro sentido. Uma presença no seu espaço, nos seus rituais e nos dias que você inventa.
+                </p>
+                <a class="text-link" href="#ambientes">
+                  Encontre inspiração
+                  <svg>
+                    <use href="#i-arrow"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="process-image image-wrap reveal">
+          <img id="process-image" src="/images/marco.png" alt="A composição de Marco em base, anéis e difusor" loading="lazy">
+          <span id="process-image-caption">
+            01 — A beleza do encontro
+          </span>
+        </div>
+      </section>
+      <section class="manifesto" aria-labelledby="manifesto-title">
+        <img src="/images/manifesto.png" alt="Uma luminária Per Parte acesa em um ambiente escuro" loading="lazy">
+        <div class="manifesto-shade">
+        </div>
+        <div class="manifesto-content reveal">
+          <p class="eyebrow">
+            Criado por você, feito por partes.
+          </p>
+          <h2 id="manifesto-title">
+            A era
+            <br>
+            do criar.
+          </h2>
+          <p>
+            Há infinitas maneiras de ser você.
+            <br>
+            A sua casa também pode ser assim.
+          </p>
+          <a class="button button-light" href="#essencia">
+            Entre no nosso universo
+            <svg>
+              <use href="#i-arrow"/>
+            </svg>
+          </a>
+        </div>
+        <span class="film-label">
+          Um estudo de luz · Per Parte
+        </span>
+      </section>
+      <section class="categories section-pad" aria-labelledby="categories-title">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">
+              Uma forma de começar
+            </p>
+            <h2 id="categories-title">
+              Qual é a sua luz?
+            </h2>
+          </div>
+          <a class="text-link" href="#colecao">
+            Ver a coleção
+            <svg>
+              <use href="#i-arrow"/>
+            </svg>
+          </a>
+        </div>
+        <div class="category-grid">
+          <button class="category-card reveal" data-product="marco">
+            <img src="/images/marco.png" alt="" loading="lazy">
+            <span>
+              <small>
+                O encontro das formas
+              </small>
+              <strong>
+                Marco
+              </strong>
+            </span>
+            <i class="category-arrow">
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </i>
+          </button>
+          <button class="category-card reveal" data-product="duna">
+            <img src="/images/ambiente-duna.png" alt="" loading="lazy">
+            <span>
+              <small>
+                Uma pausa para ficar
+              </small>
+              <strong>
+                Duna
+              </strong>
+            </span>
+            <i class="category-arrow">
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </i>
+          </button>
+          <button class="category-card reveal" data-product="farol">
+            <img src="/images/ambiente-farol.png" alt="" loading="lazy">
+            <span>
+              <small>
+                Outro ritmo para criar
+              </small>
+              <strong>
+                Farol
+              </strong>
+            </span>
+            <i class="category-arrow">
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </i>
+          </button>
+        </div>
+      </section>
+      <section class="gallery section-pad" aria-labelledby="gallery-title">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow">
+              Pequenos cenários, muitas possibilidades
+            </p>
+            <h2 id="gallery-title">
+              A luz mora nos detalhes.
+            </h2>
+          </div>
+          <div class="rail-controls">
+            <button class="circle-button" data-scroll="gallery-rail" data-direction="-1" aria-label="Ver cena anterior">
+              <svg class="reverse">
+                <use href="#i-arrow"/>
+              </svg>
+            </button>
+            <button class="circle-button" data-scroll="gallery-rail" data-direction="1" aria-label="Ver próxima cena">
+              <svg>
+                <use href="#i-arrow"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="gallery-rail" id="gallery-rail">
+          <button class="gallery-card" data-product="duna">
+            <span class="image-wrap">
+              <img src="/images/ambiente-duna.png" alt="Duna em uma sala de estar" loading="lazy">
+            </span>
+            <span>
+              Um canto para ficar
+              <small>
+                Duna · estudo de ambiente
+              </small>
+            </span>
+          </button>
+          <button class="gallery-card" data-product="farol">
+            <span class="image-wrap">
+              <img src="/images/ambiente-farol.png" alt="Farol em uma escrivaninha" loading="lazy">
+            </span>
+            <span>
+              Espaço para novas ideias
+              <small>
+                Farol · estudo de ambiente
+              </small>
+            </span>
+          </button>
+          <button class="gallery-card" data-product="duna">
+            <span class="image-wrap">
+              <img src="/images/detalhes-duna.png" alt="A textura fosca de Duna em detalhe" loading="lazy">
+            </span>
+            <span>
+              Perto, é ainda mais sua
+              <small>
+                Duna · estudo de textura
+              </small>
+            </span>
+          </button>
+          <button class="gallery-card" data-product="marco">
+            <span class="image-wrap">
+              <img src="/images/marco.png" alt="As partes coloridas de Marco" loading="lazy">
+            </span>
+            <span>
+              Toda parte, uma escolha
+              <small>
+                Marco · estudo de composição
+              </small>
+            </span>
+          </button>
+        </div>
+      </section>
+      <section class="mission section-pad" id="essencia" aria-labelledby="mission-title">
+        <div class="mission-image image-wrap reveal">
+          <img src="/images/hero-duna.png" alt="O universo visual Brasa da Per Parte" loading="lazy">
+        </div>
+        <div class="mission-copy reveal">
+          <p class="eyebrow">
+            Nossa essência
+          </p>
+          <h2 id="mission-title">
+            Mais de você.
+            <br>
+            Em cada parte.
+          </h2>
+          <p>
+            A Per Parte nasce de uma ideia simples: quem vai viver com um objeto também pode fazer parte da sua criação.
+          </p>
+          <p>
+            Unimos formas, cor e impressão 3D para abrir novas possibilidades. Objetos com presença. Uma casa com personalidade. E a vontade de criar o que ainda não existe.
+          </p>
+          <a class="button button-brasa" href="#colecao">
+            Conheça o começo
+            <svg>
+              <use href="#i-arrow"/>
+            </svg>
+          </a>
+        </div>
+      </section>
+      <section class="faq section-pad" id="duvidas" aria-labelledby="faq-title">
+        <div class="faq-heading reveal">
+          <p class="eyebrow">
+            Vamos por partes
+          </p>
+          <h2 id="faq-title">
+            Antes de
+            <br>
+            acender.
+          </h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>
+              O que é a Per Parte?
+              <svg>
+                <use href="#i-plus"/>
+              </svg>
+            </summary>
+            <p>
+              Uma marca de luminárias de mesa que combina design, partes e impressão 3D sob demanda. Nossa visão é aproximar quem cria daquilo que vai viver em sua casa.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Como as luminárias são feitas?
+              <svg>
+                <use href="#i-plus"/>
+              </svg>
+            </summary>
+            <p>
+              As formas são construídas em partes e impressas em 3D. A textura e as junções entram na linguagem do objeto. Materiais e acabamentos finais serão confirmados nas peças físicas.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Posso criar minha composição?
+              <svg>
+                <use href="#i-plus"/>
+              </svg>
+            </summary>
+            <p>
+              Essa liberdade está no centro da Per Parte. O configurador faz parte da experiência que estamos preparando; aqui você conhece as primeiras direções da coleção.
+            </p>
+          </details>
+          <details>
+            <summary>
+              As imagens mostram peças já fabricadas?
+              <svg>
+                <use href="#i-plus"/>
+              </svg>
+            </summary>
+            <p>
+              As imagens desta apresentação são estudos visuais da coleção. Formas, cores e materiais serão confirmados com as peças físicas.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Quando posso comprar?
+              <svg>
+                <use href="#i-plus"/>
+              </svg>
+            </summary>
+            <p>
+              Estamos preparando a coleção. Preços, disponibilidade e prazos serão apresentados quando as peças estiverem prontas para compra. Por enquanto, você pode conhecer e salvar suas favoritas neste navegador.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="footer-top">
+        <p class="eyebrow">
+          O próximo capítulo começa com uma ideia.
+        </p>
+        <h2>
+          Vamos acender
+          <br>
+          possibilidades.
+        </h2>
+        <a href="#colecao" class="button button-light">
+          Encontre sua luz
+          <svg>
+            <use href="#i-arrow"/>
+          </svg>
+        </a>
+      </div>
+      <div class="footer-bottom">
+        <a class="wordmark" href="#inicio">
+          Per Parte
+        </a>
+        <p>
+          Criado por você,
+          <br>
+          feito por partes.
+        </p>
+        <nav aria-label="Rodapé">
+          <a href="#colecao">
+            Luminárias
+          </a>
+          <a href="#processo">
+            Como é feita
+          </a>
+          <a href="#essencia">
+            Nossa essência
+          </a>
+          <a href="#duvidas">
+            Dúvidas
+          </a>
+          <button data-open-favorites>
+            Minhas favoritas
+          </button>
+        </nav>
+      </div>
+      <div class="footer-colophon">
+        <span>
+          © 2026 Per Parte
+        </span>
+        <span>
+          Coleção em estudo · Brasil
+        </span>
+        <a href="#inicio">
+          Voltar ao topo ↑
+        </a>
+      </div>
+    </footer>
+    <dialog id="product-dialog" class="product-dialog" aria-labelledby="dialog-product-title">
+      <button class="dialog-close icon-button" data-close-dialog aria-label="Fechar detalhes">
+        <svg>
+          <use href="#i-close"/>
+        </svg>
+      </button>
+      <div class="dialog-product-image">
+        <img id="dialog-product-image" src="/images/duna.png" alt="">
+      </div>
+      <div class="dialog-product-copy">
+        <p class="eyebrow" id="dialog-product-family">
+        </p>
+        <h2 id="dialog-product-title">
+        </h2>
+        <p class="dialog-product-tagline" id="dialog-product-tagline">
+        </p>
+        <p id="dialog-product-description">
+        </p>
+        <div class="dialog-palette" id="dialog-product-palette">
+        </div>
+        <button class="button button-brasa" id="dialog-save">
+          <svg>
+            <use href="#i-heart"/>
+          </svg>
+          <span>
+            Salvar esta composição
+          </span>
+        </button>
+        <p class="dialog-concept">
+          Composição em estudo. Imagem conceitual. Cores, proporções e materiais sujeitos à validação física.
+        </p>
+        <a class="text-link" href="#duvidas" data-dialog-anchor>
+          Dúvidas sobre a coleção
+          <svg>
+            <use href="#i-arrow"/>
+          </svg>
+        </a>
+      </div>
+    </dialog>
+    <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+      <button class="dialog-close icon-button" data-close-dialog aria-label="Fechar busca">
+        <svg>
+          <use href="#i-close"/>
+        </svg>
+      </button>
+      <p class="eyebrow">
+        Vamos encontrar sua luz
+      </p>
+      <h2 id="search-title">
+        O que você procura?
+      </h2>
+      <label class="search-field">
+        <svg>
+          <use href="#i-search"/>
+        </svg>
+        <input id="search-input" type="search" placeholder="Busque por nome, cor ou forma" autocomplete="off" aria-label="Buscar por nome, cor ou forma">
+      </label>
+      <div id="search-results" class="search-results" aria-live="polite">
+      </div>
+    </dialog>
+    <dialog id="favorites-dialog" class="search-dialog" aria-labelledby="favorites-title">
+      <button class="dialog-close icon-button" data-close-dialog aria-label="Fechar favoritas">
+        <svg>
+          <use href="#i-close"/>
+        </svg>
+      </button>
+      <p class="eyebrow">
+        Um lugar para suas escolhas
+      </p>
+      <h2 id="favorites-title">
+        Suas favoritas.
+      </h2>
+      <p class="favorites-explainer">
+        Salvas neste navegador, para você voltar quando quiser.
+      </p>
+      <div id="favorites-results" class="search-results" aria-live="polite">
+      </div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite">
+    </div>
+  </body>
+</html>

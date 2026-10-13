@@ -22,8 +22,14 @@
 
 ## Etapa 2 — Aplicativos
 
-- [ ] Implementar o site com a linguagem visual aprovada.
+- [x] Criar a landing visual local para três luminárias, com direção Per Parte e referência estrutural Gantri.
+- [x] Adotar HTML, CSS e JavaScript com Node nativo para o protótipo reversível do site (ADR 0003).
+- [x] Concluir a verificação do protótipo em desktop/mobile e registrar os resultados em `.claude/state.md`.
+- [ ] Revisar com os sócios coleção, nomes propostos, imagens conceituais e linguagem visual antes da versão comercial.
+- [ ] Implementar a versão comercial do site após conteúdo, condições e integrações aprovados.
 - [ ] Implementar o configurador com controles fabricáveis, preço vivo e prévia fiel.
 - [ ] Integrar fabricação, contas e checkout somente após contratos e decisões aprovados.
+
+**Revisão atual:** Marco é a referência da revista; Duna e Farol são propostas. A interface permite exploração local, sem compra ou configuração conectada. Publicação e push seguem adiados por decisão do usuário.
 
 **Nota:** a revista lista uma janela entre Carnaval e Páscoa de 2027 e um D-Zero ainda sem data (pp. 8–9, 65–66). Não é prazo assumido pelo código.

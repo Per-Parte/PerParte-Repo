@@ -9,7 +9,7 @@
 
 ## Estado do recomeço
 
-Este repositório foi reiniciado em 13/10/2026. `apps/site` e `apps/configurador` são workspaces vazios, sem framework escolhido. `apps/quadro` é o quadro visual local do projeto; `packages/design-system` contém tokens iniciais da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
+Este repositório foi reiniciado em 13/10/2026. `apps/site` é um protótipo de landing visual em HTML, CSS e JavaScript, com servidor Node nativo na porta 4174 e build estático (ADR 0003). `apps/configurador` continua vazio; backend e stack final do produto permanecem em aberto. `apps/quadro` é o quadro visual local do projeto na porta 4173; `packages/design-system` contém os tokens compartilhados da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
 
 ## Regras
 
@@ -19,8 +19,10 @@ Este repositório foi reiniciado em 13/10/2026. `apps/site` e `apps/configurador
 - Segurança elétrica herdada das instruções do projeto: somente LED de até 9 W, pelo menos 25 mm entre lâmpada e parede impressa, e nenhuma parte condutora desenhada pelo cliente. Confirme a engenharia antes de implementar fabricação.
 - Sem IA no produto, conforme direção anterior do projeto, até nova decisão explícita.
 - Gantri é benchmark de pesquisa em `docs/pesquisa/gantri.md`. Seus tokens não são tokens da Per Parte.
+- A landing apresenta Marco, Duna e Farol como coleção em estudo. Duna/Farol e seus desenhos são propostas; todas as imagens geradas são conceituais. Não inferir fabricação, estoque, preço ou condições comerciais a partir da interface.
+- Interações locais da landing não conectam compra, conta, cadastro, produção ou configurador. Respeite pausa de slideshow, teclado e preferência por menos movimento.
 - Notas vivas do cofre Obsidian ficam fora deste repositório. Nunca apague `Documents\Projeto Per Parte`.
-- Faça `git pull` no início e `git push` ao fim da sessão quando as credenciais permitirem.
+- Faça `git pull` no início quando as credenciais permitirem. Publicação e `git push` estão adiados por pedido do usuário (“Publicamos depois”); retome apenas após nova orientação.
 
 ## Manutenção do contexto
 

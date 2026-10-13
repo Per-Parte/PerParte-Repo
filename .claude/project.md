@@ -24,4 +24,14 @@ A constante visual é a **Luz Acesa** `#F6E7C4`; Brasa `#A90000` é a assinatura
 
 ## Limites desta etapa
 
-O monorepo define site e configurador em workspaces separados, ainda vazios, um pacote de tokens e um quadro visual local em `apps/quadro` para organizar o contexto. O quadro não substitui a revista nem os documentos oficiais e ainda não sincroniza entre pessoas. Nenhum framework de produto, backend, preço, royalty ou contrato de API foi implementado. A pesquisa Gantri informa escolhas, sem substituir as decisões da revista. O recomeço está registrado em `.claude/adr/0001-reinicio-e-fonte-mestre.md`; a escolha inicial do quadro está em `.claude/adr/0002-quadro-local.md`.
+O monorepo separa `apps/site`, `apps/configurador`, `apps/quadro` e `packages/design-system`. O site é um protótipo visual de landing em HTML, CSS e JavaScript, servido localmente por Node, para apresentar três composições. O configurador continua vazio; sua stack permanece em aberto. O quadro reúne documentos e notas locais, sem sincronização entre pessoas, e não substitui a revista nem os documentos oficiais.
+
+### Landing em revisão
+
+A página usa a estrutura editorial e os comportamentos observados na Gantri por capturas da extensão do Chrome, adaptados à identidade Per Parte: fotografia ampla, navegação sobre o destaque, títulos com respiro, botões arredondados, coleção, ambientes, processo e manifesto. Cores e tipografia vêm do design system compartilhado; a tipografia continua **PROVISÓRIA**.
+
+As três luminárias são **Marco**, cujo nome e composição-base aparecem na revista, e **Duna** e **Farol**, nomes e desenhos em **PROPOSTA**. Todas as imagens geradas são estudos conceituais; não comprovam fabricação nem homologação. A direção editorial e a origem das afirmações ficam em `docs/site-direcao-conteudo.md`.
+
+Slideshow, seleção de ambientes, acordeão, detalhes de produto, busca e favoritos funcionam apenas na interface local. Não há preços inventados, checkout, conta, envio de cadastro, integração comercial ou configurador conectado. A geração de imagens faz parte da criação dos assets do protótipo; não adiciona IA ao produto. A revisão é local e a publicação foi adiada pelo usuário: “Publicamos depois”.
+
+O recomeço está em `.claude/adr/0001-reinicio-e-fonte-mestre.md`, o quadro em `.claude/adr/0002-quadro-local.md` e a escolha reversível do site estático em `.claude/adr/0003-site-visual-estatico.md`. A pesquisa Gantri informa a composição, sem substituir as decisões da revista nem fixar a stack do futuro produto comercial.
