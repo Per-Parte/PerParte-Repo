@@ -4,6 +4,8 @@
 
 > **Verificações da etapa:** PDF copiado com SHA-256 igual ao original e transcrição com 67 marcadores de página; `npm ci --offline --ignore-scripts` passou após permitir a criação dos links locais de workspaces no Windows; `npm ls --workspaces --depth=0` reconheceu site, configurador e design-system; `npm run tokens:verificar` e importação JS passaram. A suíte Extract Design System gerou dados brutos da Gantri, mas não reconheceu cores da homepage dinâmica; medições complementares de estilos computados estão em `docs/pesquisa/gantri.md`.
 
+> **Publicação pendente:** `git push -u origin codex/reinicio-marca-2026-10-13` retornou HTTP 403: a única credencial GitHub disponível é `FainowAI`, sem permissão em `Per-Parte/PerParte-Repo`; `gh auth status` informa token inválido. O trabalho permanece em commits locais na branch `codex/reinicio-marca-2026-10-13`. Autenticar uma conta com acesso e repetir o push.
+
 ## Próximo passo
 
 Revisar com Caio e Davi os pontos `EM ABERTO` da revista, especialmente logo e tipografia finais, filamentos, preço, prazo, garantia e engenharia elétrica. Só então escolher stack e começar os aplicativos.
