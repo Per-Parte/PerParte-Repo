@@ -1,7 +1,11 @@
 node_modules/
 .next/
-.obsidian/
-.DS_Store
+dist/
+build/
+.turbo/
 .env*
 !.env.example
 *.tsbuildinfo
+.DS_Store
+.playwright-mcp/
+skill-observations/

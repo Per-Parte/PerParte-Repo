@@ -1,14 +1,15 @@
 {
   "name": "per-parte",
   "private": true,
+  "version": "0.0.0",
+  "description": "Monorepo inicial da Per Parte: site, configurador e design system.",
+  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/web",
-    "lint": "npm run lint -w apps/web",
-    "test": "npm run test -w packages/nucleo"
+    "tokens:gerar": "node packages/design-system/gerar.mjs",
+    "tokens:verificar": "node packages/design-system/gerar.mjs --check"
   }
 }

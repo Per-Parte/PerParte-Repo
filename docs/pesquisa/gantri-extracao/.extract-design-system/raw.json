@@ -1,0 +1,643 @@
+{
+  "url": "https://www.gantri.com/",
+  "extractedAt": "2026-10-13T18:17:26.198Z",
+  "siteName": "Gantri",
+  "logo": {
+    "source": "svg",
+    "url": "https://www.gantri.com/",
+    "width": 15,
+    "height": 15,
+    "safeZone": {
+      "top": 0,
+      "right": 0,
+      "bottom": 0,
+      "left": 0
+    },
+    "background": null
+  },
+  "favicons": [
+    {
+      "type": "icon",
+      "url": "https://www.gantri.com/favicon.png",
+      "sizes": null
+    },
+    {
+      "type": "og:image",
+      "url": "https://gantri.com/logo-large.png",
+      "sizes": null
+    },
+    {
+      "type": "favicon.ico",
+      "url": "https://www.gantri.com/favicon.ico",
+      "sizes": null
+    }
+  ],
+  "colors": {
+    "semantic": {},
+    "palette": [
+      {
+        "color": "rgb(0, 0, 0)",
+        "normalized": "#000000",
+        "count": 1251,
+        "confidence": "high",
+        "sources": [
+          "sc-88661b3a-0",
+          "sc-88661b3a-1",
+          "styledbutton-sc-12w1zik-0"
+        ],
+        "lch": "lch(0% 0 0)",
+        "oklch": "oklch(0% 0 0)"
+      },
+      {
+        "color": "rgb(255, 255, 255)",
+        "normalized": "#ffffff",
+        "count": 278,
+        "confidence": "high",
+        "sources": [
+          "styledbuttoncontent-sc-12w1zik"
+        ],
+        "lch": "lch(100% 0 158.2)",
+        "oklch": "oklch(100% 0 89.88)"
+      },
+      {
+        "color": "rgb(0, 133, 91)",
+        "normalized": "#00855b",
+        "count": 126,
+        "confidence": "high",
+        "sources": [
+          "styledbutton-sc-12w1zik-0"
+        ],
+        "lch": "lch(48.92% 43.97 161.27)",
+        "oklch": "oklch(54.53% 0.119 162.45)"
+      },
+      {
+        "color": "rgb(132, 132, 132)",
+        "normalized": "#848484",
+        "count": 74,
+        "confidence": "high",
+        "sources": [],
+        "lch": "lch(55.15% 0 158.2)",
+        "oklch": "oklch(61.33% 0 89.88)"
+      }
+    ],
+    "cssVariables": {
+      "--button-ghost-processing-icon-color-opaque": {
+        "value": "rgba(0 0 0 / 20%)"
+      },
+      "--button-secondarycontrast-processing-icon-color-opaque": {
+        "value": "rgba(255 255 255 / 20%)"
+      },
+      "--text-highlight": {
+        "value": "#9BFBB3",
+        "lch": "lch(91.33% 50.23 149.09)",
+        "oklch": "oklch(91.01% 0.135 150.97)"
+      },
+      "--text-warning": {
+        "value": "#DE7E00",
+        "lch": "lch(62.05% 75.15 65.97)",
+        "oklch": "oklch(68.41% 0.159 60.91)"
+      },
+      "--text-success": {
+        "value": "#7393E8",
+        "lch": "lch(61.94% 48.01 284.61)",
+        "oklch": "oklch(67.61% 0.131 267.24)"
+      },
+      "--text-alert": {
+        "value": "#F47783",
+        "lch": "lch(65.02% 51.64 18.5)",
+        "oklch": "oklch(71.73% 0.153 15.79)"
+      },
+      "--text-link": {
+        "value": "#00cc88",
+        "lch": "lch(72.87% 62.41 159.14)",
+        "oklch": "oklch(74.6% 0.168 160.43)"
+      }
+    },
+    "_raw": [
+      {
+        "color": "rgb(0, 0, 0)",
+        "normalized": "#000000",
+        "count": 1251
+      },
+      {
+        "color": "rgb(0, 133, 91)",
+        "normalized": "#00855b",
+        "count": 126
+      },
+      {
+        "color": "rgb(255, 255, 255)",
+        "normalized": "#ffffff",
+        "count": 278
+      },
+      {
+        "color": "rgb(132, 132, 132)",
+        "normalized": "#848484",
+        "count": 74
+      },
+      {
+        "color": "rgba(229, 229, 229, 0.6)",
+        "normalized": "#e5e5e5",
+        "count": 16
+      }
+    ]
+  },
+  "typography": {
+    "styles": [
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "91px (5.69rem)",
+        "weight": 400,
+        "lineHeight": "1.05",
+        "spacing": "-2.73px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "52px (3.25rem)",
+        "weight": 400,
+        "lineHeight": "1.23",
+        "spacing": "-1px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "36px (2.25rem)",
+        "weight": 400,
+        "lineHeight": "1.33",
+        "spacing": "-0.54px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "24px (1.50rem)",
+        "weight": 400,
+        "lineHeight": "1.33",
+        "spacing": "-0.24px",
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "Sohne Buch",
+        "fallbacks": "Helvetica",
+        "size": "24px (1.50rem)",
+        "weight": 400,
+        "lineHeight": "1.33",
+        "spacing": "-0.24px",
+        "transform": null
+      },
+      {
+        "context": "link",
+        "family": "Sohne Halbfett",
+        "fallbacks": "Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.47",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.60",
+        "spacing": "0.15px",
+        "transform": null
+      },
+      {
+        "context": "button",
+        "family": "Sohne Buch",
+        "fallbacks": "Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.47",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.47",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "Sohne Buch",
+        "fallbacks": "Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.47",
+        "spacing": null,
+        "transform": null
+      },
+      {
+        "context": "heading-1",
+        "family": "Sohne Buch",
+        "fallbacks": "Helvetica",
+        "size": "15px (0.94rem)",
+        "weight": 400,
+        "lineHeight": "1.60",
+        "spacing": "0.15px",
+        "transform": null
+      },
+      {
+        "context": "caption",
+        "family": "__buch_032087",
+        "fallbacks": "__buch_Fallback_032087, Helvetica",
+        "size": "11px (0.69rem)",
+        "weight": 400,
+        "lineHeight": "1.45",
+        "spacing": "0.11px",
+        "transform": null
+      }
+    ],
+    "sources": {
+      "googleFonts": [],
+      "adobeFonts": false,
+      "variableFonts": false
+    }
+  },
+  "spacing": {
+    "scaleType": "8px",
+    "commonValues": [
+      {
+        "px": "2px",
+        "rem": "0.13rem",
+        "count": 9,
+        "numericValue": 2
+      },
+      {
+        "px": "4px",
+        "rem": "0.25rem",
+        "count": 5,
+        "numericValue": 4
+      },
+      {
+        "px": "5px",
+        "rem": "0.31rem",
+        "count": 2,
+        "numericValue": 5
+      },
+      {
+        "px": "8px",
+        "rem": "0.50rem",
+        "count": 44,
+        "numericValue": 8
+      },
+      {
+        "px": "12px",
+        "rem": "0.75rem",
+        "count": 26,
+        "numericValue": 12
+      },
+      {
+        "px": "16px",
+        "rem": "1.00rem",
+        "count": 9,
+        "numericValue": 16
+      },
+      {
+        "px": "24px",
+        "rem": "1.50rem",
+        "count": 28,
+        "numericValue": 24
+      },
+      {
+        "px": "32px",
+        "rem": "2.00rem",
+        "count": 7,
+        "numericValue": 32
+      },
+      {
+        "px": "48px",
+        "rem": "3.00rem",
+        "count": 1,
+        "numericValue": 48
+      },
+      {
+        "px": "64px",
+        "rem": "4.00rem",
+        "count": 5,
+        "numericValue": 64
+      },
+      {
+        "px": "72px",
+        "rem": "4.50rem",
+        "count": 1,
+        "numericValue": 72
+      },
+      {
+        "px": "80px",
+        "rem": "5.00rem",
+        "count": 1,
+        "numericValue": 80
+      },
+      {
+        "px": "128px",
+        "rem": "8.00rem",
+        "count": 9,
+        "numericValue": 128
+      },
+      {
+        "px": "160px",
+        "rem": "10.00rem",
+        "count": 1,
+        "numericValue": 160
+      },
+      {
+        "px": "256px",
+        "rem": "16.00rem",
+        "count": 1,
+        "numericValue": 256
+      }
+    ]
+  },
+  "borderRadius": {
+    "values": [
+      {
+        "value": "4px",
+        "count": 52,
+        "elements": [
+          "div",
+          "link",
+          "button"
+        ],
+        "confidence": "high",
+        "numericValue": 4
+      },
+      {
+        "value": "8px",
+        "count": 2,
+        "elements": [
+          "Shop the Rossi Table Light",
+          "div"
+        ],
+        "confidence": "low",
+        "numericValue": 8
+      },
+      {
+        "value": "12px",
+        "count": 2,
+        "elements": [
+          "div"
+        ],
+        "confidence": "low",
+        "numericValue": 12
+      },
+      {
+        "value": "24px",
+        "count": 1,
+        "elements": [
+          "dialog"
+        ],
+        "confidence": "low",
+        "numericValue": 24
+      },
+      {
+        "value": "40px",
+        "count": 12,
+        "elements": [
+          "button",
+          "Gantri on Instagram"
+        ],
+        "confidence": "high",
+        "numericValue": 40
+      },
+      {
+        "value": "50%",
+        "count": 17,
+        "elements": [
+          "Follow the journey",
+          "Pause slideshow",
+          "Previous best sellers",
+          "Next best sellers",
+          "Previous categories"
+        ],
+        "confidence": "high",
+        "numericValue": 50
+      }
+    ]
+  },
+  "borders": {
+    "combinations": [
+      {
+        "width": "1px 0px 0px",
+        "style": "solid none none",
+        "color": "rgba(255, 255, 255, 0.1)",
+        "count": 3,
+        "elements": [
+          "div"
+        ],
+        "confidence": "low"
+      },
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(255, 255, 255, 0.15)",
+        "count": 1,
+        "elements": [
+          "div"
+        ],
+        "confidence": "low"
+      },
+      {
+        "width": "2px",
+        "style": "inset",
+        "color": "rgb(0, 0, 0)",
+        "count": 1,
+        "elements": [
+          "iframe"
+        ],
+        "confidence": "low"
+      },
+      {
+        "width": "1px",
+        "style": "solid",
+        "color": "rgba(255, 255, 255, 0.1)",
+        "count": 1,
+        "elements": [
+          "dialog"
+        ],
+        "confidence": "low"
+      }
+    ]
+  },
+  "shadows": [
+    {
+      "shadow": "rgba(255, 255, 255, 0.05) 0px 0px 16px 0px inset",
+      "count": 9,
+      "confidence": "high"
+    },
+    {
+      "shadow": "rgba(255, 255, 255, 0.15) 0px 0px 32px 0px inset",
+      "count": 4,
+      "confidence": "medium"
+    },
+    {
+      "shadow": "rgba(255, 255, 255, 0.1) 0px 1px 0px 0px inset",
+      "count": 3,
+      "confidence": "medium"
+    }
+  ],
+  "components": {
+    "buttons": [
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgba(0, 0, 0, 0.07)",
+            "color": "rgb(0, 0, 0)",
+            "padding": "12px 16px",
+            "borderRadius": "40px",
+            "border": "0px none rgb(0, 0, 0)",
+            "boxShadow": "rgba(255, 255, 255, 0.05) 0px 0px 16px 0px inset",
+            "outline": "rgb(0, 0, 0) none 3px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "backgroundColor": "var( --button-secondary-background-hover, #00855B )",
+            "color": "var( --button-secondary-foreground-hover, #FFFFFF )",
+            "boxShadow": "var(--modern-glow-hover)"
+          },
+          "active": {
+            "backgroundColor": "var( --button-secondary-background-active, #28352F )",
+            "color": "var( --button-secondary-foreground-active, #FFFFFF )",
+            "boxShadow": "var(--modern-glow-active,var(--modern-glow-hover))"
+          },
+          "focus": {
+            "boxShadow": "var(--modern-glow-focus,var(--modern-glow-hover))"
+          }
+        },
+        "fontWeight": "400",
+        "fontSize": "15px",
+        "classes": "StyledButton-sc-12w1zik-0 fmHgib",
+        "confidence": "high"
+      },
+      {
+        "states": {
+          "default": {
+            "backgroundColor": "rgb(0, 133, 91)",
+            "color": "rgb(0, 0, 0)",
+            "padding": "12px 24px",
+            "borderRadius": "40px",
+            "border": "0px none rgb(0, 0, 0)",
+            "boxShadow": "rgba(255, 255, 255, 0.15) 0px 0px 32px 0px inset",
+            "outline": "rgb(0, 0, 0) none 3px",
+            "transform": "none",
+            "opacity": "1"
+          },
+          "hover": {
+            "backgroundColor": "var( --button-primary-background-hover, #006646 )",
+            "color": "var( --button-primary-foreground-hover, #FFFFFF )",
+            "boxShadow": "var(--modern-glow-hover)"
+          },
+          "active": {
+            "backgroundColor": "var( --button-primary-background-active, #28352F )",
+            "color": "var( --button-primary-foreground-active, #FFFFFF )",
+            "boxShadow": "var(--modern-glow-active,var(--modern-glow-hover))"
+          },
+          "focus": {
+            "boxShadow": "var(--modern-glow-focus,var(--modern-glow-hover))"
+          }
+        },
+        "fontWeight": "400",
+        "fontSize": "15px",
+        "classes": "StyledButton-sc-12w1zik-0 jvlZmu",
+        "confidence": "high"
+      }
+    ],
+    "inputs": {
+      "text": [
+        {
+          "specificType": "email",
+          "states": {
+            "default": {
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "color": "rgb(255, 255, 255)",
+              "border": "0px none rgb(255, 255, 255)",
+              "borderRadius": "0px",
+              "padding": "24px 0px 8px",
+              "boxShadow": "none",
+              "outline": "rgb(255, 255, 255) none 3px"
+            },
+            "focus": {
+              "boxShadow": "white 0px 0px 0px 30px inset",
+              "color": "white"
+            }
+          }
+        }
+      ],
+      "checkbox": [],
+      "radio": [],
+      "select": []
+    },
+    "links": [
+      {
+        "color": "rgb(0, 133, 91)",
+        "textDecoration": "none",
+        "fontWeight": "400",
+        "states": {
+          "default": {
+            "color": "rgb(0, 133, 91)",
+            "textDecoration": "none"
+          },
+          "hover": {
+            "color": "rgb(0, 204, 136)",
+            "textDecoration": "underline"
+          }
+        }
+      },
+      {
+        "color": "rgb(0, 0, 0)",
+        "textDecoration": "none",
+        "fontWeight": "400",
+        "states": {
+          "default": {
+            "color": "rgb(0, 0, 0)",
+            "textDecoration": "none"
+          },
+          "hover": {
+            "color": "rgb(0, 204, 136)",
+            "textDecoration": "underline"
+          }
+        }
+      }
+    ],
+    "badges": {
+      "all": [],
+      "byVariant": {
+        "error": [],
+        "warning": [],
+        "success": [],
+        "info": [],
+        "neutral": []
+      }
+    }
+  },
+  "breakpoints": [
+    {
+      "px": "720px"
+    },
+    {
+      "px": "1024px"
+    },
+    {
+      "px": "1920px"
+    }
+  ],
+  "iconSystem": [],
+  "frameworks": []
+}

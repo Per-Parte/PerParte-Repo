@@ -1,0 +1,7 @@
+{
+  "name": "@perparte/configurador",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Workspace reservado ao aplicativo configurador da Per Parte.",
+  "type": "module"
+}

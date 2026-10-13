@@ -1,0 +1,40 @@
+{
+  "source": {
+    "url": "https://www.gantri.com/",
+    "extractedAt": "2026-10-13T18:17:26.198Z",
+    "extractor": "dembrandt"
+  },
+  "colors": {
+    "palette": [],
+    "cssVariables": {}
+  },
+  "typography": {
+    "headingFont": "__buch_032087",
+    "bodyFont": "__buch_032087"
+  },
+  "spacing": {
+    "scale": [
+      "2px",
+      "4px",
+      "5px",
+      "8px",
+      "12px",
+      "16px",
+      "24px",
+      "32px",
+      "48px",
+      "64px",
+      "72px",
+      "80px",
+      "128px",
+      "160px",
+      "256px"
+    ]
+  },
+  "radius": {
+    "scale": []
+  },
+  "shadows": {
+    "scale": []
+  }
+}

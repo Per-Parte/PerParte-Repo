@@ -1,0 +1,12 @@
+{
+  "name": "@perparte/design-system",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tokens iniciais da Revista de Marca da Per Parte.",
+  "type": "module",
+  "exports": {
+    "./tokens.json": "./tokens.json",
+    "./tokens.css": "./tokens.css",
+    "./tokens.mjs": "./tokens.mjs"
+  }
+}
