@@ -10,7 +10,7 @@ createServer(async (pedido, resposta) => {
   try {
     const caminho = decodeURIComponent(new URL(pedido.url, 'http://localhost').pathname);
     const relativo = caminho === '/' ? 'index.html' : caminho.replace(/^\/+/, '');
-    const permitido = ['index.html', 'styles.css', 'app.js', 'fonts.css', 'favicon.svg', 'tokens.css'].includes(relativo) || relativo.startsWith('images/') || relativo.startsWith('fonts/');
+    const permitido = ['index.html', 'styles.css', 'app.js', 'paleta.css', 'paleta.js', 'fonts.css', 'favicon.svg', 'tokens.css'].includes(relativo) || relativo.startsWith('images/') || relativo.startsWith('fonts/');
     if (!permitido) { resposta.writeHead(404); resposta.end('Página não encontrada.'); return; }
     const base = relativo.startsWith('images/') || relativo.startsWith('fonts/') ? (process.argv.includes('--dist') ? raiz : path.join(raiz, 'public')) : raiz;
     const arquivo = relativo === 'tokens.css' && !process.argv.includes('--dist') ? fileURLToPath(new URL('../../packages/design-system/tokens.css', import.meta.url)) : path.resolve(base, relativo);

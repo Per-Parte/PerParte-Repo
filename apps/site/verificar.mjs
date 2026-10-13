@@ -7,7 +7,7 @@ const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(item => item[1]);
 assert.equal(new Set(ids).size, ids.length, 'IDs HTML devem ser únicos.');
 for (const [, ancora] of html.matchAll(/\bhref="#([^"]+)"/g)) assert(ids.includes(ancora), `Âncora inexistente: ${ancora}`);
 for (const [, caminho] of html.matchAll(/(?:src|href)="(\/images\/[^"?#]+)"/g)) await access(new URL(`./public${caminho}`, import.meta.url));
-for (const arquivo of ['app.js', 'servidor.mjs', 'construir.mjs']) {
+for (const arquivo of ['app.js', 'paleta.js', 'servidor.mjs', 'construir.mjs']) {
   const resultado = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(arquivo, import.meta.url))], { encoding: 'utf8' });
   if (resultado.status !== 0) throw new Error(`${arquivo}: ${resultado.stderr}`);
 }

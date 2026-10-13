@@ -1,6 +1,6 @@
 # Imagens da landing Per Parte
 
-Data: 13/10/2026. Estado: **PROPOSTA / imagens conceituais**. Oito imagens originais foram geradas com `image_gen` nesta sessão e copiadas para `apps/site/public/images/`. Não são fotos de produtos fabricados nem material da Gantri. A direção editorial está em [site-direcao-conteudo.md](site-direcao-conteudo.md).
+Data: 13/10/2026. Estado: **PROPOSTA / imagens conceituais**. Dez imagens originais foram geradas com `image_gen` nesta sessão e copiadas para `apps/site/public/images/`. Não são fotos de produtos fabricados nem material da Gantri. A direção editorial está em [site-direcao-conteudo.md](site-direcao-conteudo.md).
 
 ## Manifesto de arquivos
 
@@ -16,8 +16,12 @@ Dimensões conferidas nos cabeçalhos PNG. A correspondência com os originais f
 | `ambiente-farol.png` | 1536 × 1024 | Farol em escritório/espaço de criação; ambientes e galeria | `exec-fa99cb19-abf8-467b-8d58-1163f64c0707.png` |
 | `detalhes-duna.png` | 1254 × 1254 | Macro do encontro Brasa/creme e das camadas; processo e galeria | `exec-939f48fb-6904-48fe-9938-e2a34cceb8db.png` |
 | `manifesto.png` | 1536 × 1024 | Marco à direita sobre cenário vinho escuro; painel de manifesto | `exec-589ad93f-9cad-4467-9a80-8e9f75e47eb9.png` |
+| `hero-marco-homem.png` | 1536 × 1024 | Campanha: homem sentado, camisa de linho clara, Marco nas mãos e fundo vinho; espaço livre à esquerda | `exec-5c3f1ea6-09ed-4287-a2c6-27477fc13ed2.png` |
+| `hero-farol-mulher.png` | 1536 × 1024 | Fotografia estática: mulher em gesto de dança ao lado de Farol, cenário Lago; não é vídeo | `exec-b8c5b9e1-a5e4-40e6-b0b7-74fbb81ab273.png` |
 
 Pasta dos originais: `C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/`. Os arquivos públicos fazem parte do projeto; o caminho dos originais registra a proveniência local da geração.
+
+Na revisão, os dois novos PNGs foram conferidos em 1536 × 1024 e correspondem byte a byte aos originais. SHA-256 de `hero-marco-homem.png`: `884496ade42aa1f080e1fc3fa9549f4e998506d864dda4c0d23ef252c2c3f4af`; de `hero-farol-mulher.png`: `8a504f39279bb844aa68fb38f179225c926a9fc8e0aeb0a24ac34b61c143c42e`.
 
 ## Prompts base
 
@@ -48,8 +52,12 @@ Transcrição dos prompts de direção em `docs/site-direcao-conteudo.md`. São 
 | Escritório Farol | Retira o fundo infinito de catálogo e situa a mesma luminária em espaço de trabalho/criação | `farol.png` |
 | Macro Duna | Aproxima a junção e textura descritas na base, preservando cor e forma do produto de referência | `duna.png` |
 | Manifesto Marco | Retira o fundo bege e coloca Marco no lado direito de cenário vinho escuro, deixando espaço negativo para a mensagem | `marco.png` |
+| Homem com Marco | Acrescenta uma pessoa sentada em banco, com camisa clara de linho e calça vinho; Marco é segurada com as duas mãos; fundo vinho e área negativa à esquerda | `marco.png` |
+| Mulher com Farol | Acrescenta uma pessoa em pose/gesto de dança, calça clara e roupa Lago; Farol acesa permanece sobre um cubo ao lado, em fundo Lago | `farol.png` |
 
 As imagens de catálogo foram usadas como referência nas gerações derivadas de hero, ambientes e macro para manter silhueta, partes e cores. Isso melhora consistência entre cenas; a geração ainda é uma interpretação visual, não uma especificação geométrica ou industrial.
+
+`hero-farol-mulher.png` registra um gesto em uma única imagem. Ela pode servir como poster ou referência para uma geração posterior, mas não entrega movimento de dança. O requisito de vídeo e a disponibilidade das ferramentas estão em [video-campanha-disponibilidade.md](pesquisa/video-campanha-disponibilidade.md).
 
 ## Uso no site
 
@@ -57,4 +65,4 @@ As imagens de catálogo foram usadas como referência nas gerações derivadas d
 - Ajustar o recorte com `object-position` para manter pessoa/produto visíveis nos diferentes viewports; não substituir as imagens por placeholders vazios.
 - Usar texto alternativo descritivo nas imagens de conteúdo; imagens repetidas dentro de um controle já nomeado podem ter `alt` vazio.
 - Manter a nota de coleção em estudo e o esclarecimento no FAQ. Não adicionar certificações, material homologado, avaliações ou alegações de fabricação a partir dos renders.
-- Preservar fotografias originais e prompts de direção para novas gerações consistentes. Os oito arquivos PNG são a primeira entrega; uma futura conversão para formatos menores deve conservar os originais e ser conferida visualmente.
+- Preservar fotografias originais e prompts de direção para novas gerações consistentes. Os dez arquivos PNG compõem a entrega e sua revisão; uma futura conversão para formatos menores deve conservar os originais e ser conferida visualmente.

@@ -25,11 +25,16 @@
 - [x] Criar a landing visual local para três luminárias, com direção Per Parte e referência estrutural Gantri.
 - [x] Adotar HTML, CSS e JavaScript com Node nativo para o protótipo reversível do site (ADR 0003).
 - [x] Concluir a verificação do protótipo em desktop/mobile e registrar os resultados em `.claude/state.md`.
+- [x] Implementar a revisão visual: menu de vidro escuro, três cenas e triptico de fotos, modais/fotos arredondados, Missão, rodapé amplo, processo por scroll e paleta visual de 25 cores.
+- [x] Verificar na revisão desktop a sequência dos três passos por PageDown e a paleta/ocultação durante modal sem alterar as imagens dos produtos.
+- [x] Verificar cor branca de Marco, seção Missão e navegação/paleta móvel em 351 × 760 CSS px, sem overflow e com seleção por teclado.
+- [x] Concluir enquadramento do hero masculino móvel, confirmar console sem erros e repetir build/check após as últimas alterações; resultados em `docs/revisao-landing-2026-10-13.md`.
+- [ ] Gerar e integrar vídeo real de pessoa dançando com luminária Per Parte; acesso a gerador ainda pendente, sem resposta do usuário à pergunta de conexão.
 - [ ] Revisar com os sócios coleção, nomes propostos, imagens conceituais e linguagem visual antes da versão comercial.
 - [ ] Implementar a versão comercial do site após conteúdo, condições e integrações aprovados.
 - [ ] Implementar o configurador com controles fabricáveis, preço vivo e prévia fiel.
 - [ ] Integrar fabricação, contas e checkout somente após contratos e decisões aprovados.
 
-**Revisão atual:** Marco é a referência da revista; Duna e Farol são propostas. A interface permite exploração local, sem compra ou configuração conectada. Publicação e push seguem adiados por decisão do usuário.
+**Revisão atual:** dez imagens conceituais originais; Marco é a referência da revista, Duna e Farol são propostas. A foto da mulher em gesto de dança não conclui o pedido de vídeo. A paleta reproduz um estudo visual do benchmark sem instituir catálogo comercial de cores. A interface permite exploração local, sem compra ou configuração conectada. Publicação e push seguem adiados por decisão do usuário.
 
 **Nota:** a revista lista uma janela entre Carnaval e Páscoa de 2027 e um D-Zero ainda sem data (pp. 8–9, 65–66). Não é prazo assumido pelo código.
