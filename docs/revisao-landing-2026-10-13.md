@@ -1,5 +1,33 @@
 # Revisão visual da landing — 13/10/2026
 
+## Revisão artística posterior — concluída e verificada
+
+Direção estética aprovada pelo usuário: expressões individualizadas, figurinos dramáticos/artísticos e cenários surrealistas coloridos a partir de três referências Gantri. Preservar os três produtos Per Parte como referência das gerações; as imagens permanecem estudos conceituais. Ver `direcao-artistica-imagens.md`.
+
+Orientação posterior do usuário: mudar somente as personagens das três campanhas para adequação à persona da revista (pp. 16–18), preservando cenário, câmera e luminária. Esse refinamento foi gerado e inspecionado. Idade/atitude e estilo pessoal orientam o casting; gênero, etnia e aparência escolhidos não são requisitos demográficos da fonte. As quatro inspirações permanecem preservadas.
+
+- [x] Gerar e integrar três novas imagens de campanha.
+- [x] Refinar apenas as personagens das três campanhas conforme a última orientação e conferir os novos originais/hashes.
+- [x] Gerar e integrar quatro imagens de inspiração, ampliando a galeria para oito cards.
+- [x] Conferir dimensões, hashes/originais e manifesto dos 17 PNGs, mantendo os dez anteriores.
+- [x] Conferir recortes, leitura, consistência de produto e carregamento no site desktop/móvel; repetir verificações técnicas adequadas à alteração.
+
+### Evidência desta revisão artística
+
+| Verificação | Resultado | Capturas em `pesquisa/perparte-capturas/` |
+|---|---|---|
+| Campanhas desktop | Duna e Farol conferidas no Chrome pela extensão em 1482 × 734; Marco no navegador integrado em 1280 × 720 | `13-campanha-duna-persona-desktop.jpg`, `14-campanha-marco-persona-desktop.jpg`, `15-campanha-farol-persona-desktop.jpg` |
+| Galeria | Oito cards; quatro novas imagens carregadas; seta avançou `scrollLeft` de 0 para 339; card do trio levou a `#colecao` | `16-galeria-artistica-desktop.jpg`, navegador integrado 1280 × 720 |
+| Campanhas móveis | Três heros em 390 × 844, rostos/luminárias inteiros, fundos corretos e sem overflow horizontal | `17-campanha-marco-persona-mobile.jpg`, `18-campanha-duna-persona-mobile.jpg`, `19-campanha-farol-persona-mobile.jpg` |
+| Três personagens finais | Três cards abaixo do hero e navbar conferidos juntos | `20-tres-personagens-final.jpg`, navegador integrado 1280 × 720 |
+| Verificações técnicas | `npm run site:check`, `npm run site:build` e `git diff --check` passaram; console do navegador integrado sem erros | Resultados da revisão final das imagens |
+
+Parte do QA usou o navegador integrado isolado porque houve navegação externa simultânea no Chrome. As capturas informam a superfície realmente usada; não foram todas produzidas pela extensão. Os arquivos individuais e seus hashes foram conferidos antes da revisão renderizada. A alteração não adiciona funcionalidade comercial nem geração de vídeo.
+
+O vídeo segue adiado pelo usuário; essa rodada produz imagens estáticas. O seletor de cor não deve recolorir os produtos.
+
+## Revisão anterior da interface — validada
+
 Solicitações do usuário após revisão da primeira versão. Estado deste registro: revisão da interface validada em desktop/móvel, incluindo enquadramento do hero e comandos finais. O vídeo real é a pendência restante desta revisão. Publicação e push continuam adiados. Nenhuma nova decisão de arquitetura foi introduzida.
 
 ## Checklist
@@ -17,7 +45,7 @@ Solicitações do usuário após revisão da primeira versão. Estado deste regi
 - [x] Verificar navegação e paleta móvel em 351 × 760 CSS px, sem overflow; foco e seleção por teclado após a correção.
 - [x] Enquadramento da cabeça no hero masculino móvel conferido abaixo da navbar; fundo Vinho `#670700` une a faixa superior.
 - [x] Build/check finais após correção de foco passaram; build repetido após o último CSS também passou.
-- [ ] Vídeo real de pessoa dançando com luminária. Pendente de gerador de vídeo conectado; ver `pesquisa/video-campanha-disponibilidade.md`.
+- [ ] Vídeo real de pessoa dançando com luminária. Adiado pelo usuário em 13/10/2026; retomar quando solicitado. Ver `pesquisa/video-campanha-disponibilidade.md`.
 
 ## Evidência de verificação até este registro
 
@@ -39,7 +67,7 @@ As capturas ficam em `pesquisa/perparte-capturas/`. Os testes da primeira versã
 
 ## Pendência de vídeo
 
-Não há gerador de vídeo conectado. A pergunta de acesso enviada ao usuário ainda não recebeu resposta neste registro. A imagem `hero-farol-mulher.png` mostra uma pose de dança, mas é PNG estático. Nenhum vídeo deve ser marcado como disponível ou concluído sem arquivo reproduzível e revisão da ação e da luminária durante o clipe.
+Em 13/10/2026, o usuário decidiu deixar o vídeo pendente por enquanto. Manter a fotografia atual e retomar a geração quando solicitado. Não há gerador de vídeo conectado. A imagem `hero-farol-mulher.png` mostra uma pose de dança, mas é PNG estático. Nenhum vídeo deve ser marcado como disponível ou concluído sem arquivo reproduzível e revisão da ação e da luminária durante o clipe.
 
 ## Limites e decisões
 

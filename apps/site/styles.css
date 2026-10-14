@@ -2165,7 +2165,7 @@ dialog[open]  {
     display:flex;
   }
   .hero-slide[data-slide="0"] img  {
-    object-position:71% top;
+    object-position:77% top;
   }
   .hero  {
     height:100svh;
@@ -2184,7 +2184,7 @@ dialog[open]  {
     padding-top:96px;
   }
   .hero-shade  {
-    background:linear-gradient(0deg,rgba(67,0,0,.65),rgba(103,7,0,.4) 22%,transparent 59%)
+    background:linear-gradient(0deg,color-mix(in srgb,var(--pp-cor-preto-simbolo) 65%,transparent),color-mix(in srgb,var(--pp-cor-preto-simbolo) 18%,transparent) 25%,transparent 59%)
   }
   .hero-content  {
     top:auto;
@@ -2856,14 +2856,21 @@ dialog[open]  {
   white-space:nowrap;
 }
 
-.nav-disclosure>span  {
-  font-size:13px;
-  line-height:1;
-  opacity:.7;
-  transition:transform .2s;
+.nav-disclosure>.nav-chevron  {
+  display:block;
+  flex:0 0 12px;
+  width:12px;
+  height:12px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transform-origin:50% 50%;
+  transition:transform .2s ease;
 }
 
-.nav-disclosure[aria-expanded=true]>span  {
+.nav-disclosure[aria-expanded=true]>.nav-chevron  {
   transform:rotate(180deg);
 }
 
@@ -3458,16 +3465,29 @@ controles seguem operáveis. */
   object-position:72% top;
 }
 
-.first-look .story-card:nth-child(2) img  {
-  object-position:74% top;
+.first-look .story-card:first-child img  {
+  object-position:60% top;
 }
 
-.hero-slide[data-slide="2"]  {
-  background:var(--pp-cor-lago);
+.first-look .story-card:nth-child(2) img  {
+  object-position:77% top;
+}
+
+.mega-feature[data-product="marco"] img  {
+  object-position:60% center;
+}
+
+/* Tons de continuidade amostrados das fotos; não são novos tokens de marca. */
+.hero-slide[data-slide="0"] {
+  background:#7a0102;
 }
 
 .hero-slide[data-slide="1"] {
-  background:#670700;
+  background:#0f2a19;
+}
+
+.hero-slide[data-slide="2"] {
+  background:#017fa5;
 }
 
 .mission-image img  {
@@ -3658,7 +3678,10 @@ controles seguem operáveis. */
 }
 
 @media(max-width:560px)  {
-  .hero-slide[data-slide="1"] img,.hero-slide[data-slide="2"] img  {
+  .hero-slide[data-slide="1"] img  {
+    object-position:65% top;
+  }
+  .hero-slide[data-slide="2"] img  {
     object-position:72% top;
   }
   .footer-links  {
@@ -3719,5 +3742,50 @@ controles seguem operáveis. */
   }
   .scroll-process .process-panel  {
     padding-bottom:16px;
+  }
+}
+
+/* Recortes dos estudos: produto e pessoa permanecem juntos na fotografia. */
+.gallery .gallery-card--art img {
+  object-position:center;
+}
+
+.gallery .gallery-card--art[data-product="duna"] img {
+  object-position:76% center;
+}
+
+.gallery .gallery-card--art[data-product="marco"] img {
+  object-position:43% center;
+}
+
+.gallery .gallery-card--art[data-product="farol"] img {
+  object-position:63% center;
+}
+
+/* A cena conjunta ganha largura para apresentar as três obras por inteiro. */
+.gallery-card--collection {
+  min-width:calc((100% - 54px) / 3.5 * 2);
+  width:calc((100% - 54px) / 3.5 * 2);
+}
+
+.gallery-card--collection>.image-wrap {
+  aspect-ratio:1.56;
+}
+
+@media(max-width:800px) {
+  .gallery-card--collection {
+    min-width:calc((100% - 36px) / 3 * 2);
+    width:calc((100% - 36px) / 3 * 2);
+  }
+}
+
+@media(max-width:560px) {
+  .gallery-card--collection {
+    min-width:100%;
+    width:100%;
+  }
+
+  .gallery-card--collection>.image-wrap {
+    aspect-ratio:1.2;
   }
 }

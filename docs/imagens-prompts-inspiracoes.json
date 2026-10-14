@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-10-13",
+  "tool": "image_gen.imagegen (builtin)",
+  "mode": "generate with product references",
+  "status": "PROPOSTA — imagens conceituais para revisão visual",
+  "notes": [
+    "Cada imagem foi gerada em uma chamada independente à ferramenta nativa; sem CLI, edição por código ou pós-processamento.",
+    "As referências foram inspecionadas antes da geração. Produtos preservam as famílias de cor e as silhuetas de referência; Marco mantém exatamente três anéis âmbar.",
+    "Não são fotografias de produtos fabricados, estoque ou comprovação industrial. Não houve geração de vídeo nesta etapa."
+  ],
+  "images": [
+    {
+      "filename": "insp-duna-nuvens.png",
+      "destination": "apps/site/public/images/insp-duna-nuvens.png",
+      "originalPath": "C:/Users/Antônio/.codex/generated_images/01a1372c-6234-7d82-b322-d6b615d3220d/exec-e1f78b1d-d49f-4e20-a211-c8b0b66d9529.png",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "transparentBackground": false,
+      "prompt": "Use case: ads-marketing. Create one photorealistic surreal fashion-editorial photograph for the original Per Parte lighting brand, landscape 1536x1024. Reference image 1 is ONLY the exact Duna product identity; preserve its silhouette and proportions: broad warm cream hemispherical illuminated dome, short cylindrical deep Brasa-red vertically fluted base, fine matte 3D-print layering, clear separate parts. Scene: an inventive theatrical deep Brasa #A90000 studio, a cream sofa assembled from large soft cloud-like upholstery forms, oversized sculptural cream and coral flowers. An adult woman with striking sculptural hair and an oversized coral-and-cream outfit sits relaxed on the cloud sofa, caught in a spontaneous individual laugh, not a neutral model pose. Duna stands clearly visible on a cream pedestal with a visually floating cantilever form near her, at realistic table-lamp scale. Keep the Duna lamp entirely unobscured and recognizable. High-end tactile set design, strange but believable constructed photography, nuanced real skin, rich fabric, generous composition, soft cinematic studio light and genuine photographic shadows. Both person and product crisp enough to read; creatively surreal set, not a conventional living room. Retain the reference lamp shape/colors exactly rather than inventing a new product. No text, typography, logos, watermark, extra lamps, glass or metal lamp materials. This is an original conceptual campaign image, not a manufacturing record.",
+      "referencedImagePaths": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/duna.png"
+      ]
+    },
+    {
+      "filename": "insp-marco-escada.png",
+      "destination": "apps/site/public/images/insp-marco-escada.png",
+      "originalPath": "C:/Users/Antônio/.codex/generated_images/01a1372c-6234-7d82-b322-d6b615d3220d/exec-50c73a78-d4e0-4f88-adc5-eecb10b1c6fa.png",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "transparentBackground": false,
+      "prompt": "Use case: ads-marketing. Create one original photorealistic surreal fashion-editorial photograph for Per Parte, landscape 1536x1024. Input reference image 1 is the exact Marco lamp identity: preserve the low matte olive-green cylindrical base, EXACTLY THREE distinct chunky amber rounded rings stacked above the base, broad warm cream illuminated rounded dome, fine 3D printed matte layering and clear joins. Do not add or remove rings. Scene: a theatrical impossible stairway with wide amber steps and softly rounded corners, a sculptural architectural loop suggesting an Escher-like impossible path but rendered as a real studio installation. Background in deep Vinho #670700 and warm cream. An adult man wears creative black-and-white graphic tailoring, thoughtfully paused in an unusual curious pose on one stair, expressive raised eyebrow and playful individuality rather than generic fashion-model expression. Marco rests on a broad stair platform at a realistic table-lamp scale, fully visible in the foreground next to him, not held, not obstructed. Sharp product geometry and distinct three rings. Warm, artful photographic studio lighting with believable skin, textured fabric, matte sculpture and soft shadows, rich composition with spatial depth. Sophisticated eccentric designer campaign, surprising and playful. Keep reference product silhouette, colors, proportions and materials invariant. No extra lamps, no text, no logos, no watermark, no labels, no glossy metal or glass. This is conceptual set photography, not a physical manufacturing claim.",
+      "referencedImagePaths": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/marco.png"
+      ]
+    },
+    {
+      "filename": "insp-farol-mar.png",
+      "destination": "apps/site/public/images/insp-farol-mar.png",
+      "originalPath": "C:/Users/Antônio/.codex/generated_images/01a1372c-6234-7d82-b322-d6b615d3220d/exec-0194777e-5ac3-4ffd-853f-340403438421.png",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "transparentBackground": false,
+      "prompt": "Use case: ads-marketing. Create one original photorealistic surreal product-editorial campaign photograph for Per Parte, landscape 1536x1024. Reference image 1 supplies the exact Farol lamp product identity: tall slender warm cream illuminated capsule diffuser with fine vertical fluting and rounded ends, small Lago teal joining ring and broad low matte Lago #008795 cylindrical base, visible fine 3D-print layers. Preserve the exact reference silhouette, proportions, colors and distinct joints. Scene: Farol stands dry and fully visible on a small raised island clad in teal ceramic tiles within a shallow calm studio pool. A giant matte warm cream sphere is impossibly suspended above and behind the island, and large cobalt fabric curtains enclose the distant theatrical space. Create spatially surprising gallery-like set design with a real photographic treatment: controlled rippling reflections, tactile tile grout, textured matte sphere, delicate folds in cobalt curtains. No people. Lamp at natural table-lamp scale, foreground hero with clean separation from the floating sphere and curtains. Camera three-quarter perspective, sophisticated editorial composition, luminous warm lamp balanced with cool teal and cobalt, realistic shadows and reflections, believable materials rather than cartoon CGI. This is an artistic conceptual set: the product stays entirely above water and dry, without electrical parts in the water. No other lamps, no text, logos, labels, watermarks or promises. Do not transform the lamp into ceramic, metal or glass.",
+      "referencedImagePaths": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png"
+      ]
+    },
+    {
+      "filename": "insp-trio-galeria.png",
+      "destination": "apps/site/public/images/insp-trio-galeria.png",
+      "originalPath": "C:/Users/Antônio/.codex/generated_images/01a1372c-6234-7d82-b322-d6b615d3220d/exec-14af34b9-7d25-441d-add1-56aa29fe5804.png",
+      "dimensions": {
+        "width": 1536,
+        "height": 1024
+      },
+      "transparentBackground": false,
+      "prompt": "Use case: ads-marketing. Create one original photorealistic surreal gallery campaign photograph for Per Parte, landscape 1536x1024. Use all three supplied images as exact product-identity references, not as background references. Image 1 is Duna: broad warm cream glowing hemispherical dome on a short deep Brasa-red vertically fluted cylindrical base. Image 2 is Marco: low matte olive cylindrical base, EXACTLY THREE separate chunky amber rounded rings, broad warm cream glowing dome. Image 3 is Farol: tall warm cream glowing capsule with fine vertical fluting and rounded ends, a small Lago-teal joining ring over a wide low Lago-teal cylindrical base. Preserve each lamp's reference silhouette, proportions, colors and matte 3D-print texture exactly; render one of each and no other lamps. Scene: an eccentric designer gallery transformed into a surreal world of enormous sculptural 3D forms, a dramatic sculptural rose-pink fabric curtain bending through space, large suspended flat circles and curved volumes, dominant Brasa red, Lago teal and warm cream. Place the three lamps prominently and unobstructed on distinct gallery pedestals in a pleasing triangular composition; they must be clearly identifiable, well separated, at credible relative scale, with Marco's three amber rings countable. Keep lamps in the foreground; surreal giant objects behind support the products rather than obscure them. No people. Premium art-directed studio photography, physically believable materials and light, subtle surface texture, warm lamp glows, playful architectural depth, confident non-generic editorial color. No text, lettering, logos, labels, price tags, watermark, metallic lamp parts or glass. This is an original conceptual brand image, not a picture of manufactured stock.",
+      "referencedImagePaths": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/duna.png",
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/marco.png",
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png"
+      ]
+    }
+  ]
+}

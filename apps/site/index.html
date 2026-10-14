@@ -12,7 +12,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/paleta.css">
-    <link rel="preload" as="image" href="/images/hero-duna.png" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/campanha-duna-jardim.png" fetchpriority="high">
     <script type="module" src="/app.js">
     </script>
     <script type="module" src="/paleta.js">
@@ -56,27 +56,19 @@
       <nav class="desktop-nav" aria-label="Principal">
         <button class="nav-disclosure" data-mega="luminarias" aria-expanded="false" aria-controls="mega-luminarias">
           Luminárias
-          <span aria-hidden="true">
-            ⌄
-          </span>
+          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
         </button>
         <button class="nav-disclosure" data-mega="inspire" aria-expanded="false" aria-controls="mega-inspire">
           Inspire-se
-          <span aria-hidden="true">
-            ⌄
-          </span>
+          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
         </button>
         <button class="nav-disclosure" data-mega="processo" aria-expanded="false" aria-controls="mega-processo">
           Como é feita
-          <span aria-hidden="true">
-            ⌄
-          </span>
+          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
         </button>
         <button class="nav-disclosure" data-mega="marca" aria-expanded="false" aria-controls="mega-marca">
           Per Parte
-          <span aria-hidden="true">
-            ⌄
-          </span>
+          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
         </button>
       </nav>
       <div class="header-actions">
@@ -148,7 +140,7 @@
           </button>
         </div>
         <button class="mega-feature" data-product="marco">
-          <img src="/images/hero-marco-homem.png" alt="Marco acesa nas mãos de um criador">
+          <img src="/images/campanha-marco-orbita.png" alt="Um jovem de óculos e casaco gráfico junto de Marco, sob anéis gigantes suspensos">
           <span>
             <strong>
               A primeira de muitas.
@@ -202,14 +194,14 @@
             Suas favoritas
           </button>
         </div>
-        <a class="mega-feature" href="#ambientes">
-          <img src="/images/ambiente-duna.png" alt="Duna acesa em uma sala acolhedora">
+        <a class="mega-feature" href="#galeria">
+          <img src="/images/insp-duna-nuvens.png" alt="Duna junto de uma mulher em um sofá ondulado, entre flores gigantes">
           <span>
             <strong>
-              Seu canto. Outra luz.
+              Dê espaço à imaginação.
             </strong>
             <small>
-              Explore os ambientes.
+              Explore nossas cenas.
             </small>
           </span>
           <i>
@@ -304,7 +296,7 @@
           </button>
         </div>
         <a class="mega-feature" href="#essencia">
-          <img src="/images/hero-farol-mulher.png" alt="Uma mulher ao lado de Farol no universo Lago">
+          <img src="/images/campanha-farol-cenario.png" alt="Farol em um cenário surreal Lago, com roupa escultural e azulejos">
           <span>
             <strong>
               Mais de você.
@@ -355,13 +347,13 @@
     <main id="conteudo">
       <section class="hero" id="inicio" aria-label="Luz para ser sua">
         <div class="hero-slide active" data-slide="0" data-slide-product="duna">
-          <img src="/images/hero-duna.png" alt="Duna acesa em uma cena editorial vermelha Brasa, ao lado de uma pessoa" fetchpriority="high">
+          <img src="/images/campanha-duna-jardim.png" alt="Uma jovem de cabelo curto cacheado e roupa fúcsia com Duna, entre flores gigantes em um jardim Brasa" fetchpriority="high">
         </div>
         <div class="hero-slide" data-slide="1" data-slide-product="marco">
-          <img src="/images/hero-marco-homem.png" alt="Marco acesa nas mãos de um homem em uma cena Brasa" loading="eager">
+          <img src="/images/campanha-marco-orbita.png" alt="Um jovem de óculos e casaco gráfico junto de Marco, em um cenário verde profundo com anéis suspensos" loading="eager">
         </div>
         <div class="hero-slide" data-slide="2" data-slide-product="farol">
-          <img src="/images/hero-farol-mulher.png" alt="Uma mulher em um gesto de dança ao lado de Farol acesa, em fundo Lago" loading="eager">
+          <img src="/images/campanha-farol-cenario.png" alt="Uma jovem de cabelo ruivo ondulado e roupa em amarelo e cobalto junto de Farol, entre azulejos e esferas suspensas" loading="eager">
         </div>
         <div class="hero-shade">
         </div>
@@ -407,11 +399,11 @@
         </button>
         <div class="hero-controls">
           <div class="slide-dots" aria-label="Cena do destaque">
-            <button class="active" data-go-slide="0" aria-label="Mostrar cena Brasa" aria-pressed="true">
+            <button class="active" data-go-slide="0" aria-label="Mostrar Jardim Brasa com Duna" aria-pressed="true">
             </button>
-            <button data-go-slide="1" aria-label="Mostrar Marco com criador" aria-pressed="false">
+            <button data-go-slide="1" aria-label="Mostrar Órbita com Marco" aria-pressed="false">
             </button>
-            <button data-go-slide="2" aria-label="Mostrar Farol com criadora" aria-pressed="false">
+            <button data-go-slide="2" aria-label="Mostrar cenário Lago com Farol" aria-pressed="false">
             </button>
           </div>
           <button class="pause-button" aria-label="Pausar alternância de imagens" aria-pressed="false">
@@ -428,35 +420,35 @@
         <div class="story-grid">
           <article class="story-card reveal">
             <div class="image-wrap">
-              <img src="/images/hero-marco-homem.png" alt="Marco nas mãos de um criador" loading="lazy">
+              <img src="/images/campanha-marco-orbita.png" alt="Um jovem de óculos com Marco e anéis suspensos em um cenário imaginado" loading="lazy">
             </div>
             <p>
               <span>
                 01
               </span>
-              Formas que se encontram.
+              A imaginação ganha forma.
             </p>
           </article>
           <article class="story-card reveal">
             <div class="image-wrap">
-              <img src="/images/hero-duna.png" alt="Uma criadora e Duna no universo Brasa" loading="lazy">
+              <img src="/images/campanha-duna-jardim.png" alt="Uma jovem de cabelo cacheado em roupa fúcsia com Duna entre flores gigantes no universo Brasa" loading="lazy">
             </div>
             <p>
               <span>
                 02
               </span>
-              Cada detalhe tem um porquê.
+              A cor abre caminhos.
             </p>
           </article>
           <article class="story-card reveal">
             <div class="image-wrap">
-              <img src="/images/hero-farol-mulher.png" alt="Uma criadora em movimento ao lado de Farol" loading="lazy">
+              <img src="/images/campanha-farol-cenario.png" alt="Farol e uma jovem ruiva em roupa amarela e cobalto em um cenário artístico Lago" loading="lazy">
             </div>
             <p>
               <span>
                 03
               </span>
-              Um lugar que é só seu.
+              Crie seu próprio cenário.
             </p>
           </article>
         </div>
@@ -897,7 +889,7 @@
         <div class="section-heading reveal">
           <div>
             <p class="eyebrow">
-              Pequenos cenários, muitas possibilidades
+              Cenas para imaginar
             </p>
             <h2 id="gallery-title">
               A luz mora nos detalhes.
@@ -917,6 +909,22 @@
           </div>
         </div>
         <div class="gallery-rail" id="gallery-rail">
+          <button class="gallery-card gallery-card--art" data-product="duna">
+            <span class="image-wrap"><img src="/images/insp-duna-nuvens.png" alt="Duna junto de uma mulher em um sofá ondulado, em um jardim imaginado de flores gigantes" loading="lazy"></span>
+            <span>Um lugar fora do óbvio<small>Duna · estudo surreal</small></span>
+          </button>
+          <button class="gallery-card gallery-card--art" data-product="marco">
+            <span class="image-wrap"><img src="/images/insp-marco-escada.png" alt="Marco em uma composição surreal com uma escada" loading="lazy"></span>
+            <span>Ideias que ganham altura<small>Marco · estudo surreal</small></span>
+          </button>
+          <button class="gallery-card gallery-card--art" data-product="farol">
+            <span class="image-wrap"><img src="/images/insp-farol-mar.png" alt="Farol em uma ilha de azulejos, cercada por água e uma lua cenográfica" loading="lazy"></span>
+            <span>Outro horizonte de luz<small>Farol · estudo surreal</small></span>
+          </button>
+          <a class="gallery-card gallery-card--art gallery-card--collection" href="#colecao">
+            <span class="image-wrap"><img src="/images/insp-trio-galeria.png" alt="Marco, Duna e Farol reunidas em uma galeria imaginada" loading="lazy"></span>
+            <span>Encontros que acendem ideias<small>A coleção · cenário imaginado</small></span>
+          </a>
           <button class="gallery-card" data-product="duna">
             <span class="image-wrap">
               <img src="/images/ambiente-duna.png" alt="Duna em uma sala de estar" loading="lazy">
@@ -965,7 +973,7 @@
       </section>
       <section class="mission section-pad" id="essencia" aria-labelledby="mission-title">
         <div class="mission-image image-wrap reveal">
-          <img src="/images/hero-farol-mulher.png" alt="Uma criadora ao lado de Farol em uma campanha conceitual Lago" loading="lazy">
+          <img src="/images/campanha-farol-cenario.png" alt="Uma jovem ruiva com roupa amarela e cobalto e Farol em um cenário surreal de azulejos e esferas suspensas" loading="lazy">
         </div>
         <div class="mission-copy reveal">
           <p class="eyebrow">

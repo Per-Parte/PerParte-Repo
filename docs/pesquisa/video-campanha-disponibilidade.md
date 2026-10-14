@@ -2,6 +2,8 @@
 
 Diagnóstico em 13/10/2026. Pedido: pessoa dançando com uma luminária Per Parte em vídeo fotorrealista, tomando a campanha Gantri como referência de linguagem. O produto e o vídeo devem ser originais da Per Parte.
 
+**Decisão posterior do usuário, 13/10/2026:** deixar o vídeo pendente por enquanto. Manter a fotografia atual na landing e retomar a geração quando solicitado.
+
 ## Estado observado
 
 | Recurso | Evidência nesta sessão | Atende ao pedido? |

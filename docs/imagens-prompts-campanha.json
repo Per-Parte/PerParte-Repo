@@ -1,0 +1,77 @@
+{
+  "data": "2026-10-13",
+  "ferramenta": "image_gen integrada",
+  "tipo": "campanha conceitual surrealista",
+  "imagens": [
+    {
+      "arquivo": "campanha-duna-jardim.png",
+      "prompt": "Edit the FIRST attached campaign photograph with a strict localized change: replace ONLY the person with a completely different fictional person matching Per Parte's primary audience, a creative urban home decorator aged20–30 who loves art, fashion and personal self-expression. New person is a24-year-old Brazilian woman with warm brown skin, a youthful rounded face, short natural curly shag haircut, lively inquisitive eyes, subtle warm half-smile, approachable real young creative adult. Keep the same seated pose, same body placement/right-half framing, same hand supporting the lamp and hand by the face, approximately same head/hand size and exact head position. Retain the fuchsia oversized sculptural jacket and burgundy trousers with their striking colors and silhouette, style them as playful self-curated artistic pieces, small simple earrings, minimal natural makeup. SECOND image is product reference only. Preserve the Duna lamp EXACTLY with identical scale, location, glowing ivory dome and short crimson ribbed pedestal. Preserve ALL giant pale flowers, floating petal, floating silk ribbon, red curved bench, deep red background, lighting, framing and negative space. Change no objects, no scenery, no lamp geometry, no camera angle, no composition. The woman should feel like a stylish young person who invents their own home, with personality rather than a celebrity lookalike. Maintain photoreal editorial craft and rich color. No text, branding or watermark. Landscape1536x1024.",
+      "referencias": [
+        "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-aa6eba2b-88ad-4b98-946b-ea5e4fab65ac.png",
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/duna.png"
+      ],
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-0d6570b4-4949-48a0-bb0b-2b4d22e93f47.png",
+      "destino": "apps/site/public/images/campanha-duna-jardim.png",
+      "historico": [
+        {
+          "etapa": "Geração original de cenário e campanha",
+          "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-aa6eba2b-88ad-4b98-946b-ea5e4fab65ac.png",
+          "prompt": "Use case: ads-marketing. Create a NEW original surreal fashion editorial campaign photograph for Per Parte lighting, landscape 1536x1024. Input1 is the exact PRODUCT reference: Duna, glowing ivory broad hemisphere shade, short crimson cylinder pedestal with thin vertical ribs. Preserve this lamp design, shape, proportions, colors and warm glow exactly. Input2 is STYLE reference only: expressive fashion portrait, saturated studio set, theatrical botanicals, tactile film grain; do not replicate its person's identity, its lamp, clothes exactly, text or composition. New scene: a striking adult Brazilian male artist age35, dark wavy slicked hair, small earring, expressive raised eyebrow and playful confident direct gaze, sculptural oversized fuchsia satin jacket with dramatic puff sleeves over black vest, broad burgundy trousers, silver rings. He is half lounging on an impossible curved red ribbon bench, one hand supporting the Duna lamp on his bent knee. Oversized pale pink CALLA LILIES taller than the man curl up behind him on the right; two silk ribbons float impossibly in the air and a giant ivory flower petal hovers nearby. Background deep scarlet red #A90000 with wine shadows, photographic physical surreal stage, warm direct flash and rich shadows, sophisticated avant-garde design magazine, vivid but tasteful. IMPORTANT HERO LAYOUT: left45% is mostly empty deep red negative space for website copy. Entire person, lamp and main props inside right55%; head begins at18% image height, feet may crop but NEVER head. Lamp should be large and clearly recognizable at right-center around62–73% x, 55% y. Right subject should still work in a tall narrow crop centeredx72%. Realistic skin, hands, cloth, analog grain, unusual individual expression. No typography, no letters, no watermark, no logos, no extra lamps. This is art-directed surreal photography, not generic lifestyle portrait.",
+          "referencias": [
+            "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/duna.png",
+            "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-0ab5bb4a-6c66-409b-a3dd-080ca546003f.png"
+          ]
+        }
+      ],
+      "criterioPersona": "Decorador(a) criativo(a), 20–30 anos, cidades médias ou grandes, interesse em arte, moda e estilos variados. Aparência, gênero e profissão não são fixados pelo documento; o casting é uma proposta visual.",
+      "fontePersona": "docs/fonte/revista-texto-extraido.md, pp. 16–18"
+    },
+    {
+      "arquivo": "campanha-marco-orbita.png",
+      "prompt": "Edit FIRST image only by replacing the depicted man with a completely different fictional26-year-old Brazilian man representing the Per Parte primary persona: creative urban young adult who buys personal design, follows art and varied fashion, wants a unique home object of his own. Youthful oval face, medium brown skin, soft short curly hair with a few loose twists, round thin dark eyeglasses, clean-shaven, playful curious half-smile while looking up at the floating amber ring. Same seatedbackwards-chair pose, same right hand raised with gentle pointing gesture, same body silhouette/placement, same exact head position. Keep distinctive striped cream-and-black oversized coat, amber scarf and wide red trousers; give a self-curated patchwork textile character with simple unbranded styling. No status jewelry or luxury branding. SECOND image is exact product reference. Preserve Marco lamp unchanged, including olive cylinder base, EXACTLY THREE amber rings, warm ivory dome, existing size and exact position on green pedestal. Preserve ALL three floating giant amber toruses, green steps, chrome chair, forest-green background, lights, shadows, camera framing and left negative space. Do not recompose or add objects. Change only the human character, maintaining the surreal fashion energy. Photoreal texture and anatomy. Landscape1536x1024, no words, no watermark.",
+      "referencias": [
+        "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-e64243f5-b0ea-4fcb-87e9-8a916c07c9f3.png",
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/marco.png"
+      ],
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-2d8dd632-3553-4c8f-ad76-e9886c98ad2a.png",
+      "destino": "apps/site/public/images/campanha-marco-orbita.png",
+      "historico": [
+        {
+          "etapa": "Geração original de cenário e campanha",
+          "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-e64243f5-b0ea-4fcb-87e9-8a916c07c9f3.png",
+          "prompt": "Use case: ads-marketing. New original high-fashion surreal editorial campaign, landscape1536x1024, Per Parte lighting. Input1 is exact product reference MARCO: low olive cylindrical base, EXACTLY THREE rounded amber horizontal rings above, broad warm illuminated ivory dome. Preserve design and proportions, no fourth ring. Input2 is solely style language reference: charismatic editorial expression, saturated green stage, strong clothing contrast and lamp portrait; don't copy person, lamp, pose or clothing literally. An adult Black male fashion creative age30 with angular face, short sculptural haircut and silver ear cuff, wearing a dramatically oversized black-and-ivory striped tailored coat, sculptural amber scarf, wide deep-red trousers and sculptural black shoes. He sits backwards on a curved chrome chair, torso turned, expression curious and amused as he looks at one gigantic amber torus floating behind his shoulder. Marco sits illuminated on a green pedestal next to his elbow, 32cm product scale. Three enormous abstract torus sculptures suspend impossibly in right-side air at different heights, mirroring the lamp's rounded ring theme but clearly separated from the lamp. Matte forest-green stage with subtle teal cast and deep shadows, rounded stepped green floor. Strong editorial flash, crisp fabric texture, cinematic shadows, sophisticated real photograph of a surreal stage. HERO COMPOSITION: left44% quiet deep forest green for white text overlay. Person and Marco occupy right56%; head startsat18% of image height, whole face away from top navbar, lamp aroundx66%,y60%, all main information within cropx55–88%. Artistic dynamic body language, no normal casual beige clothes, no generic smile. No text, logos or watermark.",
+          "referencias": [
+            "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/marco.png",
+            "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-0470b7ce-7fa6-4658-9cc5-52bf5dcb6c63.png"
+          ]
+        }
+      ],
+      "criterioPersona": "Decorador(a) criativo(a), 20–30 anos, cidades médias ou grandes, interesse em arte, moda e estilos variados. Aparência, gênero e profissão não são fixados pelo documento; o casting é uma proposta visual.",
+      "fontePersona": "docs/fonte/revista-texto-extraido.md, pp. 16–18"
+    },
+    {
+      "arquivo": "campanha-farol-cenario.png",
+      "prompt": "Localized edit of FIRST image: replace ONLY the woman with a completely different fictional25-year-old Brazilian young woman who is an imaginative urban home decorator, loves art and mixing fashion styles, with authentic approachable personality. New character has a youthful round face with subtle freckles, light-medium warm skin, auburn wavy chin-length bob with relaxed bangs, expressive dark eyes, joyful curious raised eyebrow and a small spontaneous smile directed toward the floating silver orb. Keep same chin-in-hand leaning pose and opposite hand raised under sphere, same head position and size, same body placement and exact overall silhouette. Keep butter-yellow oversized sculptural blouse with puff sleeves, cobalt trousers with large cream circles and coral boots as self-curated creative wardrobe. Simple small earrings, natural makeup. SECOND image is exact lamp reference. Preserve Farol lamp EXACTLY in its current location/scale, ivory illuminated vertically ribbed capsule and teal base. Preserve tile pedestal, cream arches, silver orb, hanging checkered sphere, blue/teal backdrop, floor, camera, light and all left negative space. No changes to any scenery, product or props. The scene remains an artistic surreal editorial photograph with a relatable young creative, not a copy of any reference person. Landscape1536x1024. No typography or watermark.",
+      "referencias": [
+        "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-a52d0701-449f-4eb6-b3e1-137d894a249f.png",
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png"
+      ],
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-2b3fe015-9293-4e61-b49d-b34177567d93.png",
+      "destino": "apps/site/public/images/campanha-farol-cenario.png",
+      "historico": [
+        {
+          "etapa": "Geração original de cenário e campanha",
+          "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-a52d0701-449f-4eb6-b3e1-137d894a249f.png",
+          "prompt": "Use case: ads-marketing. Create NEW original surreal fashion campaign photograph for Per Parte, landscape1536x1024. Input1 is exact FAROL product reference: glowing warm ivory tall capsule with vertical ribs, short wide teal cylindrical base and smaller teal collar; preserve geometry/colors exactly. Input2 conveys STYLE only, expressive woman, graphic designer wardrobe, saturated backdrop and architectural tiled stage. Do NOT copy this woman's face, yellow lamp, black spotted outfit or exact pose. New fictional adult Brazilian woman age29, olive skin, sleek black geometric bob, very expressive eyes and amused surprised half-smile, sculptural oversized butter-yellow blouse with dramatic balloon sleeves and ultramarine trousers with huge cream circles, glossy coral boots. Pose: leaning sideways with chin supported on fingertips and elbow on impossible curved teal tiled pedestal, other arm stretched toward an enormous floating pearlescent silver orb. The real-size Farol lamp glows on the tiled pedestal beside her, separate and fully visible. At right are oversized folded-paper arches and one small checkered sphere hanging in air with no supports. Rich deep Lago teal background#008795 blended toward cobalt at outeredge, stage floor warmcream. Photoreal studio editorial, precise fabric, direct fashion flash, natural skin texture, tactile ceramic tile grout, cinematic shadows, elegant controlled surrealism. HERO LAYOUT: left45% mostly empty deep teal for copy, human and lamp inside right55%, face beginsat18%height and is comfortably belowtop, lamp betweenx58–72% at55–70%height. Entire head visible, usable mobilecrop centeredx72%. No text, letters, logos, watermark or extra lamps. Artistic distinctive expression and styling, not stock photography.",
+          "referencias": [
+            "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png",
+            "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-ae9d17d2-2913-4bf1-b9e0-c62f0743e63a.png"
+          ]
+        }
+      ],
+      "criterioPersona": "Decorador(a) criativo(a), 20–30 anos, cidades médias ou grandes, interesse em arte, moda e estilos variados. Aparência, gênero e profissão não são fixados pelo documento; o casting é uma proposta visual.",
+      "fontePersona": "docs/fonte/revista-texto-extraido.md, pp. 16–18"
+    }
+  ],
+  "versao": "2 — personagens ajustados à persona da revista, pp. 16–18"
+}

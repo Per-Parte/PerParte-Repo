@@ -33,7 +33,7 @@ Arquivos principais: `index.html` para estrutura e conteúdo, `styles.css` para 
 
 | Interação | Efeito esperado | Limite |
 |---|---|---|
-| Navegação e menus | Menu desktop escuro/translúcido com desfoque de 15 px no fundo; menu móvel e links para as seções. | Sem rotas comerciais ou configurador. |
+| Navegação e menus | Menu desktop escuro/translúcido com desfoque de 15 px no fundo; menu móvel e links para as seções. Setas em SVG próprio de 12 × 12 px, alinhadas ao texto e giradas 180° ao expandir. | Sem rotas comerciais ou configurador; preservar seleção, estado expandido e redução de movimento. |
 | Slideshow do destaque | Alternar cenas, selecionar uma cena e pausar a alternância. | Respeitar preferência por menos movimento. |
 | Seleção de ambientes | Trocar a cena e o contexto apresentados. | Não é personalização do produto. |
 | Processo por rolagem | Avançar entre os três passos mantendo somente o painel ativo aberto e sua imagem correspondente. Em móvel/movimento reduzido, manter seleção manual. | Imagens são estudos, não registro da fábrica; preferência reduzida ainda requer confirmação em runtime na revisão. |
@@ -43,9 +43,13 @@ Arquivos principais: `index.html` para estrutura e conteúdo, `styles.css` para 
 | Favoritos | Salvar e rever escolhas no mesmo navegador. | Sem conta ou sincronização. |
 | Entrada de blocos | Revelar conteúdo ao rolar, com versão de movimento reduzido. | Conteúdo deve continuar acessível sem animação. |
 
+As setas da navbar substituem os caracteres tipográficos por chevrons vetoriais próprios: `viewBox="0 0 12 12"`, caminho `M3 4.5 6 7.5 9 4.5`, traço de 1,5 px em `currentColor`, extremidades e junções arredondadas. A caixa fixa de 12 px mantém o alinhamento independente da fonte; a rotação acompanha o estado expandido do menu e respeita movimento reduzido.
+
 ## Produtos e imagens
 
-Marco tem nome e composição-base descritos na revista. Duna e Farol são **PROPOSTAS** de nomes e desenhos; as três representações são conceituais. O conjunto tem dez imagens originais geradas, cobrindo catálogo, campanha, ambientes e detalhe, incluindo homem sentado com Marco e mulher em gesto de dança junto de Farol. A segunda cena é uma fotografia estática, não vídeo. A nota “Coleção em estudo · imagens conceituais” deve permanecer acessível. Ver `docs/site-imagens.md` para dimensões, referências e hashes.
+Marco tem nome e composição-base descritos na revista. Duna e Farol são **PROPOSTAS** de nomes e desenhos; as três representações são conceituais. O conjunto tem 17 PNGs gerados: os dez anteriores preservados, três novas campanhas e quatro imagens de inspiração. As novas campanhas entram no hero, nas três fotografias seguintes, nos destaques dos menus e na Missão; a galeria passa de quatro para oito cards. Os três produtos de catálogo permanecem como referência. A nota “Coleção em estudo · imagens conceituais” deve permanecer acessível. Ver `docs/site-imagens.md` para dimensões, referências e hashes.
+
+A direção artística aprovada pelo usuário combina expressões individualizadas, roupas dramáticas/artísticas e cenários surrealistas coloridos. Em seguida, o usuário pediu alterar somente as personagens das três campanhas para se aproximarem da persona das pp. 16–18 da revista, preservando produto, cenário e câmera. Esse refinamento foi gerado e os arquivos finais tiveram dimensões e correspondência SHA-256 com os originais conferidas. O casting é uma proposta criativa; a fonte não impõe gênero, etnia ou aparência física. Direção e limites em `docs/direcao-artistica-imagens.md`; prompts literais em `docs/imagens-prompts-campanha.json` e `docs/imagens-prompts-inspiracoes.json`.
 
 As fotografias recebem borda fina de 1 px e cantos arredondados. O cartão Marco em “Qual é a sua luz?” teve texto branco confirmado por estilo computado `rgb(255, 255, 255)`. A seção “Nossa missão” foi conferida com imagem de Farol e seu texto.
 
@@ -53,12 +57,14 @@ Use Luz Acesa, neutros e Brasa conforme `docs/design-system.md`. A landing usa U
 
 ## Verificação e pendências
 
+A revisão artística foi conferida com as personagens finais: campanhas desktop em Chrome pela extensão (Duna/Farol, 1482 × 734) e navegador integrado (Marco, 1280 × 720); móvel integrado em 390 × 844, com rostos/luminárias inteiros, fundos corretos e sem overflow. A galeria mostrou oito cards e os quatro novos assets carregados, avanço por seta (`scrollLeft` 0 → 339) e link do trio para `#colecao`. Console integrado sem erros; `site:check`, `site:build` e `git diff --check` passaram. Capturas 13–20 e limites da verificação em `docs/revisao-landing-2026-10-13.md`.
+
 Registrar em `.claude/state.md` os resultados reais de build, código, assets e navegação em desktop/mobile. Conferir todas as interações acima, acesso por teclado, ausência de overflow horizontal, legibilidade sobre imagens e redução de movimento. A documentação do fluxo não substitui a execução dessas verificações.
 
-A revisão é local. Publicação e push foram adiados pelo usuário. O vídeo real de pessoa dançando com luminária continua **PENDENTE**: não há gerador de vídeo conectado, e a pergunta de acesso enviada ao usuário ainda não recebeu resposta neste registro. Não declarar slideshow/zoom ou fotografia como entrega de vídeo; consultar `docs/pesquisa/video-campanha-disponibilidade.md`.
+A revisão é local. Publicação e push foram adiados pelo usuário. O vídeo real de pessoa dançando com luminária foi explicitamente **ADIADO pelo usuário em 13/10/2026**: manter a fotografia atual e retomar somente quando solicitado. Não há gerador de vídeo conectado nem clipe produzido. Não declarar slideshow/zoom ou fotografia como entrega de vídeo; consultar `docs/pesquisa/video-campanha-disponibilidade.md`.
 
 Verificação desktop da revisão confirmou processo por PageDown em janela com 678 px de altura (avanços de 518 px), sequência 0 → 1 → 2, somente painel ativo aberto e mudança de imagens; paleta com 25 botões, seleção Cobalto sem mudar imagens, recolhimento por Escape e ocultação durante modal. Em móvel real, 351 × 760 CSS px, menu abriu/navegou/fechou e a paleta expandiu a 272 px sem overflow. O foco entrou em Flor; ArrowRight passou a Cânion, Enter selecionou e Escape recolheu. Redução de movimento foi conferida no código, sem simular a preferência do sistema.
 
-`npm run site:check` e `npm run site:build` finais passaram após a correção de foco; build repetido após o último ajuste CSS também passou. `git diff --check` passou e o console Chrome ficou sem erros. O enquadramento da cabeça na cena masculina do hero móvel foi conferido abaixo da navbar; o fundo Vinho `#670700` une a faixa superior. Evidências em `09-mobile-hero-homem.jpg` e `11-hero-homem-desktop.jpg`, junto das demais capturas locais. A interface revisada está validada; o vídeo real permanece a pendência desta revisão, acompanhada em `docs/revisao-landing-2026-10-13.md`.
+`npm run site:check` e `npm run site:build` finais passaram após a correção de foco; build repetido após o último ajuste CSS também passou. `git diff --check` passou e o console Chrome ficou sem erros. O enquadramento da cabeça na cena masculina do hero móvel foi conferido abaixo da navbar; o fundo Vinho `#670700` une a faixa superior. Evidências em `09-mobile-hero-homem.jpg` e `11-hero-homem-desktop.jpg`, junto das demais capturas locais. Esses resultados registram a revisão anterior da interface; a revisão artística posterior é acompanhada em `docs/revisao-landing-2026-10-13.md`. O vídeo real está adiado por decisão do usuário.
 
 Permanecem em aberto a coleção homologada, logo e tipografia finais, conteúdo aprovado pelos sócios, domínio/hospedagem, arquitetura comercial, checkout, contas e configurador.
