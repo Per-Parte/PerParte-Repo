@@ -1,8 +1,20 @@
 # Disponibilidade da REA para a pesquisa Gantri
 
-Data: 13/10/2026. Alvo solicitado: homepage pública da Gantri. Esta nota registra o diagnóstico da ferramenta; a evidência visual deve ser consultada junto às capturas de navegador da pesquisa.
+Registro iniciado em 13/10/2026; atualizado em 14/10/2026. Alvos: homepage Gantri, Cantilever Floor Light e All Lights. Esta nota registra o diagnóstico da ferramenta; a evidência visual deve ser consultada junto às capturas de navegador da pesquisa.
 
-## Observado nesta sessão
+## Estado atual — ferramentas expostas em 14/10/2026
+
+Na continuação da sessão, o namespace `mcp__rea` e as ferramentas `mcp__rea__*` passaram a aparecer no catálogo `ALL_TOOLS`, incluindo inspeção web, captura e análise de JavaScript. Isso confirma que o registro foi carregado pelo Codex. A execução de uma análise web não foi testada nessa etapa, dedicada ao domínio Shopify; não confundir disponibilidade com sucesso de uma análise. Não é necessário repetir setup nem reiniciar apenas para expor as ferramentas.
+
+## Estado anterior — registro instalado, antes de expor as ferramentas
+
+O usuário executou `rea setup --client codex --yes`. A sessão principal confirmou a seção `[mcp_servers.rea]` em `C:/Users/Antônio/.codex/config.toml`, com Node executando `rea.mjs mcp`. O registro está instalado; a lista `ALL_TOOLS` desta sessão ainda não expõe ferramentas REA, inclusive na conferência após o setup.
+
+O próximo passo é **fechar e reabrir o Codex**, permitindo carregar o registro atualizado, e então conferir se as ferramentas aparecem. **Não repetir o setup.** O arquivo de configuração não comprova, por si só, uma conexão ativa ou uma análise já executada.
+
+A pesquisa visual desta rodada usou capturas e estados do navegador por CUA. As imagens de referência e da revisão local foram salvas em `docs/pesquisa/loja-ajustes-capturas/`. O índice, as medidas e os limites estão em [gantri-ajustes-2026-10-14.md](gantri-ajustes-2026-10-14.md); não foram atribuídos objetos `Evidence` da REA a essas capturas.
+
+## Histórico observado em 13/10/2026
 
 - A skill `reverse-engineer-anything` está em `C:/Users/Antônio/.codex/skills/reverse-engineer-anything/SKILL.md`, versão declarada `41`; foram lidos os guias locais `connection-and-recovery.md` e `runtime-observation.md`.
 - A sessão Codex não expõe ferramentas MCP REA.
@@ -33,4 +45,16 @@ Nenhum endpoint CDP da sessão Chrome da extensão foi fornecido a este diagnós
 
 A skill orienta separar observação, inferência e decisão de reconstrução. Portanto, layout e interações da Gantri devem ser anotados a partir das capturas e da inspeção realizada pelo navegador; animações não observadas não devem ser atribuídas à Gantri. A implementação Per Parte pode acrescentar decisões próprias, identificadas como adaptações.
 
-Uma futura conexão MCP pode ser preparada por `rea setup --client codex --dry-run --json`, com revisão dos caminhos/backup/substituição da skill antes de qualquer escrita. Não foi necessária para a continuidade da pesquisa visual e não foi executada nesta etapa.
+No diagnóstico de 13/10, foi identificado o comando de simulação `rea setup --client codex --dry-run --json`, mas ele não foi executado nem necessário para continuar a pesquisa visual. Esse caminho histórico foi superado pelo setup já realizado pelo usuário em 14/10; seguir o estado atual e reabrir o Codex, sem executar o setup novamente.
+
+## Nova tentativa em 14/10/2026
+
+Alvos desta sessão: página Cantilever Floor Light e loja All Lights, conforme URLs registradas em `gantri.md`.
+
+- A skill `reverse-engineer-anything` foi consultada novamente; a presença do arquivo de instruções não disponibilizou um servidor MCP REA na sessão.
+- A tentativa de diagnóstico via `npx -y rea-agents@latest doctor --client codex --json` encontrou `ENOTFOUND` no ambiente com restrição de rede.
+- A tentativa fora do sandbox encontrou `ECOMPROMISED` e também não concluiu o diagnóstico. Esse código registra a falha da execução; não comprova conexão MCP, análise do site nem uma causa específica que não tenha sido confirmada.
+- A pesquisa prosseguiu pelo Chrome com o controle de navegador disponível. Foram observados estados de produto e loja, trocas de imagem, links, SKU e contagem. Esses resultados são evidência de navegador, **não** objetos `Evidence` produzidos pela REA.
+- Até essa tentativa, não havia sido feito reparo de registro MCP, substituição da skill ou instalação de motores para apresentar a pesquisa. O setup executado posteriormente pelo usuário está registrado no estado atual acima. O diagnóstico histórico de 13/10 permanece identificado pela sua data; não é tratado como um novo diagnóstico concluído em 14/10.
+
+O limite não impediu a reconstrução dos comportamentos observados. Permanecem desconhecidos o código privado, a arquitetura interna e as condições não exercitadas no navegador. A pesquisa diferencia claramente observações da referência, decisões da Per Parte e verificações locais da implementação.

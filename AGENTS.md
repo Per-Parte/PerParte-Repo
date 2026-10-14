@@ -9,9 +9,11 @@
 
 ## Estado do recomeço
 
-Este repositório foi reiniciado em 13/10/2026. `apps/site` é um protótipo de landing visual em HTML, CSS e JavaScript, com servidor Node nativo na porta 4174 e build estático (ADR 0003). `apps/configurador` é o ateliê local HTML/CSS/JavaScript ESM na porta 4175, com desenho paramétrico SVG, persistência no navegador e rascunhos de pedido (ADR 0004). Essa escolha é PROVISÓRIA e reversível; login foi adiado, e backend/stack comercial permanecem em aberto. `apps/quadro` é o quadro visual local do projeto na porta 4173; `packages/design-system` contém os tokens compartilhados da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
+Este repositório foi reiniciado em 13/10/2026. `apps/site` reúne landing, Loja, produto, conta e carrinho em HTML/CSS/JavaScript ESM, com API Node nativa na porta 4174. Shopify é o backend comercial **DECIDIDO** pelo pedido de 14/10/2026 (ADR 0005); vanilla/Node continua **PROVISÓRIO** e reversível. Headless, token Storefront e coleção `todas` estão configurados; Search & Discovery instalado, filtros em configuração. A loja ainda não possui produtos reais. O smoke sem escrita passou, mas não comprova compra. `apps/configurador` é o ateliê local na porta 4175, com SVG paramétrico, persistência e rascunhos (ADR 0004); sessão integrada, sincronização e fabricação continuam pendentes. `apps/quadro` é o quadro local na porta 4173; `packages/design-system` contém os tokens da revista. Não ressuscite código, stack ou decisões do projeto anterior por inércia.
 
 ## Regras
+
+Resend é o serviço **DECIDIDO** para e-mails próprios (ADR 0006). `emails.perparte.com` está verificado em `sa-east-1`; modelos, transporte interno e CLI estão preparados. A chave somente de envio fica no ambiente ignorado com `RESEND_ENABLED=false`. Um teste autorizado para Davi foi confirmado como DELIVERED no Resend, com habilitação somente naquele processo; aparência na inbox/clientes continua pendente. Não há gatilho automático ativo; o configurador continua local.
 
 - Documentação, interface e código de domínio em pt-BR.
 - Diferencie `DECIDIDO`, `PROVISÓRIO`, `PROPOSTA`, `EM ABERTO` e `FUTURO`. Uma proposta da revista não vira requisito implementado automaticamente.
@@ -24,9 +26,13 @@ Este repositório foi reiniciado em 13/10/2026. `apps/site` é um protótipo de 
 - Criações e rascunhos são locais e versionados. Não sobrescrever armazenamento inválido sem a ação explícita de recuperação. Pedidos guardam cópias dos modelos e não são enviados à Per Parte.
 - O vidro discreto dos blocos do configurador segue pedido explícito de 14/10/2026; manter tokens Per Parte e nenhuma sombra decorativa.
 - A landing apresenta Marco, Duna e Farol como coleção em estudo. Duna/Farol e seus desenhos são propostas; todas as imagens geradas são conceituais. Não inferir fabricação, estoque, preço ou condições comerciais a partir da interface.
-- Interações locais da landing não conectam compra, conta, cadastro, produção ou configurador. Respeite pausa de slideshow, teclado e preferência por menos movimento.
+- Dados comerciais vêm da Shopify: produto/variante publicados, preço, disponibilidade e imagem. Estudos não são compráveis; seleção visual de cor não cria variante. O carrinho usa `checkoutUrl` retornada, sem afirmar pagamento ou produção concluídos.
+- Conta hospedada Shopify não equivale a OAuth/sessão local nem sincroniza criações do configurador. Credenciais ficam em `.env.local` ignorado, nunca no frontend; operações GraphQL do servidor são fechadas. A hospedagem comercial exige runtime da API além de `dist`.
+- Códigos de acesso das novas contas continuam nativos da Shopify. Resend envia mensagens próprias, sem OTP paralelo; não disparar boas-vindas cegamente por `customers/create` nem tratar clique, favorita ou rascunho local como evento comercial confirmado. Evitar duplicar notificações Shopify.
+- E-mails exigem evento legítimo e destinatário vinculado. CLI gera prévias por padrão; envio exige flag explícita e configuração habilitada. Não expor rota pública de envio arbitrário, registrar chave/conteúdo pessoal em logs nem publicar `.local/emails`. Idempotência Resend de 24 h não substitui outbox persistente; automação, backend cloud e validação de inbox continuam pendentes.
+- Diferencie instalação/configuração, testes simulados, smoke sem escrita e compra real. Não preencher a loja com produtos ou condições fictícias para validar a interface. Respeite pausa do slideshow, teclado e preferência por menos movimento.
 - Notas vivas do cofre Obsidian ficam fora deste repositório. Nunca apague `Documents\Projeto Per Parte`.
-- Faça `git pull` no início quando as credenciais permitirem. Publicação e `git push` estão adiados por pedido do usuário (“Publicamos depois”); retome apenas após nova orientação.
+- Faça `git pull` no início quando as credenciais permitirem. Em 14/10/2026, o usuário autorizou integrar o trabalho à `main` e publicar o site em produção na Vercel, substituindo o adiamento anterior. Preserve credenciais, logs operacionais e prévias privadas fora do Git e do pacote público; registre o resultado efetivo em `state.md`.
 
 ## Manutenção do contexto
 

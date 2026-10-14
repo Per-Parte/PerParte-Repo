@@ -1,0 +1,25 @@
+SIMULAÇÃO LOCAL · NENHUM ENVIO
+Dados e endereços fictícios. Modelos preparados; nenhum gatilho ativo.
+Assunto: Pedido EXEMPLO-002: Uma atualização sobre sua composição. — Per Parte
+
+--- INÍCIO DO MODELO ---
+
+Per Parte
+
+Atualização do pedido
+
+Uma atualização sobre sua composição.
+
+Pedido EXEMPLO-002
+
+Oi, Alex.
+
+Uma atualização sobre sua composição está disponível.
+
+Abra o pedido para consultar os detalhes.
+
+Ver pedido: https://conta.perparte.example/pedidos/exemplo-002
+
+Criado por você, feito por partes.
+
+Fale com a gente: atendimento@perparte.example

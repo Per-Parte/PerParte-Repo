@@ -1,0 +1,25 @@
+SIMULAÇÃO LOCAL · NENHUM ENVIO
+Dados e endereços fictícios. Modelos preparados; nenhum gatilho ativo.
+Assunto: Seu orçamento EXEMPLO-001 está disponível — Per Parte
+
+--- INÍCIO DO MODELO ---
+
+Per Parte
+
+Orçamento disponível
+
+Sua composição, parte por parte.
+
+Orçamento EXEMPLO-001
+
+Oi, Alex.
+
+O orçamento EXEMPLO-001 está disponível para você consultar.
+
+Veja os detalhes e as condições antes de continuar.
+
+Ver orçamento: https://perparte.example/orcamentos/exemplo-001
+
+Criado por você, feito por partes.
+
+Fale com a gente: atendimento@perparte.example

@@ -10,3 +10,8 @@ build/
 .playwright-mcp/
 skill-observations/
 .mcp.json
+.vercel/
+.local/
+mcp-logs.txt
+wa-logs.txt
+.build-site-*/

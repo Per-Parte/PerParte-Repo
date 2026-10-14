@@ -1,0 +1,13 @@
+.env*
+**/.env*
+!**/.env.example
+.mcp.json
+.local/
+**/.build-site-*/
+mcp-logs.txt
+wa-logs.txt
+.claude/
+skill-observations/
+docs/
+apps/site/tests/
+apps/site/dist/

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run site:build",
+  "outputDirectory": "apps/site/dist",
+  "trailingSlash": false,
+  "functions": {
+    "api/index.mjs": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:rota*", "destination": "/api/index?__rota=:rota*" },
+    { "source": "/loja", "destination": "/comercio.html" },
+    { "source": "/conta", "destination": "/comercio.html" },
+    { "source": "/carrinho", "destination": "/comercio.html" },
+    { "source": "/produtos/:handle", "destination": "/comercio.html" }
+  ],
+  "headers": [
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+    ] },
+    { "source": "/api/:rota*", "headers": [
+      { "key": "Cache-Control", "value": "no-store" },
+      { "key": "Referrer-Policy", "value": "no-referrer" }
+    ] }
+  ]
+}

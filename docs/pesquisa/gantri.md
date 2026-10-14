@@ -1,6 +1,6 @@
 # Gantri — benchmark da Per Parte
 
-**Pesquisa em 13/10/2026.** Gantri é a principal referência de categoria, experiência editorial e confiança comercial, descrita na Revista de Marca pp. 4, 14–22 e 35–38. Os dados abaixo vêm do [site oficial](https://www.gantri.com/), da [página de missão](https://www.gantri.com/about) e de medição da homepage em navegador (desktop 1689 × 1221; móvel 390 × 844). São uma amostra de páginas e datas, não um design system oficial da Gantri.
+**Pesquisa iniciada em 13/10/2026; ampliada em 14/10/2026.** Gantri é a principal referência de categoria, experiência editorial e confiança comercial, descrita na Revista de Marca pp. 4, 14–22 e 35–38. O levantamento inicial vem do [site oficial](https://www.gantri.com/), da [página de missão](https://www.gantri.com/about) e de medição da homepage em navegador (desktop 1689 × 1221; móvel 390 × 844). O complemento de 14/10 abaixo cobre produto, loja, navegação e troca de cores. São amostras de páginas e datas, não um design system oficial da Gantri.
 
 ## Posição e lição para a Per Parte
 
@@ -49,4 +49,36 @@ Contagem de estilos computados em cerca de 970 elementos da homepage desktop: ra
 
 ## Limites da pesquisa
 
-A extração automática registrou só a homepage. As medições manuais foram feitas nos elementos disponíveis em duas larguras, não em toda a jornada de compra. Não foram copiadas fontes, imagens, SVGs ou código da Gantri. Revise as páginas oficiais e repita a medição antes de usar números atuais em uma decisão nova.
+A extração automática inicial registrou só a homepage. As medições de 13/10 foram feitas nos elementos disponíveis em duas larguras, não em toda a jornada de compra. Não foram copiadas fontes, imagens, SVGs ou código da Gantri. Revise as páginas oficiais e repita a medição antes de usar números atuais em uma decisão nova.
+
+## Complemento de 14/10/2026: produto, loja e cor
+
+O usuário solicitou estudar a [página Cantilever Floor Light](https://www.gantri.com/products/10095/cantilever-floor-light-by-louis-filosa?sku=10095-lg-sand) e a [loja All Lights](https://www.gantri.com/shop/all-lights). A observação foi feita no Chrome, por controle de navegador da sessão. Houve capturas de produto em desktop de 1440 px e de loja em 1268 × 714 px. As capturas e os estados foram inspecionados durante a conversa; este complemento registra suas conclusões, sem atribuir identificadores de evidência REA a capturas do navegador. O diagnóstico da ferramenta está em `rea-disponibilidade.md`.
+
+### Composição visual observada
+
+| Área | Observação da referência | Adaptação Per Parte |
+|---|---|---|
+| Navegação | Faixa superior de aproximadamente 64 px; busca, conta e sacola em traços finos. A conta usa cabeça circular e corpo triangular. | SVG próprio, geometria explícita e mesma organização de ações; wordmark e tokens Per Parte. |
+| Produto | Galeria à esquerda, próxima da metade da largura; miniaturas verticais e imagem principal ampla, seguidas de outras imagens. Painel de informações à direita acompanha a rolagem. | Galeria com miniaturas, ampliação e painel sticky no desktop; troca de imagem no móvel. |
+| Escolhas do produto | Cor em amostras retangulares, sete colunas; grupos de todas as cores/escolha do criador; opções adicionais independentes da cor; preço e botão em pílula. | Opções reais Shopify; escolha do criador só quando cadastrada; combinações exatas entre os eixos. |
+| Loja | Margens próximas de 24 px, breadcrumb, título e descrição com respiro; contador à direita. Barra de filtros em pílulas, densidade da grade e ordenação. | Categoria, Brilho, Difusão e Tamanho como grupos; valores e demais facetas vindos do catálogo. Não inventar especificações para preencher filtros. |
+| Grade | Quatro colunas no estado observado; três controles de densidade. | Densidades desktop de duas, quatro e seis colunas; no móvel, uma ou duas. Esses números da implementação são decisões responsivas, não uma medição de todos os estados Gantri. |
+
+As dimensões descritas como aproximadas foram estimadas das capturas. Não equivalem a uma extração de todos os estilos computados dessas páginas. Texto, fotos, fontes, garantias e condições comerciais da referência não foram transplantados para a Per Parte.
+
+### Matriz de comportamento verificada
+
+| Ação na Gantri | Antes/depois observado | Consequência para a implementação |
+|---|---|---|
+| Selecionar Cobalt na página de produto | A imagem trocou de Sand para Cobalt; o SKU na URL acompanhou a escolha. O acabamento da haste permaneceu independente. | Alterar somente o eixo Cor; resolver a variante exata preservando tamanho e acabamento; imagem, preço, disponibilidade e URL precisam apontar para a mesma variante. |
+| Selecionar Cobalt no controle flutuante da loja | A contagem permaneceu **108 antes e 108 depois**. O endereço passou a carregar `?colors=cobalt`; imagens e links dos cards passaram à variante correspondente quando existente. | A paleta global é uma **visualização de cor**, sem reduzir a grade. Na Per Parte usa `visualizarCor` na URL e preferência de sessão; esse parâmetro não é encaminhado como filtro à Shopify. |
+| Usar os controles de filtro da barra | São controles distintos da paleta flutuante, agrupados por Category, Brightness, Diffusion e Size. | Manter filtros de catálogo separados da visualização global. A semântica de combinação das facetas vem da Shopify, não de inferência sobre o contador da Gantri. |
+
+O teste com contagem estável é a evidência que diferencia troca visual de filtro. O simples nome “Escolher cor” não determina a operação. Não foi inspecionado o código privado da Gantri nem comprovada sua arquitetura interna; mudança de URL e mídia permite reproduzir o comportamento observado sem presumir a tecnologia utilizada.
+
+### Integridade da cor e limites da coleção
+
+Uma variante sem imagem própria não autoriza reutilizar a foto de outra cor como se fosse a escolhida. A implementação mostra imagem pendente nesse caso. Uma combinação inexistente também não pode selecionar silenciosamente outro tamanho/acabamento para aparentar sucesso. Links com variante removida exigem nova escolha, em vez de assumir a primeira variante comprável.
+
+Marco, Duna e Farol continuam estudos, sem preço ou compra. As imagens `categoria-marco-violeta.png`, `categoria-duna-verde.png` e `categoria-farol-ambar.png` mudam o **cenário**, preservando as cores dos objetos; portanto não viram variantes Violeta/Verde/Âmbar. Novas cores comerciais dependem de opções e imagens cadastradas na Shopify. A validação técnica com variantes de teste é separada do catálogo real.

@@ -31,14 +31,50 @@ Estas decisões vêm do pedido do usuário em 13/10/2026, não de uma aprovaçã
 |---|---|---|---|
 | S-01 | DECIDIDO | Criar uma landing para apresentar três luminárias, usando a estrutura, hierarquia, minimalismo e interações da Gantri como referência, com identidade Per Parte. | Pedido do usuário; `docs/pesquisa/gantri.md` |
 | S-02 | DECIDIDO | Usar capturas da extensão do Chrome como evidência visual do benchmark. Separar observação, medição e interpretação. | Pedido do usuário |
-| S-03 | DECIDIDO | Interações locais de navegação e exploração; integrações comerciais e conexão da landing ao configurador ficam adiadas. O configurador separado foi autorizado em 14/10/2026 (K-01). Não simular compra, cadastro ou envio concluído. | Pedido do usuário |
+| S-03 | DECIDIDO | O escopo original era navegação local; o pedido de 14/10/2026 autoriza comércio Shopify em SH-01 a SH-12. A conexão com as criações do configurador continua pendente. Não simular compra, cadastro ou envio concluído. | Pedidos de 13/10 e 14/10/2026 |
 | S-04 | PROPOSTA | Marco, Duna e Farol formam a coleção visual. Marco tem nome e composição-base na revista; a representação é estudo. Duna e Farol são propostas desta etapa. | `docs/site-direcao-conteudo.md`; revista pp. 6 e 37 |
 | S-05 | DECIDIDO | Usar imagens originais geradas para completar a apresentação e informar que são conceituais. Não tratá-las como fotografias de produto fabricado. | Pedido do usuário; limite editorial do protótipo |
 | S-06 | DECIDIDO | Reutilizar os tokens de `packages/design-system`; manter a tipografia provisória e não copiar tokens, fontes, logotipo ou fotos da Gantri. | D-01 a D-06; fonte de marca |
 | S-07 | DECIDIDO | Não inventar preço, estoque, prazo, garantia, avaliação de cliente, selo ou material certificado. | Pendências C-01/C-02 e revista |
-| S-08 | DECIDIDO | Servir o protótipo estático localmente, com build independente; escolha reversível, sem fixar a stack do configurador. | ADR 0003 |
-| S-09 | DECIDIDO | Adiar publicação e push; entregar a revisão local. | “Publicamos depois”, pedido do usuário |
+| S-08 | PROVISÓRIO | HTML/CSS/JavaScript e Node local continuam reversíveis; a API Shopify amplia o servidor e exige runtime além dos assets estáticos. Não fixa a stack do configurador. | ADR 0003; ADR 0005 |
+| S-09 | DECIDIDO | Atualizar `main` e publicar o site em produção na Vercel; execução e validação pública ainda pendentes. Configurador permanece local e envios automáticos desativados. | Pedido posterior de 14/10/2026, que substitui “Publicamos depois” |
 | S-10 | DECIDIDO | Permitir teclado, menu móvel, fechamento de diálogos e redução de movimento; slideshow deve permitir pausa. | Critérios de implementação desta etapa |
+
+## Escopo autorizado para o comércio Shopify
+
+Pedido explícito de 14/10/2026. `DECIDIDO` indica direção aprovada; não significa que conexão, catálogo ou checkout foram validados ao vivo.
+
+| ID | Estado | Regra ou direção | Fonte |
+|---|---|---|---|
+| SH-01 | DECIDIDO | Shopify é o backend comercial do site para catálogo, variantes, carrinho e checkout. | Pedido do usuário; ADR 0005 |
+| SH-02 | DECIDIDO | Criar Loja, produto, conta e carrinho; clicar nas luminárias da landing leva à página de produto. | Pedido do usuário |
+| SH-03 | DECIDIDO | Usar layout e interações da Loja/produto Gantri como referência, preservando tokens, conteúdo e assets próprios da Per Parte. | Pedido do usuário; S-06 |
+| SH-04 | DECIDIDO | Consultar produtos publicados em runtime; novos cadastros não exigem duplicação no código. | Pedido do usuário |
+| SH-05 | DECIDIDO | Cor/tamanho compráveis resolvem variante existente com imagem, preço e disponibilidade coerentes. A paleta global visualiza a cor nos cards compatíveis sem reduzir a grade e preservando outros eixos; o filtro Cor consulta o catálogo separadamente. Nenhum seletor cria mercadoria. | Pedido do usuário; contrato Storefront; observação Gantri |
+| SH-06 | DECIDIDO | Filtros e ordenação devem operar sobre catálogo remoto paginado, com facetas configuradas na Shopify; não apenas sobre a página carregada. | Escopo da Loja; pesquisa Shopify |
+| SH-07 | DECIDIDO | Compra usa ID da variante e `checkoutUrl` retornada pela Shopify; não inventar produto, valor, disponibilidade ou condições comerciais. | S-07; contrato Storefront |
+| SH-08 | PROVISÓRIO | Acesso de cliente inicialmente pelo portal hospedado Shopify, com e-mail e código. Não equivale a sessão do site/configurador. | Implementação inicial; ADR 0005 |
+| SH-09 | EM ABERTO | OAuth Customer Account API, domínio HTTPS da conta, sincronização de criações e vínculo do configurador à conta. | Limites da implementação |
+| SH-10 | DECIDIDO | Credenciais ficam no servidor, em ambiente ignorado pelo Git; API expõe operações fechadas e não aceita token Admin no frontend. | Contrato de integração |
+| SH-11 | DECIDIDO | Carrinho local versionado protege dados ilegíveis; recuperação exige ação explícita. Estudos conceituais não podem ser adicionados. | Implementação inicial |
+| SH-12 | EM ABERTO | Headless/token e coleção `todas` configurados; Search & Discovery instalado e smoke sem escrita aprovado. Concluir facetas, cadastrar produtos aprovados e validar seleção/carrinho/checkout reais. | Estado administrativo desta sessão |
+| SH-13 | DECIDIDO | Compartilhar navbar e paleta entre homepage/Loja; atalhos por categoria, vidro nos filtros, cards com nome/indicador de cor e preço/tamanho; produto com curadoria animada, história, navegação flutuante e imagem de escala com pessoa. Exibir somente dados e imagens cadastrados; estudos não comprovam dimensões. | Pedido visual do usuário e prints Gantri, 14/10/2026 |
+| SH-14 | DECIDIDO | Preservar `perparte.com`/`www` no frontend externo e usar `checkout.perparte.com` como primário Shopify. Manter domínio técnico da API e seguir `checkoutUrl`. DNS e TLS configurados; propagação global e compra real são verificações separadas. | Pedido de domínio; `docs/integracoes/dominio-shopify.md` |
+
+## Escopo autorizado para e-mails próprios
+
+Pedido explícito de 14/10/2026. O serviço e os modelos estão preparados; um teste real autorizado foi confirmado como DELIVERED no Resend. `DECIDIDO` não significa ativação de automações nem comprova apresentação na caixa de entrada.
+
+| ID | Estado | Regra ou direção | Fonte |
+|---|---|---|---|
+| EM-01 | DECIDIDO | Usar Resend para e-mails próprios da Per Parte. Domínio `emails.perparte.com` verificado em `sa-east-1`, remetente `sistema@emails.perparte.com` e Reply-To `davi@perparte.com`. | Pedido do usuário; ADR 0006; configuração observada |
+| EM-02 | DECIDIDO | Preservar o código de acesso nativo das novas contas Shopify. Resend não implementa OTP paralelo nem autentica site/configurador. | Limites da conta hospedada; pesquisa oficial |
+| EM-03 | PROVISÓRIO | Renderer local HTML/texto, transporte Node interno e CLI com prévia por padrão. Modelos: boas-vindas, orçamento disponível e atualização de pedido; nenhuma rota pública de envio. | Implementação local; ADR 0006 |
+| EM-04 | DECIDIDO | Enviar somente a partir de evento legítimo e destinatário vinculado. Não usar clique, favorita, salvamento local ou `customers/create` isolado como prova de cadastro/compra/orçamento ou consentimento. | Limites do produto; contrato de integração |
+| EM-05 | DECIDIDO | Chave somente de envio no ambiente ignorado; `RESEND_ENABLED=false` até ativação explícita. CLI exige também `--enviar`, configuração completa e evento opaco estável; nunca registrar chave ou conteúdo pessoal em logs. | Contrato de transporte; ADR 0006 |
+| EM-06 | EM ABERTO | Backend cloud, eventos autenticados, vínculo de destinatário, outbox/histórico persistentes, tratamento de reentrega, supressões e observabilidade. Idempotência Resend de 24 h não substitui persistência. | Dependências da automação |
+| EM-07 | EM ABERTO | Definir quais notificações próprias serão ativadas, sem duplicar mensagens Shopify; confirmar app, escopos e acesso real a dados protegidos antes de usar webhooks. | Pesquisa Shopify/Resend |
+| EM-08 | EM ABERTO | Um teste autorizado de boas-vindas para `davi@perparte.com` foi confirmado como DELIVERED no Resend. Ainda validar posição/aparência na caixa de entrada e compatibilidade nos clientes; prévia móvel de 390 px aprovada não substitui essa revisão. | Teste real e limites de QA, 14/10/2026 |
 
 ## Escopo autorizado para o configurador local
 
@@ -59,7 +95,7 @@ Decisões do pedido do usuário em 14/10/2026 e da implementação reversível r
 | K-11 | PROVISÓRIO | Renderizador SVG autoral com projeção ortográfica e modelo paramétrico compartilhado entre palco/miniaturas; sem dependência Hairline, mesh fabril ou STL. | ADR 0004; `docs/pesquisa/hairline.md` |
 | K-12 | PROVISÓRIO | Persistência `localStorage` versão 1, leitura validada, proteção de conteúdo ilegível e pedidos como cópias independentes dos modelos. | Contrato `src/dominio.mjs`; ADR 0004 |
 | K-13 | PROVISÓRIO | Faixas de largura/altura são apenas limites de exploração visual. Não comprovam guardas elétricas, encaixe, espessura ou estabilidade. | Contrato de domínio; engenharia pendente |
-| K-14 | EM ABERTO | Login, backend, sincronização, envio real de pedido, orçamento, preço vivo, pagamento e integração com fabricação. | Escopo da sessão; dependências comerciais/industriais |
+| K-14 | EM ABERTO | Sessão e sincronização do configurador, envio real de suas obras, orçamento, preço vivo e fabricação. Shopify foi escolhido para o comércio do site; sua conexão ao ateliê continua pendente. | Escopo do configurador; SH-01/SH-09 |
 | K-15 | DECIDIDO | Fornecer controles de teclado, dimensionamento numérico, tratamento de movimento reduzido e aviso de alterações não salvas. | Critérios da implementação local |
 
 ## Guardas técnicas anteriores, preservadas durante o reinício
@@ -68,4 +104,4 @@ As instruções do projeto fornecidas nesta sessão chamam estas restrições de
 
 ## Não decidir por inferência
 
-Stack comercial do configurador e do restante do produto, backend, arquitetura de conta, URLs públicas, preço definitivo, percentuais, métodos de pagamento, data de lançamento, impressora e filamento final estão abertos nesta etapa. O HTML/CSS/JavaScript do protótipo local é uma decisão reversível de apresentação, não a definição de toda a arquitetura futura. A cópia fundadora da revista pede aprovação de Davi e Caio antes de publicação (p. 25).
+Shopify está decidido como backend comercial do site, e a publicação do site na Vercel foi autorizada. O acesso à equipe `per-parte1` (PerParte) confirmou o projeto `per-parte-website` e os aliases `perparte.com`/`www`; publicação e validação desta versão em produção permanecem pendentes. `SITE_ORIGINS` deve conter as origens HTTPS exatas autorizadas em produção. Stack de produção/sincronização do configurador, OAuth integrado, preço definitivo, percentuais, métodos de pagamento, data de lançamento, impressora e filamento final continuam abertos. HTML/CSS/JavaScript e Node são escolhas reversíveis de implementação, não a definição de toda a arquitetura futura. A cópia fundadora da revista pede aprovação de Davi e Caio antes de publicação (p. 25).

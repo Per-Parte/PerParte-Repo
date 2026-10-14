@@ -2,12 +2,20 @@ import { readFile, access } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
+import { htmlNavegacao } from './navegacao.js';
+const htmlOriginal = await readFile(new URL('./index.html', import.meta.url), 'utf8');
+const html = htmlOriginal.replace(/<div data-navegacao-compartilhada>[\s\S]*?<\/div>/, htmlNavegacao(true));
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(item => item[1]);
 assert.equal(new Set(ids).size, ids.length, 'IDs HTML devem ser únicos.');
 for (const [, ancora] of html.matchAll(/\bhref="#([^"]+)"/g)) assert(ids.includes(ancora), `Âncora inexistente: ${ancora}`);
 for (const [, caminho] of html.matchAll(/(?:src|href)="(\/images\/[^"?#]+)"/g)) await access(new URL(`./public${caminho}`, import.meta.url));
-for (const arquivo of ['app.js', 'paleta.js', 'servidor.mjs', 'construir.mjs']) {
+const comercioOriginal = await readFile(new URL('./comercio.html', import.meta.url), 'utf8');
+const comercio = comercioOriginal.replace(/<div data-navegacao-compartilhada>[\s\S]*?<\/div>/, htmlNavegacao(false));
+const idsComercio = [...comercio.matchAll(/\bid="([^"]+)"/g)].map(item => item[1]);
+assert.equal(new Set(idsComercio).size, idsComercio.length, 'IDs de comércio devem ser únicos com a navbar montada.');
+for (const [, ancora] of comercio.matchAll(/\bhref="#([^"]+)"/g)) assert(idsComercio.includes(ancora), `Âncora de comércio inexistente: ${ancora}`);
+for (const arquivo of ['navegacao.js', 'navegacao.css']) await access(new URL(arquivo, import.meta.url));
+for (const arquivo of ['app.js', 'paleta.js', 'vitrine.js', 'catalogo.js', 'comercio.js', 'navegacao.js', 'servidor.mjs', 'shopify-servidor.mjs', 'construir.mjs']) {
   const resultado = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(arquivo, import.meta.url))], { encoding: 'utf8' });
   if (resultado.status !== 0) throw new Error(`${arquivo}: ${resultado.stderr}`);
 }

@@ -12,10 +12,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/paleta.css">
+    <link rel="stylesheet" href="/navegacao.css">
     <link rel="preload" as="image" href="/images/campanha-duna-jardim.png" fetchpriority="high">
     <script type="module" src="/app.js">
     </script>
-    <script type="module" src="/paleta.js">
+    <script type="module" src="/vitrine.js">
     </script>
   </head>
   <body>
@@ -49,301 +50,9 @@
     <a class="skip-link" href="#conteudo">
       Pular para o conteúdo
     </a>
-    <header class="site-header" id="site-header">
-      <a class="wordmark" href="#inicio" aria-label="Per Parte, início">
-        Per Parte
-      </a>
-      <nav class="desktop-nav" aria-label="Principal">
-        <button class="nav-disclosure" data-mega="luminarias" aria-expanded="false" aria-controls="mega-luminarias">
-          Luminárias
-          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
-        </button>
-        <button class="nav-disclosure" data-mega="inspire" aria-expanded="false" aria-controls="mega-inspire">
-          Inspire-se
-          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
-        </button>
-        <button class="nav-disclosure" data-mega="processo" aria-expanded="false" aria-controls="mega-processo">
-          Como é feita
-          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
-        </button>
-        <button class="nav-disclosure" data-mega="marca" aria-expanded="false" aria-controls="mega-marca">
-          Per Parte
-          <svg class="nav-chevron" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
-        </button>
-      </nav>
-      <div class="header-actions">
-        <a href="#colecao" class="header-pill">
-          Encontre sua luz
-          <svg>
-            <use href="#i-arrow"/>
-          </svg>
-        </a>
-        <button class="icon-button" data-open-search aria-label="Buscar luminárias">
-          <svg>
-            <use href="#i-search"/>
-          </svg>
-        </button>
-        <button class="icon-button favorites-trigger" data-open-favorites aria-label="Ver luminárias salvas">
-          <svg>
-            <use href="#i-heart"/>
-          </svg>
-          <span class="favorites-count" hidden>
-            0
-          </span>
-        </button>
-        <button class="icon-button menu-trigger" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-nav">
-          <svg>
-            <use href="#i-menu"/>
-          </svg>
-        </button>
-      </div>
-    </header>
-    <div class="nav-scrim" hidden>
+    <div data-navegacao-compartilhada>
+      <nav class="nav-sem-script" aria-label="Principal"><a href="/">Per Parte</a><a href="/loja">Loja</a><a href="/conta">Minha conta</a><a href="/carrinho">Sacola</a></nav>
     </div>
-    <div class="mega-shell" id="mega-shell" hidden>
-      <section class="mega-panel" id="mega-luminarias" aria-label="Explore as luminárias" hidden>
-        <div class="mega-links mega-primary">
-          <p class="eyebrow">
-            Luminárias
-          </p>
-          <a href="#colecao">
-            Toda a coleção
-          </a>
-          <button data-product="marco">
-            Marco
-          </button>
-          <button data-product="duna">
-            Duna
-          </button>
-          <button data-product="farol">
-            Farol
-          </button>
-        </div>
-        <div class="mega-links">
-          <p class="eyebrow">
-            Uma luz, seu jeito
-          </p>
-          <a href="#ambientes" data-mood-link="habitar">
-            Para habitar
-          </a>
-          <a href="#ambientes" data-mood-link="pausar">
-            Para pausar
-          </a>
-          <a href="#ambientes" data-mood-link="criar">
-            Para criar
-          </a>
-          <p class="eyebrow mega-second-label">
-            Suas escolhas
-          </p>
-          <button data-open-favorites>
-            Composições salvas
-          </button>
-        </div>
-        <button class="mega-feature" data-product="marco">
-          <img src="/images/campanha-marco-orbita.png" alt="Um jovem de óculos e casaco gráfico junto de Marco, sob anéis gigantes suspensos">
-          <span>
-            <strong>
-              A primeira de muitas.
-            </strong>
-            <small>
-              Conheça Marco.
-            </small>
-          </span>
-          <i>
-            <svg>
-              <use href="#i-arrow"/>
-            </svg>
-          </i>
-        </button>
-      </section>
-      <section class="mega-panel" id="mega-inspire" aria-label="Inspiração para seus ambientes" hidden>
-        <div class="mega-links mega-primary">
-          <p class="eyebrow">
-            Inspire-se
-          </p>
-          <a href="#ambientes">
-            Novas atmosferas
-          </a>
-          <a href="#ambientes" data-mood-link="habitar">
-            Habitar
-          </a>
-          <a href="#ambientes" data-mood-link="pausar">
-            Pausar
-          </a>
-          <a href="#ambientes" data-mood-link="criar">
-            Criar
-          </a>
-        </div>
-        <div class="mega-links">
-          <p class="eyebrow">
-            A luz muda tudo
-          </p>
-          <a href="#galeria">
-            Pequenos cenários
-          </a>
-          <a href="#colecao">
-            Escolha uma composição
-          </a>
-          <p class="eyebrow mega-second-label">
-            Encontre a sua
-          </p>
-          <button data-open-search>
-            Buscar luminárias
-          </button>
-          <button data-open-favorites>
-            Suas favoritas
-          </button>
-        </div>
-        <a class="mega-feature" href="#galeria">
-          <img src="/images/insp-duna-nuvens.png" alt="Duna junto de uma mulher em um sofá ondulado, entre flores gigantes">
-          <span>
-            <strong>
-              Dê espaço à imaginação.
-            </strong>
-            <small>
-              Explore nossas cenas.
-            </small>
-          </span>
-          <i>
-            <svg>
-              <use href="#i-arrow"/>
-            </svg>
-          </i>
-        </a>
-      </section>
-      <section class="mega-panel" id="mega-processo" aria-label="Conheça o processo" hidden>
-        <div class="mega-links mega-primary">
-          <p class="eyebrow">
-            Como é feita
-          </p>
-          <a href="#processo">
-            Feito por partes
-          </a>
-          <a href="#processo" data-process-link="0">
-            A composição
-          </a>
-          <a href="#processo" data-process-link="1">
-            A matéria
-          </a>
-          <a href="#processo" data-process-link="2">
-            O encontro
-          </a>
-        </div>
-        <div class="mega-links">
-          <p class="eyebrow">
-            Do encontro à matéria
-          </p>
-          <a href="#processo">
-            Impressão 3D
-          </a>
-          <a href="#duvidas">
-            Dúvidas sobre a coleção
-          </a>
-          <p class="eyebrow mega-second-label">
-            A marca
-          </p>
-          <a href="#essencia">
-            Nossa missão
-          </a>
-        </div>
-        <a class="mega-feature" href="#processo">
-          <img src="/images/detalhes-duna.png" alt="Camadas e junções de Duna em detalhe">
-          <span>
-            <strong>
-              Toda parte tem um porquê.
-            </strong>
-            <small>
-              Olhe mais de perto.
-            </small>
-          </span>
-          <i>
-            <svg>
-              <use href="#i-arrow"/>
-            </svg>
-          </i>
-        </a>
-      </section>
-      <section class="mega-panel" id="mega-marca" aria-label="Conheça a Per Parte" hidden>
-        <div class="mega-links mega-primary">
-          <p class="eyebrow">
-            Per Parte
-          </p>
-          <a href="#essencia">
-            Nossa missão
-          </a>
-          <a href="#era-do-criar">
-            A era do criar
-          </a>
-          <a href="#colecao">
-            O começo
-          </a>
-        </div>
-        <div class="mega-links">
-          <p class="eyebrow">
-            Criado por você
-          </p>
-          <a href="#processo">
-            Feito por partes
-          </a>
-          <a href="#duvidas">
-            Vamos por partes
-          </a>
-          <p class="eyebrow mega-second-label">
-            Seu universo
-          </p>
-          <button data-open-favorites>
-            Suas favoritas
-          </button>
-        </div>
-        <a class="mega-feature" href="#essencia">
-          <img src="/images/campanha-farol-cenario.png" alt="Farol em um cenário surreal Lago, com roupa escultural e azulejos">
-          <span>
-            <strong>
-              Mais de você.
-            </strong>
-            <small>
-              Em cada parte.
-            </small>
-          </span>
-          <i>
-            <svg>
-              <use href="#i-arrow"/>
-            </svg>
-          </i>
-        </a>
-      </section>
-    </div>
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação móvel" inert>
-      <a href="#colecao">
-        Luminárias
-        <span>
-          01
-        </span>
-      </a>
-      <a href="#ambientes">
-        Inspire-se
-        <span>
-          02
-        </span>
-      </a>
-      <a href="#processo">
-        Como é feita
-        <span>
-          03
-        </span>
-      </a>
-      <a href="#essencia">
-        Nossa missão
-        <span>
-          04
-        </span>
-      </a>
-      <p>
-        Criado por você,
-        <br>
-        feito por partes.
-      </p>
-    </nav>
     <main id="conteudo">
       <section class="hero" id="inicio" aria-labelledby="hero-title">
         <div class="hero-slide active" data-slide="0" data-slide-product="duna">
@@ -383,7 +92,7 @@
             </a>
           </div>
         </div>
-        <button class="hero-product" data-product="duna">
+        <a href="/produtos/duna" class="hero-product" data-product="duna">
           <img src="/images/duna.png" alt="" width="52" height="58">
           <span>
             <strong>
@@ -396,7 +105,7 @@
           <svg>
             <use href="#i-arrow"/>
           </svg>
-        </button>
+        </a>
         <div class="hero-controls">
           <div class="slide-dots" aria-label="Cena do destaque">
             <button class="active" data-go-slide="0" aria-label="Mostrar Jardim Brasa com Duna" aria-pressed="true">
@@ -542,12 +251,12 @@
                   Uma presença tranquila para os momentos que ficam.
                 </p>
               </div>
-              <button class="button button-light" id="mood-product" data-product="duna">
+              <a href="/produtos/duna" class="button button-light" id="mood-product" data-product="duna">
                 Conheça Duna
                 <svg>
                   <use href="#i-arrow"/>
                 </svg>
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -578,9 +287,9 @@
         <div class="product-grid" id="products">
           <article class="product-card reveal">
             <div class="product-image">
-              <button class="product-image-button" data-product="marco" aria-label="Conhecer Marco">
+              <a href="/produtos/marco" class="product-image-button" data-product="marco" aria-label="Conhecer Marco">
                 <img src="/images/marco.png" alt="Marco — luminária de mesa verde e âmbar" loading="lazy">
-              </button>
+              </a>
               <span class="product-tag">
                 A primeira de muitas
               </span>
@@ -589,18 +298,18 @@
                   <use href="#i-heart"/>
                 </svg>
               </button>
-              <button class="product-quick" data-product="marco">
+              <a href="/produtos/marco" class="product-quick" data-product="marco">
                 Conhecer a obra
                 <svg>
                   <use href="#i-arrow"/>
                 </svg>
-              </button>
+              </a>
             </div>
             <div class="product-info">
               <div>
-                <button data-product="marco" class="product-name">
+                <a href="/produtos/marco" data-product="marco" class="product-name">
                   Marco
-                </button>
+                </a>
                 <p>
                   Uma ideia, parte por parte.
                 </p>
@@ -617,9 +326,9 @@
           </article>
           <article class="product-card reveal">
             <div class="product-image">
-              <button class="product-image-button" data-product="duna" aria-label="Conhecer Duna">
+              <a href="/produtos/duna" class="product-image-button" data-product="duna" aria-label="Conhecer Duna">
                 <img src="/images/duna.png" alt="Duna — luminária baixa, com base Brasa e cúpula creme" loading="lazy">
-              </button>
+              </a>
               <span class="product-tag">
                 Presença tranquila
               </span>
@@ -628,18 +337,18 @@
                   <use href="#i-heart"/>
                 </svg>
               </button>
-              <button class="product-quick" data-product="duna">
+              <a href="/produtos/duna" class="product-quick" data-product="duna">
                 Conhecer a obra
                 <svg>
                   <use href="#i-arrow"/>
                 </svg>
-              </button>
+              </a>
             </div>
             <div class="product-info">
               <div>
-                <button data-product="duna" class="product-name">
+                <a href="/produtos/duna" data-product="duna" class="product-name">
                   Duna
-                </button>
+                </a>
                 <p>
                   Uma pausa em forma de luz.
                 </p>
@@ -654,9 +363,9 @@
           </article>
           <article class="product-card reveal">
             <div class="product-image">
-              <button class="product-image-button" data-product="farol" aria-label="Conhecer Farol">
+              <a href="/produtos/farol" class="product-image-button" data-product="farol" aria-label="Conhecer Farol">
                 <img src="/images/farol.png" alt="Farol — luminária vertical creme sobre base Lago" loading="lazy">
-              </button>
+              </a>
               <span class="product-tag">
                 Cor encontra luz
               </span>
@@ -665,18 +374,18 @@
                   <use href="#i-heart"/>
                 </svg>
               </button>
-              <button class="product-quick" data-product="farol">
+              <a href="/produtos/farol" class="product-quick" data-product="farol">
                 Conhecer a obra
                 <svg>
                   <use href="#i-arrow"/>
                 </svg>
-              </button>
+              </a>
             </div>
             <div class="product-info">
               <div>
-                <button data-product="farol" class="product-name">
+                <a href="/produtos/farol" data-product="farol" class="product-name">
                   Farol
-                </button>
+                </a>
                 <p>
                   Outro ritmo para sua mesa.
                 </p>
@@ -722,12 +431,12 @@
                   <p>
                     Base, corpo e difusor. Formas simples que, juntas, encontram uma personalidade. A beleza também está no encontro.
                   </p>
-                  <button class="text-link" data-product="marco">
+                  <a href="/produtos/marco" class="text-link" data-product="marco">
                     Veja a composição
                     <svg>
                       <use href="#i-arrow"/>
                     </svg>
-                  </button>
+                  </a>
                 </div>
               </div>
               <div class="process-item">
@@ -746,12 +455,12 @@
                   <p>
                     A impressão 3D transforma a composição em matéria. As linhas e as junções fazem parte da expressão de cada obra.
                   </p>
-                  <button class="text-link" data-product="duna">
+                  <a href="/produtos/duna" class="text-link" data-product="duna">
                     Olhe mais de perto
                     <svg>
                       <use href="#i-arrow"/>
                     </svg>
-                  </button>
+                  </a>
                 </div>
               </div>
               <div class="process-item">
@@ -835,7 +544,7 @@
           </a>
         </div>
         <div class="category-grid">
-          <button class="category-card reveal" data-product="marco">
+          <a href="/produtos/marco" class="category-card reveal" data-product="marco">
             <img src="/images/categoria-marco-violeta.png" alt="Marco acesa em um cenário violeta e lavanda" loading="lazy">
             <span>
               <small>
@@ -850,8 +559,8 @@
                 <use href="#i-arrow"/>
               </svg>
             </i>
-          </button>
-          <button class="category-card reveal" data-product="duna">
+          </a>
+          <a href="/produtos/duna" class="category-card reveal" data-product="duna">
             <img src="/images/categoria-duna-verde.png" alt="Duna acesa em um cenário verde com luz lima suave" loading="lazy">
             <span>
               <small>
@@ -866,8 +575,8 @@
                 <use href="#i-arrow"/>
               </svg>
             </i>
-          </button>
-          <button class="category-card reveal" data-product="farol">
+          </a>
+          <a href="/produtos/farol" class="category-card reveal" data-product="farol">
             <img src="/images/categoria-farol-ambar.png" alt="Farol acesa em um cenário vinho e âmbar" loading="lazy">
             <span>
               <small>
@@ -882,7 +591,7 @@
                 <use href="#i-arrow"/>
               </svg>
             </i>
-          </button>
+          </a>
         </div>
       </section>
       <section class="gallery section-pad" id="galeria" aria-labelledby="gallery-title">
@@ -909,23 +618,23 @@
           </div>
         </div>
         <div class="gallery-rail" id="gallery-rail">
-          <button class="gallery-card gallery-card--art" data-product="duna">
+          <a href="/produtos/duna" class="gallery-card gallery-card--art" data-product="duna">
             <span class="image-wrap"><img src="/images/insp-duna-nuvens.png" alt="Duna junto de uma mulher em um sofá ondulado, em um jardim imaginado de flores gigantes" loading="lazy"></span>
             <span>Um lugar fora do óbvio<small>Duna · estudo surreal</small></span>
-          </button>
-          <button class="gallery-card gallery-card--art" data-product="marco">
+          </a>
+          <a href="/produtos/marco" class="gallery-card gallery-card--art" data-product="marco">
             <span class="image-wrap"><img src="/images/insp-marco-escada.png" alt="Marco em uma composição surreal com uma escada" loading="lazy"></span>
             <span>Ideias que ganham altura<small>Marco · estudo surreal</small></span>
-          </button>
-          <button class="gallery-card gallery-card--art" data-product="farol">
+          </a>
+          <a href="/produtos/farol" class="gallery-card gallery-card--art" data-product="farol">
             <span class="image-wrap"><img src="/images/insp-farol-mar.png" alt="Farol em uma ilha de azulejos, cercada por água e uma lua cenográfica" loading="lazy"></span>
             <span>Outro horizonte de luz<small>Farol · estudo surreal</small></span>
-          </button>
+          </a>
           <a class="gallery-card gallery-card--art gallery-card--collection" href="#colecao">
             <span class="image-wrap"><img src="/images/insp-trio-galeria.png" alt="Marco, Duna e Farol reunidas em uma galeria imaginada" loading="lazy"></span>
             <span>Encontros que acendem ideias<small>A coleção · cenário imaginado</small></span>
           </a>
-          <button class="gallery-card" data-product="duna">
+          <a href="/produtos/duna" class="gallery-card" data-product="duna">
             <span class="image-wrap">
               <img src="/images/ambiente-duna.png" alt="Duna em uma sala de estar" loading="lazy">
             </span>
@@ -935,8 +644,8 @@
                 Duna · estudo de ambiente
               </small>
             </span>
-          </button>
-          <button class="gallery-card" data-product="farol">
+          </a>
+          <a href="/produtos/farol" class="gallery-card" data-product="farol">
             <span class="image-wrap">
               <img src="/images/ambiente-farol.png" alt="Farol em uma escrivaninha" loading="lazy">
             </span>
@@ -946,8 +655,8 @@
                 Farol · estudo de ambiente
               </small>
             </span>
-          </button>
-          <button class="gallery-card" data-product="duna">
+          </a>
+          <a href="/produtos/duna" class="gallery-card" data-product="duna">
             <span class="image-wrap">
               <img src="/images/detalhes-duna.png" alt="A textura fosca de Duna em detalhe" loading="lazy">
             </span>
@@ -957,8 +666,8 @@
                 Duna · estudo de textura
               </small>
             </span>
-          </button>
-          <button class="gallery-card" data-product="marco">
+          </a>
+          <a href="/produtos/marco" class="gallery-card" data-product="marco">
             <span class="image-wrap">
               <img src="/images/marco.png" alt="As partes coloridas de Marco" loading="lazy">
             </span>
@@ -968,7 +677,7 @@
                 Marco · estudo de composição
               </small>
             </span>
-          </button>
+          </a>
         </div>
       </section>
       <section class="mission section-pad" id="essencia" aria-labelledby="mission-title">
@@ -1100,15 +809,15 @@
               <a href="#colecao">
                 Todas as luminárias
               </a>
-              <button data-product="marco">
+              <a href="/produtos/marco" data-product="marco">
                 Marco
-              </button>
-              <button data-product="duna">
+              </a>
+              <a href="/produtos/duna" data-product="duna">
                 Duna
-              </button>
-              <button data-product="farol">
+              </a>
+              <a href="/produtos/farol" data-product="farol">
                 Farol
-              </button>
+              </a>
             </div>
             <div class="footer-link-group">
               <h3>
@@ -1263,6 +972,7 @@
         </svg>
         <input id="search-input" type="search" placeholder="Busque por nome, cor ou forma" autocomplete="off" aria-label="Buscar por nome, cor ou forma">
       </label>
+      <a class="text-link" id="search-all" href="/loja">Buscar em toda a loja <svg><use href="#i-arrow"/></svg></a>
       <div id="search-results" class="search-results" aria-live="polite">
       </div>
     </dialog>
