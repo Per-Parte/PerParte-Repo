@@ -1,0 +1,40 @@
+{
+  "data": "2026-10-13",
+  "ferramenta": "image_gen integrada",
+  "tipo": "Estudos de fundos coloridos para cards de composição",
+  "imagens": [
+    {
+      "arquivo": "categoria-marco-violeta.png",
+      "produto": "Marco",
+      "referencias": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/marco.png",
+        "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-06e790a1-947e-4442-b7d2-55a0c585b5bb.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Create a portrait 1024x1280 editorial product photograph for a Per Parte website category card. IMAGE1 is the exact product MARCO to preserve: olive green short cylindrical base, EXACTLY THREE rounded amber horizontal rings, broad glowing ivory dome. IMAGE2 is lighting/backdrop/composition reference only; do not use any Gantri products, writing, logos, icons or layout. Replace the beige studio surroundings of IMAGE1 with a saturated deep violet seamless photography cyclorama fading through cobalt-purple into luminous soft lavender on the floor. Rich plum-violet upper third, brighter purple pool of light on floor, subtle tactile film grain, directional studio key from upper left, long grounded shadow softly to the right, subtle warm halo near lamp. Preserve the lamp's exact design, 3 rings, proportions, original olive/amber/ivory colors and gentle warm glow. Keep the thin dark power cord exiting unobtrusively to the right on the floor. The WHOLE lamp must be visible, centered horizontally around54%, its top at32% image height and base at84%. Upper25% is calm dark negative space for white web text; bottom12% free for UI arrow. High end realistic design product photography, crisp fine 3D-printed texture, soft photographic tonal falloff and contact shadow. No pedestal, props, people, extra lamps, text, lettering, logo, border, vignette frame, UI or watermark. Product is the only object; saturated background colors change, product colors do not.",
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-44b2cb6a-0543-458e-ba60-08cba3ef7069.png",
+      "destino": "apps/site/public/images/categoria-marco-violeta.png"
+    },
+    {
+      "arquivo": "categoria-duna-verde.png",
+      "produto": "Duna",
+      "referencias": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/duna.png",
+        "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-32e9d429-5595-4b90-a3df-b855e6f81a7d.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Make a portrait 1024x1280 premium editorial product photograph for a Per Parte category card. IMAGE1 is exact DUNA lamp reference. Preserve the broad low illuminated ivory hemisphere and short deep-red cylindrical pedestal with thin vertical ribs, all proportions and colors exactly. IMAGE2 is reference ONLY for saturated seamless studio backdrop, dramatic photographic light, negative-space layout and long shadow, NOT for objects, brand, text or icons. Replace beige surroundings with a moss-forest green seamless cyclorama that transitions from deep pine green in the upper third to luminous fresh soft lime/sage green on the lower floor. Strong but elegant saturated color contrast between green studio and red Duna base; gentle spotlight on backdrop, soft diagonal grounded shadow rightward, authentic warm lamp glow, tactile fine film grain and matte surface, high-end physical product photo. Whole lamp centered around52% horizontal, dome starts around40% image height, foot ends82%, broad dome occupies65% of canvas width. Leave upper28% quiet and deep green for white website title; no lettering actually rendered. Natural three-quarter frontal camera showing same object shape as product reference; keep subtle dark power cord leaving to right. No pedestal, no furniture, no plants, no people, no extra objects or lamps, no text, no logo, no watermark, no icons or border. Output only the photograph. Background changes; lamp design and colors remain unchanged.",
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-b9a30315-0f9b-48c8-9534-10fe7d150ba9.png",
+      "destino": "apps/site/public/images/categoria-duna-verde.png"
+    },
+    {
+      "arquivo": "categoria-farol-ambar.png",
+      "produto": "Farol",
+      "referencias": [
+        "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png",
+        "C:/Users/ANTNIO~1/AppData/Local/Temp/codex-clipboard-32e9d429-5595-4b90-a3df-b855e6f81a7d.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Produce a portrait 1024x1280 premium editorial product photograph for Per Parte website card. IMAGE1 is exact FAROL lamp product reference: tall softly rounded illuminated ivory capsule with vertical flutes, low broad teal cylindrical base plus smaller teal collar. Preserve exact geometry, proportions, ivory and teal colors and warm glow, do not introduce a different lamp. IMAGE2 supplies only the dramatic warm-color studio atmosphere of its right-hand card, photographic pool of light and minimal product composition; do NOT reproduce any Gantri lamp, UI, words or branding. Replace beige background with seamless studio cyclorama transitioning from deep burnt burgundy at very top through vibrant vermilion orange in middle to peach/apricot golden floor at bottom. A beautiful diffused amber spotlight creates photographic tonal depth behind lamp, realistic contact shadow extends right, subtle fine film grain, precise ribbed matte material. Whole Farol centered at55% horizontal, capsule top around29% image height and base at85%, product width roughly33% of image width. The top22% remains calm deep wine-orange for white website title. Subtle dark power cable goes right across floor. No people, plinths, furniture, props, extra lamps, text, icons, logo, border or watermark. Keep product colors unchanged while making the surroundings colorful and luminous.",
+      "original": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-0d4ddd84-f89d-4469-bb4c-96b13bf8780c.png",
+      "destino": "apps/site/public/images/categoria-farol-ambar.png"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ Data: 13/10/2026. **DECIDIDO pelo usuário para esta revisão:** expressões ind
 - **Composição para a página:** reservar área legível para títulos e controles, preservar rosto e produto no recorte móvel e manter o protagonista claro mesmo em thumbnail.
 - **Originalidade:** as referências orientam atmosfera, força expressiva e relação entre pessoa/objeto. Pessoas, produtos, marcas, texto e fotografias da Gantri não são usados como assets da landing.
 
-## Refinamento mais recente: personagens e persona
+## Refinamento das personagens e persona
 
 Após revisar as três campanhas geradas, o usuário pediu **alterar somente as personagens para adequá-las à persona do documento mestre**. As três edições foram geradas, inspecionadas e copiadas para os mesmos caminhos públicos. Preservam a composição dos cenários, luminárias, câmera e direção surrealista/colorida. Os novos originais e hashes já substituem os da primeira geração de campanha no manifesto; o histórico dos prompts conserva ambas as etapas. As quatro imagens de inspiração permanecem como geradas.
 
@@ -35,9 +35,18 @@ Os três assets de catálogo permanecem como referência. Duna/Farol são propos
 |---|---|---|
 | Três campanhas | `campanha-duna-jardim.png`, `campanha-marco-orbita.png`, `campanha-farol-cenario.png` | Campanhas expressivas para hero e demais destaques; personagens refinadas conforme a última orientação |
 | Quatro inspirações | `insp-duna-nuvens.png`, `insp-marco-escada.png`, `insp-farol-mar.png`, `insp-trio-galeria.png` | Galeria ampliada de quatro para oito cards com novos universos visuais |
+| Três fundos de estúdio | `categoria-marco-violeta.png`, `categoria-duna-verde.png`, `categoria-farol-ambar.png` | Cor editorial nos cards de “Qual é a sua luz?”, mantendo os produtos de referência |
 | Acervo anterior | Os dez PNGs anteriores | Preservar catálogo, histórico de campanha e demais imagens sem perda de origem |
 
-O conjunto contém 17 PNGs armazenados: dez anteriores e sete novos. A primeira rodada teve dimensões e correspondência com os originais conferidas; as três campanhas editadas foram novamente verificadas e os registros atualizados. A confirmação de dimensões, origem, hashes e uso efetivo está no manifesto em [site-imagens.md](site-imagens.md). Assets guardados no acervo não precisam aparecer na campanha ativa.
+O conjunto contém 20 PNGs armazenados: dez anteriores, sete da revisão artística e três fundos de estúdio. A primeira rodada teve dimensões e correspondência com os originais conferidas; as três campanhas editadas foram novamente verificadas e os registros atualizados. Os três fundos foram conferidos em 1122 × 1402, com cópias iguais aos originais por SHA-256. A confirmação de dimensões, origem, hashes e uso efetivo está no manifesto em [site-imagens.md](site-imagens.md). Assets guardados no acervo não precisam aparecer na campanha ativa.
+
+## Fundos coloridos dos cards de composição
+
+O usuário pediu mais cor no site a partir dos prints de categorias da Gantri. Em `#categorias`, “Qual é a sua luz?”, Marco passa a ter cenário violeta/lavanda; Duna, verde-floresta/sálvia; Farol, vinho/laranja/âmbar. São fundos contínuos de estúdio, com luz direcional, queda tonal e espaço para título e seta. Não há pessoas nessas três cenas.
+
+A mudança é editorial: desenho, proporções e cores das luminárias permanecem ligados aos assets de catálogo. O fundo não cria uma nova variante de produto nem altera a paleta de filamentos. As campanhas com personagens adequadas à persona e a galeria de oito cards são preservadas. Os prompts literais, referências e originais estão em [imagens-prompts-fundos.json](imagens-prompts-fundos.json).
+
+O QA dos cards foi concluído no navegador integrado em desktop 1280 × 720 e móvel 390 × 844: imagens carregadas, produtos inteiros, títulos legíveis e nenhum overflow. No móvel, os três cards aparecem em uma coluna e o título Farol fica separado da cúpula. Detalhes de Marco e Farol abriram corretamente e fecharam por Escape; console sem erros, check e build passaram. Capturas 21–23 em `docs/pesquisa/perparte-capturas/`.
 
 ## Proveniência e revisão
 

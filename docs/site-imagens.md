@@ -1,6 +1,6 @@
 # Imagens da landing Per Parte
 
-Data: 13/10/2026. Estado: **PROPOSTA / imagens conceituais**. O acervo contém 17 imagens originais geradas com `image_gen` e copiadas para `apps/site/public/images/`: dez anteriores e sete novas. Não são fotos de produtos fabricados nem fotografias da Gantri. A direção editorial está em [site-direcao-conteudo.md](site-direcao-conteudo.md); a revisão artística aprovada pelo usuário está em [direcao-artistica-imagens.md](direcao-artistica-imagens.md).
+Data: 13/10/2026. Estado: **PROPOSTA / imagens conceituais**. O acervo contém 20 imagens originais geradas com `image_gen` e copiadas para `apps/site/public/images/`: dez anteriores, sete da revisão artística e três novos fundos de estúdio para os cards de composição. Não são fotos de produtos fabricados nem fotografias da Gantri. A direção editorial está em [site-direcao-conteudo.md](site-direcao-conteudo.md); a revisão artística aprovada pelo usuário está em [direcao-artistica-imagens.md](direcao-artistica-imagens.md).
 
 **Refinamento concluído nos arquivos:** depois da primeira rodada, o usuário pediu ajustar somente as personagens das três campanhas à persona da revista, preservando produto e cenário. O manifesto abaixo já registra as edições finais. A primeira geração e os prompts correspondentes permanecem no histórico do JSON; as quatro inspirações foram preservadas.
 
@@ -27,8 +27,11 @@ Dimensões conferidas nos cabeçalhos PNG. A correspondência com os originais f
 | `insp-marco-escada.png` | 1536 × 1024 | Galeria: homem em alfaiataria gráfica, escadaria âmbar e arco creme sobre fundo vinho; Marco ao lado | `exec-50c73a78-d4e0-4f88-adc5-eecb10b1c6fa.png` |
 | `insp-farol-mar.png` | 1536 × 1024 | Galeria: Farol em ilha de azulejos acima do espelho-d’água, cortinas azuis e esfera lunar creme | `exec-0194777e-5ac3-4ffd-853f-340403438421.png` |
 | `insp-trio-galeria.png` | 1536 × 1024 | Galeria: Duna, Marco e Farol sobre três pedestais, esculturas Lago/Brasa/creme e tecido rosa | `exec-14af34b9-7d25-441d-add1-56aa29fe5804.png` |
+| `categoria-marco-violeta.png` | 1122 × 1402 | Card Marco em “Qual é a sua luz?”: fundo de estúdio violeta/lavanda; produto preserva base oliva, três anéis âmbar e domo creme | `exec-44b2cb6a-0543-458e-ba60-08cba3ef7069.png` |
+| `categoria-duna-verde.png` | 1122 × 1402 | Card Duna em “Qual é a sua luz?”: fundo de estúdio verde-floresta/sálvia; produto preserva base Brasa e cúpula creme | `exec-b9a30315-0f9b-48c8-9534-10fe7d150ba9.png` |
+| `categoria-farol-ambar.png` | 1122 × 1402 | Card Farol em “Qual é a sua luz?”: fundo de estúdio vinho/laranja/âmbar; produto preserva base Lago e difusor creme | `exec-0d4ddd84-f89d-4469-bb4c-96b13bf8780c.png` |
 
-Pastas dos originais em `C:/Users/Antônio/.codex/generated_images/`: `01a1366c-7023-7703-bbd8-1b6328f806e6/` contém os dez anteriores e as três campanhas novas; `01a1372c-6234-7d82-b322-d6b615d3220d/` contém as quatro inspirações. Os arquivos públicos fazem parte do projeto; os caminhos dos originais registram a proveniência local da geração.
+Pastas dos originais em `C:/Users/Antônio/.codex/generated_images/`: `01a1366c-7023-7703-bbd8-1b6328f806e6/` contém os dez anteriores, as três campanhas novas e os três fundos de estúdio; `01a1372c-6234-7d82-b322-d6b615d3220d/` contém as quatro inspirações. Os arquivos públicos fazem parte do projeto; os caminhos dos originais registram a proveniência local da geração.
 
 Na revisão anterior, os dois PNGs adicionais foram conferidos em 1536 × 1024 e correspondem byte a byte aos originais. SHA-256 de `hero-marco-homem.png`: `884496ade42aa1f080e1fc3fa9549f4e998506d864dda4c0d23ef252c2c3f4af`; de `hero-farol-mulher.png`: `8a504f39279bb844aa68fb38f179225c926a9fc8e0aeb0a24ac34b61c143c42e`.
 
@@ -44,10 +47,19 @@ Na revisão artística posterior, os **17 arquivos** tiveram dimensões lidas do
 | `insp-farol-mar.png` | `c2c2586231f3e74f630e0103bf3fc2aeef1d3bade6707bf1a765e5045a229987` |
 | `insp-trio-galeria.png` | `f5c4418349d5101e40e92ea8b950818d1b54eda0fa21d3302d141df2abeebbfa` |
 
+Na revisão dos fundos coloridos, os três PNGs foram conferidos em **1122 × 1402**, tamanho efetivamente entregue pela ferramenta. As cópias correspondem byte a byte aos originais. Os prompts pediam 1024 × 1280; o manifesto registra a dimensão real, sem redimensionamento posterior.
+
+| Arquivo | SHA-256 |
+|---|---|
+| `categoria-marco-violeta.png` | `62627328209199bd95e295f942f7fdce72f85e832f1ea287dfc195f6b50fc48e` |
+| `categoria-duna-verde.png` | `0d555921b3cfdfe59f078e12e1d381cfa5e4c0e6460e19db8ccfdb2dc65a3bae` |
+| `categoria-farol-ambar.png` | `16c4966536f734e7bfc235c3ca8a5d1b20c4036b6e676fbc4c2ed532a611ff66` |
+
 ## Prompts literais da revisão artística
 
 - [imagens-prompts-campanha.json](imagens-prompts-campanha.json): três edições finais das personagens, prompts completos, referências, originais e destinos; o histórico preserva as três gerações iniciais e suas referências estéticas fornecidas pelo usuário.
 - [imagens-prompts-inspiracoes.json](imagens-prompts-inspiracoes.json): quatro chamadas independentes de inspiração, prompts completos, referências de produto, dimensões, original e destino.
+- [imagens-prompts-fundos.json](imagens-prompts-fundos.json): três fundos de estúdio coloridos, prompts completos, referências de produto e cenário, originais e destinos. As referências externas orientam a iluminação e a composição; o produto permanece Per Parte.
 
 As três referências Gantri fornecidas pelo usuário orientaram a linguagem visual das campanhas. As instruções dos prompts pedem novas pessoas, composições e figurinos, preservando o produto Per Parte. Os arquivos temporários dessas referências não são assets do site. A seção abaixo conserva a direção base anterior e distingue esse resumo dos prompts literais executados na nova rodada.
 
@@ -86,6 +98,7 @@ Transcrição dos prompts de direção em `docs/site-direcao-conteudo.md`. São 
 | Órbita Marco | Alfaiataria listrada, atitude curiosa, palco verde e grandes anéis suspensos; edição posterior traz homem jovem com cachos/óculos; os três anéis da luminária continuam distintos | `marco.png` + referência estética na geração; campanha anterior + produto na edição |
 | Cenário Farol | Figurino amarelo/azul/creme, pose assimétrica, azulejos e volumes suspensos; edição posterior traz mulher jovem de cabelo ruivo ondulado; Farol mantém sua silhueta vertical | `farol.png` + referência estética na geração; campanha anterior + produto na edição |
 | Inspirações | Acrescenta poltrona com volumes de nuvem, escadaria impossível, palco com espelho-d’água e galeria escultural do trio | Um produto por cena; os três no trio |
+| Fundos dos cards de composição | Substitui o estúdio bege por violeta/lavanda em Marco, verde em Duna e vinho/laranja/âmbar em Farol; sem pessoas, props ou alteração de desenho/cor da luminária | Produto correspondente de catálogo + referência de fundo fornecida pelo usuário |
 
 As imagens de catálogo foram usadas como referência nas gerações derivadas de hero, ambientes e macro para manter silhueta, partes e cores. Isso melhora consistência entre cenas; a geração ainda é uma interpretação visual, não uma especificação geométrica ou industrial.
 
@@ -98,5 +111,7 @@ As imagens de catálogo foram usadas como referência nas gerações derivadas d
 - Usar texto alternativo descritivo nas imagens de conteúdo; imagens repetidas dentro de um controle já nomeado podem ter `alt` vazio.
 - Manter a nota de coleção em estudo e o esclarecimento no FAQ. Não adicionar certificações, material homologado, avaliações ou alegações de fabricação a partir dos renders.
 - Hero, três fotos imediatamente abaixo, destaques de menu e Missão usam as novas campanhas. A galeria tem oito cards: quatro novas inspirações seguidas das quatro imagens anteriores. As três campanhas antigas ficam no acervo; o catálogo de produto permanece intacto.
-- Preservar fotografias originais e prompts de direção para novas gerações consistentes. Os 17 arquivos PNG compõem a entrega e seu histórico; uma futura conversão para formatos menores deve conservar os originais e ser conferida visualmente.
+- Os três novos fundos entram somente nos cards de `#categorias`, “Qual é a sua luz?”. A cor pertence ao cenário editorial; não cria variantes de produto, filamentos ou opções comerciais. Campanhas com as personagens refinadas e a galeria de oito cards permanecem preservadas.
+- O QA dos fundos no navegador integrado confirmou as três imagens em desktop 1280 × 720 e móvel 390 × 844, produtos inteiros, nomes legíveis e nenhum overflow. No móvel, os três cards ficam em uma coluna, com o título Farol separado da cúpula. Evidências em `21-categorias-fundos-desktop.jpg`, `22-categorias-fundos-mobile.jpg` e `23-categoria-farol-mobile.jpg`, em `docs/pesquisa/perparte-capturas/`.
+- Preservar fotografias originais e prompts de direção para novas gerações consistentes. Os 20 arquivos PNG compõem a entrega e seu histórico; uma futura conversão para formatos menores deve conservar os originais e ser conferida visualmente.
 - As sete imagens foram inspecionadas individualmente: silhuetas/famílias de cor reconhecíveis e três anéis de Marco visíveis nas cenas em que aparece. A conferência dos arquivos não substitui o QA dos recortes e textos na página renderizada, registrado em [revisao-landing-2026-10-13.md](revisao-landing-2026-10-13.md).
