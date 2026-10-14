@@ -65,7 +65,7 @@ As três silhuetas têm famílias visuais próprias. Cada fotografia mantém uma
 
 **Chamada curta:** “Design que acende possibilidades.”
 
-**Título:** “Luz para ser sua.”
+**Título:** “Criado por você,” / “Feito por partes” — duas linhas, vírgula após “você” e sem ponto final, conforme pedido do usuário em 13/10/2026.
 
 **Apoio:** “Três composições. Novos jeitos de viver a luz. Conheça o universo de luminárias feitas parte por parte.”
 

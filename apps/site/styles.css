@@ -2187,7 +2187,7 @@ dialog[open]  {
     max-width:360px
   }
   .hero h1  {
-    font-size:36px;
+    font-size:clamp(26px,8.7vw,36px);
     line-height:1.22;
     margin-bottom:14px
   }

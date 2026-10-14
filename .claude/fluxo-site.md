@@ -20,7 +20,7 @@ Arquivos principais: `index.html` para estrutura e conteúdo, `styles.css` para 
 
 ## Percurso da página
 
-1. Navegação sobre a fotografia, destaque com três cenas e entrada para a coleção; menu desktop escuro com vidro/desfoque.
+1. Navegação sobre a fotografia, destaque com três cenas e título “Criado por você,” / “Feito por partes” em duas linhas, com entrada para a coleção; menu desktop escuro com vidro/desfoque.
 2. Três fotografias em colunas imediatamente após o hero; princípios da marca e introdução editorial.
 3. Ambientes com seleção de cenas.
 4. Coleção de Marco, Duna e Farol e acesso ao detalhe de cada obra.
