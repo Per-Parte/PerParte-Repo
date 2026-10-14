@@ -1,6 +1,6 @@
 # Fluxo: infraestrutura do monorepo
 
-**Atualização:** 14/10/2026. **Estado:** três aplicativos locais com Node; site conectado à Storefront Shopify. Atualização de `main` e publicação do site em produção na Vercel autorizadas, ainda sem conclusão registrada. Shopify é backend comercial **DECIDIDO**; implementação vanilla/Node permanece **PROVISÓRIA**.
+**Atualização:** 14/10/2026. **Estado:** site conectado à Storefront Shopify e publicado em `https://perparte.com`, com `main` enviada até `fcd24a1` e deploy READY; configurador e quadro continuam locais. Shopify é backend comercial **DECIDIDO**; implementação vanilla/Node permanece **PROVISÓRIA**.
 
 ## Árvore e responsabilidades
 
@@ -43,7 +43,7 @@ A conta Shopify usa portal hospedado; OAuth próprio, sessão local e vínculo �
 
 ## Domínio — configuração de 14/10/2026
 
-O usuário solicitou vincular `perparte.com` à operação Shopify. Consulta pública confirmou `perparte.com` com A `216.198.79.1`, `www` com CNAME `ef9d90000741766f.vercel-dns-017.com`, nameservers `ns51.domaincontrol.com`/`ns52.domaincontrol.com` e MX `perparte-com.mail.protection.outlook.com`. Esses registros indicam site na Vercel, DNS GoDaddy e e-mail Outlook; a configuração efetiva do projeto Vercel não foi auditada nesta rodada. As afirmações de ausência de deploy abaixo se referem à preparação local anterior, não ao estado externo atual.
+O usuário solicitou vincular `perparte.com` à operação Shopify. Consulta pública confirmou `perparte.com` com A `216.198.79.1`, `www` com CNAME `ef9d90000741766f.vercel-dns-017.com`, nameservers `ns51.domaincontrol.com`/`ns52.domaincontrol.com` e MX `perparte-com.mail.protection.outlook.com`. Esses registros indicam site na Vercel, DNS GoDaddy e e-mail Outlook. A rodada de domínio preservou esses apontamentos; posteriormente, o projeto Vercel foi conferido e a versão atual publicada, conforme a seção abaixo.
 
 **CONFIGURADO:** raiz/`www` e email preservados; `checkout.perparte.com` conectado à Shopify usando CNAME `checkout` → `shops.myshopify.com`, TTL 3600, confirmado na GoDaddy e por consulta ao DNS autoritativo. O admin mostra destino Loja virtual, tipo Domínio primário e certificado TLS provisionado. HTTPS abre a página protegida `/password` sem erro de certificado. A propagação global ainda consta em andamento; isso não comprova uma compra. Domínio de conta é uma configuração separada, ainda pendente. Evidências e roteiro em `docs/integracoes/dominio-shopify.md`.
 
@@ -53,15 +53,17 @@ O usuário solicitou vincular `perparte.com` à operação Shopify. Consulta pú
 
 `construir.mjs` copia landing e páginas comerciais para `apps/site/dist`. O comando de preview executa `servidor.mjs --dist`, preservando API e roteamento. Hospedagem apenas estática não basta para o comércio: é necessário runtime Node ou uma adaptação equivalente das rotas/API.
 
-O adaptador Vercel está preparado localmente: `api/index.mjs` chama `apps/site/vercel-adaptador.mjs`, enquanto `vercel.json` define build, rewrites das páginas e `/api/*`. Ele reutiliza as validações da API sem abrir servidor HTTP persistente. Na rodada inicial, build, JSON schema e seis testes do adaptador passaram; o conjunto completo somou 28 testes aprovados. A execução desta versão na infraestrutura Vercel permanece pendente. Instruções de ambiente e publicação em `apps/site/HOSPEDAGEM.md`.
+O adaptador Vercel está publicado: `api/index.mjs` chama `apps/site/vercel-adaptador.mjs`, enquanto `vercel.json` define build, rewrites das páginas e `/api/*`. Ele reutiliza as validações da API sem abrir servidor HTTP persistente. Na rodada inicial, build, JSON schema e seis testes do adaptador passaram; o conjunto completo somou 28 testes aprovados. Instruções de ambiente e manutenção em `apps/site/HOSPEDAGEM.md`.
 
-O pedido posterior de 14/10/2026 autoriza atualizar `main` e publicar em produção. Login isolado com `davi-2705` e inspeção autenticada confirmaram o projeto correto **`per-parte-website`** (`prj_ESzcls5GD5df0mcBVn7UUIetFFr1`), da equipe `per-parte1` (PerParte), com aliases `perparte.com` e `www.perparte.com`. O vínculo antigo de `dist` foi descartado como referência de destino. A configuração remota consultada ainda usa Root Directory `apps/site`, build `node construir.mjs` e saída `dist`; a mudança para raiz, `npm run site:build` e `apps/site/dist` é necessária para incluir a API e ainda aguarda confirmação.
+O pedido posterior de 14/10/2026 autorizou atualizar `main` e publicar em produção. O projeto correto é **`per-parte-website`** (`prj_ESzcls5GD5df0mcBVn7UUIetFFr1`), da equipe `per-parte1` (PerParte), com aliases `perparte.com`, `www.perparte.com` e `per-parte-website.vercel.app`. O vínculo antigo de `dist` foi descartado como referência de destino. A configuração remota passou a usar a raiz do repositório, Node 24.x, build `npm run site:build` e saída `apps/site/dist`. Foram cadastradas 12 variáveis Production, incluindo a configuração de origens e `RESEND_ENABLED=false`; credenciais permanecem no servidor.
 
-A preparação atual passou em 51 testes, incluindo cinco de build; o build limpo gerou 42 arquivos públicos, sem `.env*` ou `.vercel`. A verificação estática final está em conclusão. Antes do envio, conferir também exclusão de logs/prévias privadas e o ambiente de produção. A retirada de `mcp-logs.txt` e `wa-logs.txt` do rastreamento Git está planejada, preservando os arquivos locais. Esses resultados locais não confirmam deploy desta versão.
+A preparação do build passou em 51 testes e gerou 42 arquivos públicos, sem `.env*` ou `.vercel`. Os logs `mcp-logs.txt` e `wa-logs.txt` deixaram o rastreamento Git e estão ignorados. Após corrigir a captura nomeada `rota`, também repassada pela Vercel na query, a suíte passou em **53/53 testes**, com `site:check` aprovado. O adaptador só remove esse metadado quando corresponde a uma única rota permitida; capturas conflitantes/repetidas e parâmetros comerciais inválidos continuam recusados.
+
+`main` foi enviada até `fcd24a1`; o deploy `dpl_CyPYKP68Mbm9JHfg7Znqy8ZQQqxj` está READY. Páginas, configuração e catálogo retornaram 200 em produção; consultas Shopify mostram quantidade zero. Caminhos privados testados retornaram 404. O navegador confirmou três estudos, filtro Brasa → Duna e a página de Duna sem erro registrado no console, com compra desabilitada. Evidências e matriz HTTP em `docs/integracoes/publicacao-vercel.md`.
 
 O configurador gera build estático próprio. Quadro e configurador não precisam de Shopify para funcionar localmente. O servidor não hospeda arquivos de ambiente, código administrativo ou o restante do repositório.
 
-A autorização atual substitui “Publicamos depois”; push e deploy desta versão ainda não foram confirmados neste registro. Validação pública do runtime, pagamentos, frete e operação industrial permanecem pendentes. Configurador e quadro continuam separados e locais; `RESEND_ENABLED=false` e a ausência de gatilhos de e-mail são preservados.
+A publicação substitui o adiamento anterior “Publicamos depois”. Nenhum POST foi executado em produção: a revisão automática de aprovação bloqueou o smoke de carrinho. Mutations foram verificadas em testes locais com transporte simulado; carrinho/checkout reais, pagamentos, frete e operação industrial permanecem pendentes. Configurador e quadro continuam separados e locais; `RESEND_ENABLED=false` e a ausência de gatilhos de e-mail são preservados.
 
 ## Estado verificado
 

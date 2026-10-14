@@ -1,14 +1,14 @@
 # Emails transacionais — Shopify e Resend
 
-**Pesquisa e atualização operacional:** 14/10/2026. **Estado:** domínio Resend verificado, três modelos locais e transporte Node preparados; um teste de boas-vindas autorizado para `davi@perparte.com` foi enviado e aparece como **DELIVERED** no Resend. `RESEND_ENABLED=false` permanece no ambiente persistente; nenhum gatilho/webhook automático foi ligado. Publicação do site e push continuam adiados.
+**Pesquisa e atualização operacional:** 14/10/2026. **Estado:** domínio Resend verificado, três modelos locais e transporte Node preparados; um teste de boas-vindas autorizado para `davi@perparte.com` foi enviado e aparece como **DELIVERED** no Resend. O site foi publicado na Vercel com código `fcd24a1` enviado a `main`; `RESEND_ENABLED=false` permanece nos ambientes local e Production. Nenhum gatilho/webhook automático foi ligado. Evidências da publicação em [publicacao-vercel.md](publicacao-vercel.md).
 
 ## Configuração aplicada e limites
 
 Resend foi configurado para mensagens próprias da Per Parte; os códigos de acesso continuam nativos da Shopify. A CLI gera prévias por padrão e exige `--enviar`, `RESEND_ENABLED=true` e configuração completa para uma tentativa real. Personalizar notificações comerciais dentro da Shopify e ativar automações são etapas distintas, ainda não comprovadas por esta configuração.
 
-**OBSERVADO no projeto:** site vanilla/Node, adaptador Vercel preparado, novas contas hospedadas em `https://shopify.com/102503383338/account`, sem sessão local de cliente. O configurador guarda criações e pedidos somente no navegador. Não existe evento comercial de fabricação comprovado por esses rascunhos. A publicação desta versão continua adiada; código preparado localmente não constitui endpoint público de webhook.
+**OBSERVADO no projeto:** site vanilla/Node publicado em `https://perparte.com`, API de leitura Shopify respondendo na Vercel e novas contas hospedadas em `https://shopify.com/102503383338/account`, sem sessão local de cliente. O configurador guarda criações e pedidos somente no navegador. Não existe evento comercial de fabricação comprovado por esses rascunhos. A publicação não criou endpoint público de webhook nem rota de disparo de email; `/emails/transporte.mjs` retornou 404 na verificação pública.
 
-**OBSERVADO pela sessão principal e comunicado a este registro:** `emails.perparte.com` foi criado no Resend na região São Paulo (`sa-east-1`) e está **VERIFIED**, com envio habilitado e recebimento desabilitado. O Domain Connect da GoDaddy aplicou os registros de autenticação abaixo. Remetente definido: `Per Parte <sistema@emails.perparte.com>`; `Reply-To`: `davi@perparte.com`.
+**CONFIGURADO:** `emails.perparte.com` foi criado no Resend na região São Paulo (`sa-east-1`) e está **VERIFIED**, com envio habilitado e recebimento desabilitado. O Domain Connect da GoDaddy aplicou os registros de autenticação abaixo. Remetente definido: `Per Parte <sistema@emails.perparte.com>`; `Reply-To`: `davi@perparte.com`.
 
 | Registro DNS aplicado | Destino/estado |
 |---|---|
@@ -16,7 +16,7 @@ Resend foi configurado para mensagens próprias da Per Parte; os códigos de ace
 | CNAME `rsend.emails` | `rsend-sae1.forge.rmta.net` |
 | CNAME `send.emails` | `send.forge.rmta.net` |
 
-A credencial existente em `.mcp.json` foi identificada pela sessão principal como **válida e somente de envio**. A resposta `restricted_api_key` em `GET /domains` indica insuficiência de permissão para listar domínios, não chave inválida. A sessão principal confirmou a cópia das seis variáveis para `.env.local`, o arquivo ignorado pelo Git e `RESEND_ENABLED=false` persistente. Não imprimir o valor nem ampliar permissões apenas para enviar. Templates remotos e webhooks não foram ativados. Ver [domínio Shopify](dominio-shopify.md) e [hospedagem](../../apps/site/HOSPEDAGEM.md).
+A credencial existente em `.mcp.json` foi verificada como **válida e somente de envio**. A resposta `restricted_api_key` em `GET /domains` indica insuficiência de permissão para listar domínios, não chave inválida. Foram confirmados a cópia das seis variáveis para `.env.local`, o arquivo ignorado pelo Git e `RESEND_ENABLED=false` persistente. Na publicação, foram cadastradas 12 variáveis Production para o site e suas integrações, com credenciais protegidas e Resend desativado. Não imprimir o valor nem ampliar permissões apenas para enviar. Templates remotos e webhooks não foram ativados. Ver [domínio Shopify](dominio-shopify.md) e [hospedagem](../../apps/site/HOSPEDAGEM.md).
 
 ## Limites das novas contas Shopify
 
@@ -74,7 +74,7 @@ Os módulos [modelos.mjs](../../apps/site/emails/modelos.mjs), [transporte.mjs](
 | `orcamento-disponivel` | `numero`, `url`; `nome` opcional | Modelo pronto; orçamento real e destinatário ainda dependem do chamador |
 | `atualizacao-pedido` | `numero`, `titulo`, `mensagem`, `url`; `nome` opcional | Modelo pronto; só exibe a atualização fornecida, sem inferir estado comercial |
 
-Contrato detalhado em [docs/emails/README.md](../emails/README.md). A implementação foi lida para este registro; a sessão principal confirmou **46/46 testes aprovados**, incluindo os **13 testes de email com transporte simulado**, além de `site:check` e build aprovados. A prévia móvel de 390 px foi medida sem overflow. Separadamente, o teste real abaixo teve entrega confirmada no Resend; a aparência dentro da caixa de entrada ainda não foi confirmada.
+Contrato detalhado em [docs/emails/README.md](../emails/README.md). Na rodada de implementação dos emails, **46/46 testes passaram**, incluindo os **13 testes de email com transporte simulado**, além de `site:check` e build aprovados. A prévia móvel de 390 px foi medida sem overflow. Separadamente, o teste real abaixo teve entrega confirmada no Resend; a aparência dentro da caixa de entrada ainda não foi confirmada.
 
 ## Templates remotos — capacidade futura
 
@@ -123,7 +123,7 @@ node apps/site/emails/enviar.mjs --tipo boas-vindas --para pessoa@example.test -
 
 Esse comando **não envia**. `example.test` é somente marcador de prévia, nunca destinatário real. A CLI carrega o ambiente local e grava `email.html` e `email.txt` em um diretório único dentro de `.local/emails`; não publicar essas prévias quando contiverem dados pessoais.
 
-Configuração persistente confirmada pela sessão principal, sem reproduzir o segredo:
+Configuração persistente confirmada, sem reproduzir o segredo:
 
 ```dotenv
 RESEND_API_KEY=<chave privada no ambiente local ignorado>
@@ -166,13 +166,13 @@ As variáveis atuais são as da CLI acima. `RESEND_WEBHOOK_SECRET`, segredo do w
 
 ## Validação e aceite
 
-**Validação local confirmada pela sessão principal:** suíte completa com 46/46 testes aprovados, incluindo 13 de email com transporte simulado; verificação do site e build aprovados. As medidas da prévia móvel de 390 px não mostraram overflow. Para automação futura, ainda verificar assinaturas, payload alterado, loja errada, persistência, concorrência e reentrega de eventos. A fixture não autentica cliente e não cria pedido real.
+**Validação local da rodada de emails:** suíte completa com 46/46 testes aprovados, incluindo 13 de email com transporte simulado; verificação do site e build aprovados. As medidas da prévia móvel de 390 px não mostraram overflow. Para automação futura, ainda verificar assinaturas, payload alterado, loja errada, persistência, concorrência e reentrega de eventos. A fixture não autentica cliente e não cria pedido real.
 
 Para futuras simulações de entrega, o Resend oferece `delivered@resend.dev`, `bounced@resend.dev`, `complained@resend.dev` e `suppressed@resend.dev`. Esses testes contam na quota; não usar endereços fictícios de pessoas. O teste real autorizado nesta sessão usou o destinatário identificado abaixo. [Emails de teste](https://resend.com/docs/dashboard/emails/send-test-emails).
 
 ### Teste real autorizado — 14/10/2026, 16:51 BRT
 
-O usuário autorizou **um** email de teste para `davi@perparte.com`. A sessão principal usou o transporte preparado para enviar o modelo `boas-vindas` pela API Resend e confirmou **DELIVERED** no dashboard.
+O usuário autorizou **um** email de teste para `davi@perparte.com`. O transporte preparado enviou o modelo `boas-vindas` pela API Resend; o dashboard confirmou **DELIVERED**.
 
 | Evidência | Valor confirmado |
 |---|---|
@@ -186,19 +186,19 @@ O usuário autorizou **um** email de teste para `davi@perparte.com`. A sessão p
 | Resultado do provedor | `DELIVERED` |
 | Habilitação | Somente o processo de teste; `.env.local` permanece com `RESEND_ENABLED=false` |
 
-Captura da sessão principal: [teste entregue no Resend](capturas-emails/04-teste-entregue.png). O status comprova entrega reportada pelo provedor; não comprova leitura humana, pasta de destino nem aparência no cliente de email. A revisão visual na caixa de entrada permanece pendente. As prévias em `docs/emails` continuam simulações locais; não representam o registro desse envio.
+Captura: [teste entregue no Resend](capturas-emails/04-teste-entregue.png). O status comprova entrega reportada pelo provedor; não comprova leitura humana, pasta de destino nem aparência no cliente de email. A revisão visual na caixa de entrada permanece pendente. As prévias em `docs/emails` continuam simulações locais; não representam o registro desse envio.
 
 | Marco | Evidência necessária | Estado neste relatório |
 |---|---|---|
 | Pesquisa e contrato | Limites/fontes/roteiro neste arquivo | PREPARADO |
 | Templates locais | Renderer, HTML/texto e galeria | PREPARADO; três modelos, sem gatilhos |
-| Serviço configurado | Domínio Verified, região, DNS e envio habilitado | CONFIRMADO pela sessão principal; recebimento desabilitado |
+| Serviço configurado | Domínio Verified, região, DNS e envio habilitado | CONFIRMADO; recebimento desabilitado |
 | Credencial de envio | Permissão, cópia e arquivo ignorado verificados | CONFIRMADO; seis variáveis locais, chave somente de envio, envio persistente desativado |
 | Transporte/CLI | Configuração explícita e testes simulados | PREPARADO; 46/46 testes totais, incluindo 13 de email; check/build aprovados |
 | Templates remotos | IDs, versões e status relidos | Não ativados; renderer local não depende deles |
 | Integração Shopify | App, plano, escopos e assinatura verificados | PENDENTE |
-| Automação confiável | Endpoint público, fila/dedupe duráveis e testes | PENDENTE; publicação adiada |
+| Automação confiável | Endpoint de eventos, fila/dedupe duráveis e testes | PENDENTE; site publicado, mas nenhum gatilho ou endpoint de envio foi ativado |
 | Envio real de teste | Autorização, destinatário e entrega | CONCLUÍDO: um boas-vindas para Davi, `DELIVERED` |
 | Aparência na caixa de entrada | Revisão no cliente de email do destinatário | PENDENTE; prévia móvel local de 390 px sem overflow |
 
-O teste entregue não ativa email de login Shopify, não publica o frontend e não liga envio transacional automático. OTP permanece na Shopify, os modelos remotos não foram ativados e nenhum webhook/gatilho automático foi conectado.
+O teste entregue não ativa email de login Shopify nem envio transacional automático. A publicação posterior do frontend foi validada separadamente, com 53/53 testes e `site:check` aprovados, GETs públicos e navegação de Loja/produto; ela mantém `RESEND_ENABLED=false`. OTP permanece na Shopify, os modelos remotos não foram ativados e nenhum webhook/gatilho automático foi conectado.

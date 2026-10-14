@@ -2,7 +2,9 @@
 
 **Estado:** site editorial e comércio Shopify em `apps/site`; Headless/token e coleção configurados, smoke real sem escrita aprovado e catálogo comercial vazio. Search & Discovery instalado; filtros em configuração. Resend configurado para e-mails próprios, com código preparado e envio local desabilitado. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify) e ADR 0006 (Resend).
 
-**Publicação autorizada, ainda pendente:** o pedido posterior de 14/10/2026 autoriza atualizar `main` e publicar o site em produção na Vercel, substituindo o adiamento anterior. O acesso à conta correta confirmou o projeto `per-parte-website`, da equipe `per-parte1` (PerParte), com aliases `perparte.com`/`www`. A configuração remota precisa usar a raiz do repositório para incluir a API; deploy desta versão e validação pública permanecem pendentes. `SITE_ORIGINS` é obrigatório em produção. Configurador continua local e os e-mails ficam sem gatilhos, com `RESEND_ENABLED=false`. Roteiro em `apps/site/HOSPEDAGEM.md`.
+**Publicado em 14/10/2026:** `main` enviada até `fcd24a1`, deploy READY em `https://perparte.com`, projeto `per-parte-website`, equipe `per-parte1` (PerParte). A configuração remota usa raiz do repositório, Node 24.x, build `npm run site:build` e saída `apps/site/dist`; 12 variáveis Production foram cadastradas. A captura `rota` repassada pela Vercel foi tratada no adaptador, preservando a validação da API; 53/53 testes e `site:check` passaram. `SITE_ORIGINS` é obrigatório em produção. Configurador continua local e os e-mails ficam sem gatilhos, com `RESEND_ENABLED=false`. Roteiro em `apps/site/HOSPEDAGEM.md`; evidências em `docs/integracoes/publicacao-vercel.md`.
+
+**Aceite público desta rodada:** páginas principais e API de leitura retornaram 200, com catálogo Shopify vazio; caminhos privados testados retornaram 404. A Loja mostrou três estudos e o filtro Brasa abriu Duna, com história/galeria/especificações/escala renderizadas, compra desabilitada e console sem erros registrados. Nenhum POST foi executado em produção, pois a revisão automática de aprovação bloqueou o smoke de carrinho. Mutations locais simuladas não comprovam carrinho ou checkout real.
 
 ## Comércio Shopify — estado atual
 
@@ -67,7 +69,7 @@ Na raiz, `npm run emails:gerar` atualiza as prévias fictícias e `npm run email
 
 Cada chamada faz uma tentativa. Repetições mantêm evento, dados e configuração; timeout pode deixar resultado desconhecido e exige conferir o provedor. A idempotência Resend dura 24 h; não há outbox/histórico durável, fila ou deduplicação entre instâncias. Backend cloud, eventos autenticados, vínculo com destinatário, webhooks assinados e validação visual de inbox permanecem **EM ABERTO**. Treze testes específicos e suíte geral de 46 passaram, com check/build e prévia móvel de 390 px aprovados. O teste real confirma entrega reportada pelo provedor, sem comprovar posição na caixa de entrada ou compatibilidade visual nos clientes de e-mail.
 
-O código de acesso das novas contas permanece nativo da Shopify. Não implementar OTP paralelo nem disparar boas-vindas cegamente por `customers/create`. O portal hospedado não cria sessão local; salvar obra, favorita ou rascunho no navegador não dispara e-mail. Contrato e limites: `docs/integracoes/emails-transacionais.md`, `docs/emails/README.md` e ADR 0006. A publicação do site está autorizada; isso não ativa gatilhos ou envio de e-mails.
+O código de acesso das novas contas permanece nativo da Shopify. Não implementar OTP paralelo nem disparar boas-vindas cegamente por `customers/create`. O portal hospedado não cria sessão local; salvar obra, favorita ou rascunho no navegador não dispara e-mail. Contrato e limites: `docs/integracoes/emails-transacionais.md`, `docs/emails/README.md` e ADR 0006. A publicação do site não ativou gatilhos ou envio de e-mails; Production mantém `RESEND_ENABLED=false`.
 
 ## Fonte e direção
 

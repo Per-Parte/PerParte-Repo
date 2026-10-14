@@ -14,7 +14,7 @@ Na raiz: `npm run site`. Abrir `http://127.0.0.1:4174`.
 | `/conta` | Acesso ao portal hospedado Shopify |
 | `/carrinho` | Quantidades, remoção, subtotal e checkout |
 
-`npm run site:build` prepara os assets em `apps/site/dist`; `npm run preview --workspace @perparte/site` serve o build com o mesmo runtime Node. **Hospedar somente `dist` não fornece a API `/api/*`.** A publicação autorizada na Vercel usa o adaptador `api/index.mjs`; execução e validação pública ainda estão pendentes.
+`npm run site:build` prepara os assets em `apps/site/dist`; `npm run preview --workspace @perparte/site` serve o build com o mesmo runtime Node. **Hospedar somente `dist` não fornece a API `/api/*`.** A publicação em [perparte.com](https://perparte.com) usa o adaptador `api/index.mjs` na Vercel, com páginas e consultas de catálogo/configuração conferidas em produção.
 
 ## Configuração Shopify
 
@@ -89,8 +89,10 @@ Os estudos locais têm narrativa própria, crédito editorial Per Parte e campan
 
 Executar `npm run site:check`, `npm run site:build` e `npm run site:test` na raiz. Na revisão editorial atual, **33/33 testes passaram**: treze de backend, quatorze de catálogo e seis do adaptador Vercel; `site:check` também passou. Build e QA de navegador finais estavam em andamento neste registro. O smoke real é explícito: `node apps/site/tests/shopify-real.mjs`, com ambiente configurado, e confirmou novamente nove operações após a ampliação editorial. Consultar o fechamento em [state.md](../../.claude/state.md); schema aceito com catálogo vazio não comprova seleção/compra de produtos reais.
 
-A publicação está preparada em `vercel.json` e `api/index.mjs` na raiz; instruções em [HOSPEDAGEM.md](HOSPEDAGEM.md). Build, configuração JSON e testes locais passaram nas rodadas registradas. O usuário autorizou atualizar `main` e publicar em produção na Vercel em 14/10/2026. A conta correta foi acessada e confirmou o projeto `per-parte-website`, da equipe `per-parte1` (PerParte), com os aliases `perparte.com` e `www.perparte.com`. A configuração remota ainda precisa usar a raiz do repositório para incluir a API; publicação desta versão e validação do runtime permanecem pendentes. A preparação atual passou em 51 testes, incluindo cinco de build, e gerou 42 arquivos públicos sem `.env*` ou `.vercel`. `SITE_ORIGINS` é obrigatório no ambiente de produção.
+A publicação usa `vercel.json` e `api/index.mjs` na raiz; instruções em [HOSPEDAGEM.md](HOSPEDAGEM.md). `main` foi enviada até `fcd24a1`, e o deploy está READY no projeto `per-parte-website`, da equipe `per-parte1` (PerParte), com aliases `perparte.com`, `www.perparte.com` e `per-parte-website.vercel.app`. A configuração remota usa raiz do repositório, Node 24.x, `npm run site:build` e `apps/site/dist`; 12 variáveis Production foram cadastradas. `SITE_ORIGINS` é obrigatório e `RESEND_ENABLED=false` foi preservado.
+
+Após a correção restrita da captura `rota` repassada pela Vercel, **53/53 testes** e `site:check` passaram. As páginas principais e as consultas públicas de configuração/catálogo retornaram 200; o catálogo real está vazio. A Loja apresentou três estudos e o filtro Brasa abriu Duna, com compra desabilitada e sem erro registrado no console. Nenhum POST foi executado em produção: a revisão automática de aprovação bloqueou o smoke de carrinho. Mutations foram verificadas apenas em testes locais. Versão, evidências e limites em [publicacao-vercel.md](../../docs/integracoes/publicacao-vercel.md).
 
 Tokens compartilhados vêm de `packages/design-system`. Unbounded/Figtree são locais; rótulos usam Figtree Light 300. Wordmark e tipografia final seguem provisórios. Estrutura/interações Gantri orientam a referência, com conteúdo e assets próprios Per Parte.
 
-A autorização atual substitui o adiamento anterior de publicação e `git push`. O configurador continua separado e local; e-mails permanecem sem gatilhos e com `RESEND_ENABLED=false`. Ver [fluxo](../../.claude/fluxo-site.md) e [ADR 0005](../../.claude/adr/0005-shopify-backend-comercial.md).
+A publicação e o envio de `main` substituem o adiamento anterior. O configurador continua separado e local; e-mails permanecem sem gatilhos e com `RESEND_ENABLED=false`. Ver [fluxo](../../.claude/fluxo-site.md) e [ADR 0005](../../.claude/adr/0005-shopify-backend-comercial.md).

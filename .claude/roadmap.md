@@ -17,9 +17,9 @@
 - [ ] Validar com Davi e Caio as pendências da revista: logo/wordmark, tipografia final, filamentos e cores medidas na peça real, persona, preço, prazo, garantia, devolução e royalties.
 - [ ] Reconciliar as guardas elétricas e de fabricação com protótipos e ensaios.
 - [x] Escolher Shopify como backend comercial do site e registrar o ADR 0005.
-- [x] Autorizar publicação do site em produção na Vercel e atualização de `main`, por pedido posterior de 14/10/2026; execução ainda pendente.
+- [x] Autorizar publicação do site em produção na Vercel e atualização de `main`, por pedido posterior de 14/10/2026; execução concluída até `fcd24a1`.
 - [x] Acessar a conta correta e confirmar o projeto Vercel `per-parte-website`, da equipe `per-parte1` (PerParte), com aliases `perparte.com`/`www`.
-- [ ] Validar runtime/domínio público desta versão; manter vanilla/Node provisório e o contrato de produção do configurador em aberto.
+- [x] Validar runtime/domínio público desta versão por consultas HTTP e navegação de Loja/produto; manter vanilla/Node provisório e o contrato de produção do configurador em aberto.
 - [ ] Escolher critérios de aceite da experiência Montar/Inventar com usuários novatos.
 - [ ] Definir se o quadro precisará de colaboração simultânea e armazenamento compartilhado; a versão inicial é local com exportação/importação.
 
@@ -51,9 +51,11 @@
 - [ ] Validar catálogo automático e checkout com dados reais, sem realizar compra por inferência.
 - [x] Configurar `checkout.perparte.com` como primário Shopify, com CNAME e HTTPS válidos, preservando DNS do frontend e email.
 - [ ] Conferir término da propagação global do domínio de checkout; painel ainda indicava “Propagando” após emissão de TLS.
-- [x] Corrigir limpeza do build e aprovar 51 testes, incluindo cinco de build; gerar 42 arquivos públicos sem arquivos de ambiente ou `.vercel`.
-- [ ] Publicar a versão autorizada no projeto existente `per-parte-website` e atualizar `main`; mudar Root Directory de `apps/site` para a raiz, build para `npm run site:build` e saída para `apps/site/dist`. Configurar `SITE_ORIGINS` e conferir upload sem arquivos de ambiente, `.vercel`, logs ou prévias privadas.
-- [ ] Validar função/runtime e rotas públicas na Vercel após o deploy; preparo local e autorização não comprovam publicação. Condições comerciais continuam pendentes.
+- [x] Corrigir o build para montar/validar assets permitidos em diretório temporário antes de substituir `dist`; aprovar 51 testes, incluindo cinco de build, e gerar 42 arquivos públicos sem arquivos de ambiente ou `.vercel`.
+- [x] Publicar a versão autorizada no projeto `per-parte-website` e enviar `main` até `fcd24a1`; deploy READY. Root Directory alterado para raiz, Node 24.x, build `npm run site:build` e saída `apps/site/dist`; 12 variáveis Production cadastradas, com `SITE_ORIGINS` e `RESEND_ENABLED=false`.
+- [x] Corrigir a captura `rota` repassada pela Vercel sem abrir a validação de parâmetros; 53/53 testes e `site:check` aprovados.
+- [x] Validar páginas/API por GET em produção e conferir Loja com três estudos, filtro Brasa → Duna e página de Duna sem erro registrado no console. Caminhos privados testados retornaram 404; evidências em `docs/integracoes/publicacao-vercel.md`.
+- [ ] Validar mutations de carrinho e checkout com catálogo real em produção. A revisão automática de aprovação bloqueou o smoke de carrinho; nenhum POST foi executado nesta rodada. Condições comerciais continuam pendentes.
 - [x] Pesquisar a fonte do Hairline com a abordagem REA e registrar técnica, limites e matriz de interação em `docs/pesquisa/hairline.md`.
 - [x] Implementar a interface local do configurador separado: painel, três presets + livre, formas/variações por parte, cotas, rotação SVG, cores, conclusão e reabertura.
 - [x] Implementar persistência local versionada, proteção contra corrupção e preparação/download de rascunhos de pedido sem envio.
@@ -90,6 +92,6 @@
 - [ ] **MID-06 — Vincular a mídia à variante/SKU Shopify.** Após aprovação e cadastro real do produto, registrar o mapeamento entre handle, todas as opções da variante (cor e demais eixos existentes), ID da variante, SKU real e arquivo/ID da mídia aprovada. Associar a imagem principal à variante correspondente e ordenar a galeria; não reutilizar a imagem de outra cor nem preencher SKU, preço ou estoque por inferência. Concluir somente quando a Storefront retornar a mídia correta para cada variante cadastrada.
 - [ ] **MID-07 — Conferir as variações no site.** Com as mídias vinculadas, percorrer homepage, Loja e produto em desktop/móvel. Verificar imagem, nome da cor, URL/ID/SKU e preservação de outros eixos; conferir que a paleta visual mantém a grade e o filtro Cor opera separadamente. Registrar ausência de mídia como pendência, sem substituição por outra cor. Aceite: cada combinação cadastrada abre a imagem correta por link direto e por seleção, sem tornar os estudos locais compráveis.
 
-**Revisão atual:** Marco é a referência da revista; Duna/Farol e todas as imagens continuam estudos. O site possui rotas e integração comercial preparadas, Headless/token e coleção `todas` configurados. Catálogo real, facetas e comprovação de compra ainda estão pendentes neste registro. A cor comprável precisa corresponder a variante publicada; a paleta visual não institui filamentos ou estoque. O configurador continua local, com rascunhos não enviados e sem sessão integrada. A foto em gesto de dança não conclui um vídeo. Publicação do site em produção na Vercel e atualização de `main` estão autorizadas pelo pedido posterior de 14/10/2026; execução e validação pública ainda pendentes.
+**Revisão atual:** Marco é a referência da revista; Duna/Farol e todas as imagens continuam estudos. O site está publicado em `https://perparte.com`, com código `fcd24a1` enviado a `main`, deploy READY e leitura/navegação verificadas em produção. Headless/token e coleção `todas` estão configurados. Catálogo real, facetas e comprovação de compra ainda estão pendentes. A cor comprável precisa corresponder a variante publicada; a paleta visual não institui filamentos ou estoque. O configurador continua local, com rascunhos não enviados e sem sessão integrada. E-mails seguem sem gatilhos, com `RESEND_ENABLED=false`. A foto em gesto de dança não conclui um vídeo.
 
 **Nota:** a revista lista uma janela entre Carnaval e Páscoa de 2027 e um D-Zero ainda sem data (pp. 8–9, 65–66). Não é prazo assumido pelo código.

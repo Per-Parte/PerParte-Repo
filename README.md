@@ -2,7 +2,7 @@
 
 **Criado por você, feito por partes.** A Per Parte começa por luminárias de mesa impressas em 3D sob demanda. A pessoa compõe ou inventa a obra no configurador; a fabricação começa depois da criação. A marca fala da autoria do cliente com acabamento premium acessível.
 
-Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho preparados para Shopify, quadro de projeto e configurador local de luminárias. O pedido posterior de 14/10/2026 autoriza atualizar `main` e publicar o site em produção na Vercel; a execução e a validação pública ainda estão pendentes neste registro.
+Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho conectados à Shopify, quadro de projeto e configurador local de luminárias. Após autorização do usuário em 14/10/2026, `main` foi enviada até `fcd24a1` e o site foi publicado em [perparte.com](https://perparte.com), com API e navegação de Loja/produto conferidas. O catálogo comercial continua vazio; os estudos não podem ser comprados.
 
 ## Fonte de verdade
 
@@ -14,6 +14,7 @@ Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo
 - [Hairline](docs/pesquisa/hairline.md): pesquisa de fonte para desenho SVG e interação do configurador, em 14/10/2026.
 - [Shopify](docs/pesquisa/shopify.md): pesquisa oficial, contrato de catálogo/variantes, contas e checklist de conexão.
 - [E-mails transacionais](docs/integracoes/emails-transacionais.md): Resend, domínio verificado, modelos Per Parte e limites dos eventos de conta.
+- [Publicação Vercel](docs/integracoes/publicacao-vercel.md): versão publicada, configuração, correção do roteamento, evidências e limites da validação em produção.
 - [Direção da landing](docs/site-direcao-conteudo.md): conteúdo, três composições e distinção entre fonte da revista e propostas visuais.
 
 ## Monorepo
@@ -23,7 +24,7 @@ apps/
   site/             Site editorial, vitrine e API Node para Shopify
   configurador/     Ateliê local com composição paramétrica SVG
   quadro/           Quadro visual interativo do projeto
-api/                Entrada da função Vercel, com publicação autorizada e pendente
+api/                Entrada da função Vercel publicada para a API Shopify
 vercel.json         Build, rewrites e cabeçalhos da publicação na Vercel
 packages/
   design-system/    Tokens de cor, tipografia e regras; sem componentes
@@ -35,7 +36,7 @@ docs/
 .claude/            Contexto de trabalho, requisitos, estado, fluxos e decisões
 ```
 
-Os workspaces npm estão declarados na raiz. Os três aplicativos locais usam Node nativo. Shopify foi escolhido como backend comercial do site; a implementação HTML/CSS/JavaScript ESM e Node é reversível. A publicação do site na Vercel está autorizada e aguarda execução/validação. Sincronização e produção do configurador continuam em aberto; ele permanece separado e local.
+Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nativo no desenvolvimento local; o site foi publicado com função Node na Vercel. Shopify foi escolhido como backend comercial do site; a implementação HTML/CSS/JavaScript ESM e Node é reversível. Sincronização e produção do configurador continuam em aberto; ele permanece separado e local.
 
 ## Executar localmente
 
@@ -61,7 +62,7 @@ As páginas `/loja`, `/produtos/:handle`, `/conta` e `/carrinho` estão preparad
 
 Para configurar, seguir [apps/site/README.md](apps/site/README.md) e copiar `.env.example` para `.env.local`, ignorado pelo Git. A API precisa continuar rodando: hospedar apenas `dist` não disponibiliza o comércio. O portal de conta Shopify foi confirmado; ele não cria sessão local nem sincroniza o configurador. Preço, prazo, frete, pagamento e condições comerciais aguardam definição. Veja o [fluxo do site](.claude/fluxo-site.md), a [decisão original do protótipo](.claude/adr/0003-site-visual-estatico.md) e o [ADR Shopify](.claude/adr/0005-shopify-backend-comercial.md).
 
-O adaptador para Vercel foi preparado localmente, com build, configuração e 28 testes aprovados naquela rodada. A preparação atual passou em 51 testes, incluindo cinco de build; o build limpo contém 42 arquivos. O acesso à conta correta foi concluído, e o projeto confirmado é `per-parte-website`, da equipe `per-parte1` (PerParte), já associado a `perparte.com`/`www`. A publicação desta versão e a validação do runtime comercial ainda estão pendentes. `SITE_ORIGINS` é obrigatório em produção, com as origens HTTPS exatas autorizadas. `checkout.perparte.com` foi configurado como primário Shopify e abriu por HTTPS; a propagação global permanece em andamento. Evidências em [domínio Shopify](docs/integracoes/dominio-shopify.md) e instruções de hospedagem em [HOSPEDAGEM.md](apps/site/HOSPEDAGEM.md).
+O projeto `per-parte-website`, da equipe `per-parte1` (PerParte), está publicado com deploy READY e aliases `perparte.com`/`www`. A correção do parâmetro de rota repassado pela Vercel passou em **53 testes**, com `site:check` aprovado. Páginas e consultas de catálogo/configuração retornaram 200 em produção; a Loja exibiu três estudos, e o filtro Brasa abriu Duna sem erro registrado no console. `SITE_ORIGINS` é obrigatório em produção. Nenhum POST foi executado em produção; carrinho/checkout reais continuam pendentes. Evidências no [relatório de publicação](docs/integracoes/publicacao-vercel.md), [domínio Shopify](docs/integracoes/dominio-shopify.md) e [HOSPEDAGEM.md](apps/site/HOSPEDAGEM.md).
 
 ### E-mails do sistema
 
@@ -69,7 +70,7 @@ Resend é o provedor dos avisos próprios. O domínio `emails.perparte.com` est�
 
 Execute `npm run emails:preview` para abrir a [galeria local](http://127.0.0.1:4182); `npm run emails:gerar` regenera os exemplos fictícios. `npm run emails:enviar -- --ajuda` explica a CLI, que apenas gera prévia privada por padrão. Credencial e prévias privadas ficam fora do Git e do upload Vercel.
 
-O ambiente persistente mantém `RESEND_ENABLED=false`. Gatilhos automáticos e fila/histórico duráveis permanecem pendentes; a autorização de publicar o site não ativa envios. O teste usou habilitação apenas no processo. Os códigos de autenticação continuam na Shopify. Ver [guia operacional](docs/integracoes/emails-transacionais.md) e [contrato dos modelos](docs/emails/README.md).
+Os ambientes local e Production mantêm `RESEND_ENABLED=false`. Gatilhos automáticos e fila/histórico duráveis permanecem pendentes; publicar o site não ativou envios. O teste usou habilitação apenas no processo. Os códigos de autenticação continuam na Shopify. Ver [guia operacional](docs/integracoes/emails-transacionais.md) e [contrato dos modelos](docs/emails/README.md).
 
 ### Configurador
 
