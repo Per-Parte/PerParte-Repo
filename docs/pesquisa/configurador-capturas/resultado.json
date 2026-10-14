@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "provas": [
+    "Rotação por arrasto muda geometria projetada",
+    "Linha da cota por arrasto redimensiona; desfazer/refazer restaura medida",
+    "Cotas por teclado Home/End respeitam limites",
+    "Renomeação tem etapa própria de desfazer/refazer",
+    "Criação e tag Nova persistem após recarga, com cores e formas independentes",
+    "Reabrir e editar mantém identidade sem duplicar obra",
+    "Pedido com duas criações salvo como rascunho e exportação JSON acionada",
+    "Fluxo do zero concluído em 320px; desktop e 390px sem overflow; movimento reduzido ativo",
+    "Nenhum pageerror durante os fluxos"
+  ],
+  "erros": []
+}

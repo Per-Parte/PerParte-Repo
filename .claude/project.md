@@ -1,6 +1,6 @@
 # Per Parte — visão do projeto
 
-**Fonte primária:** Revista de Marca, edição 01, 12/10/2026, em `docs/fonte/Per-Parte-Revista-de-Marca.pdf`. Esta síntese é operacional; em caso de conflito, consulte o PDF. **Última atualização:** 13/10/2026.
+**Fonte primária:** Revista de Marca, edição 01, 12/10/2026, em `docs/fonte/Per-Parte-Revista-de-Marca.pdf`. Esta síntese é operacional; em caso de conflito, consulte o PDF. **Última atualização:** 14/10/2026.
 
 ## O que é
 
@@ -24,7 +24,7 @@ A constante visual é a **Luz Acesa** `#F6E7C4`; Brasa `#A90000` é a assinatura
 
 ## Limites desta etapa
 
-O monorepo separa `apps/site`, `apps/configurador`, `apps/quadro` e `packages/design-system`. O site é um protótipo visual de landing em HTML, CSS e JavaScript, servido localmente por Node, para apresentar três composições. O configurador continua vazio; sua stack permanece em aberto. O quadro reúne documentos e notas locais, sem sincronização entre pessoas, e não substitui a revista nem os documentos oficiais.
+O monorepo separa `apps/site`, `apps/configurador`, `apps/quadro` e `packages/design-system`. O site é um protótipo visual de landing em HTML, CSS e JavaScript, servido localmente por Node, para apresentar três composições. O configurador tem um protótipo local de criação em HTML/CSS/JavaScript ESM, com desenho paramétrico SVG, persistência no navegador e servidor Node na porta 4175. Essa escolha é PROVISÓRIA e reversível; backend e stack comercial permanecem em aberto. O quadro reúne documentos e notas locais, sem sincronização entre pessoas, e não substitui a revista nem os documentos oficiais.
 
 ### Landing em revisão
 
@@ -35,3 +35,13 @@ As três luminárias são **Marco**, cujo nome e composição-base aparecem na r
 Slideshow, seleção de ambientes, acordeão, detalhes de produto, busca e favoritos funcionam apenas na interface local. Não há preços inventados, checkout, conta, envio de cadastro, integração comercial ou configurador conectado. A geração de imagens faz parte da criação dos assets do protótipo; não adiciona IA ao produto. A revisão é local e a publicação foi adiada pelo usuário: “Publicamos depois”.
 
 O recomeço está em `.claude/adr/0001-reinicio-e-fonte-mestre.md`, o quadro em `.claude/adr/0002-quadro-local.md` e a escolha reversível do site estático em `.claude/adr/0003-site-visual-estatico.md`. A pesquisa Gantri informa a composição, sem substituir as decisões da revista nem fixar a stack do futuro produto comercial.
+
+### Configurador local
+
+O pedido de 14/10/2026 autorizou a interface de ponta a ponta em `apps/configurador`, com login explicitamente adiado. A pessoa entra em um painel inicialmente vazio, escolhe Marco, Duna, Farol ou uma composição livre e trabalha em três etapas: Formas, Cores e Concluir. Base, corpo e difusor têm forma, variação, largura, altura e cor independentes. A prévia permite giro por arrasto e alteração por cotas; miniaturas reutilizam o modelo salvo.
+
+O renderizador é autoral, inspirado na pesquisa de fonte do Hairline, sem dependência desse pacote. Mantém o desenho fino na rotação e oferece visualização colorida. O vidro discreto dos blocos segue o pedido desta sessão; não modifica os tokens nem implica acabamento físico brilhante. Os presets continuam estudos; Duna/Farol permanecem propostas.
+
+Salvar retorna ao painel, permite reabrir a obra e marca a composição mais recentemente criada como Nova, inclusive após recarregar; editar uma obra antiga não transfere essa tag. A seleção de obras gera rascunhos locais de pedido, com cópias independentes e download JSON. Nada é enviado à Per Parte. Login, conta, sincronização, orçamento, pagamento e fabricação ficam fora desta entrega.
+
+O armazenamento é `localStorage` versionado, com validação e proteção contra sobrescrita de dados ilegíveis. As dimensões têm faixas exploratórias PROVISÓRIAS; não comprovam segurança elétrica, estabilidade ou fabricação. Não há mesh/arquivo STL, e a equivalência entre prévia e produção ainda exige um contrato industrial. Ver `.claude/fluxo-configurador.md`, `.claude/adr/0004-configurador-local-svg.md` e `docs/pesquisa/hairline.md`.

@@ -14,6 +14,10 @@
     "site:check": "npm run check --workspace @perparte/site",
     "quadro": "npm run dev --workspace @perparte/quadro",
     "tokens:gerar": "node packages/design-system/gerar.mjs",
-    "tokens:verificar": "node packages/design-system/gerar.mjs --check"
+    "tokens:verificar": "node packages/design-system/gerar.mjs --check",
+    "configurador": "npm run dev --workspace @perparte/configurador",
+    "configurador:build": "npm run build --workspace @perparte/configurador",
+    "configurador:check": "npm run check --workspace @perparte/configurador",
+    "configurador:test": "npm run test --workspace @perparte/configurador"
   }
 }

@@ -1,7 +1,14 @@
 {
   "name": "@perparte/configurador",
   "private": true,
-  "version": "0.0.0",
-  "description": "Workspace reservado ao aplicativo configurador da Per Parte.",
-  "type": "module"
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Ateliê local de luminárias paramétricas com desenho SVG.",
+  "scripts": {
+    "dev": "node servidor.mjs",
+    "build": "node construir.mjs",
+    "preview": "node servidor.mjs --dist",
+    "check": "node verificar.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
 }
