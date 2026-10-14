@@ -37,6 +37,40 @@ test('rewrite mantém filtros e cursores; config não revela token', async () =>
   assert.equal(loja.chamadas.at(-1).consulta.variables.variantesDepois, 'pagina2');
 });
 
+test('captura nomeada do rewrite é removida sem perder filtros, cursor ou rota de produto', async () => {
+  const loja = cliente();
+  const resposta = await loja.consultar('/api/index?__rota=produtos&rota=produtos&limite=24&cor=Lago&depois=cursor%2Bteste');
+  assert.equal(resposta.status, 200);
+  assert.deepEqual((await resposta.json()).produtos, dadosCatalogo);
+  assert.equal(loja.chamadas[0].consulta.variables.first, 24);
+  assert.equal(loja.chamadas[0].consulta.variables.after, 'cursor+teste');
+  assert.deepEqual(loja.chamadas[0].consulta.variables.filters, [{ variantOption: { name: 'Cor', value: 'Lago' } }]);
+  assert.equal((await loja.consultar('/api/index?__rota=produtos%2Fensaio&rota=produtos%2Fensaio&variantesDepois=pagina2')).status, 200);
+  assert.equal(loja.chamadas.at(-1).consulta.variables.variantesDepois, 'pagina2');
+  assert.equal((await loja.consultar('/api/produtos?rota=produtos&limite=24')).status, 200);
+});
+
+test('captura interna conflitante ou repetida é recusada e filtros desconhecidos continuam inválidos', async () => {
+  const loja = cliente();
+  for (const rota of [
+    '/api/index?__rota=produtos&rota=carrinho',
+    '/api/index?__rota=produtos&rota=produtos&rota=produtos',
+    '/api/index?__rota=produtos&rota=',
+    '/api/produtos?rota=carrinho',
+  ]) {
+    assert.equal((await loja.consultar(rota)).status, 404, rota);
+  }
+  for (const rota of [
+    '/api/index?__rota=produtos&rota=produtos&desconhecido=1',
+    '/api/index?__rota=produtos&rota=produtos&limite=24&limite=24',
+  ]) {
+    const resposta = await loja.consultar(rota);
+    assert.equal(resposta.status, 400, rota);
+    assert.equal((await resposta.json()).erro.codigo, 'PARAMETRO_INVALIDO');
+  }
+  assert.equal(loja.chamadas.length, 0);
+});
+
 test('corpo JSON da Web Request chega intacto ao criar e alterar carrinho', async () => {
   const loja = cliente();
   const criado = await loja.consultar('/api/index?__rota=carrinho', enviar({ linhas: [{ merchandiseId: variante, quantity: 1 }] }));

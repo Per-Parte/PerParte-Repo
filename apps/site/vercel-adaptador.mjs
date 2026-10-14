@@ -12,11 +12,15 @@ export function criarAdaptadorVercel({ ambiente = process.env, fetchImpl = globa
       const url = new URL(request.url);
       const rotas = url.searchParams.getAll('__rota');
       const rota = rotas.length ? rotas[0] : url.pathname.replace(/^\/api\//, '');
-      if (rotas.length > 1 || !rotaPermitida.test(rota)) {
+      // A Vercel também repassa a captura nomeada :rota* na query do rewrite.
+      // Só retiramos esse metadado quando ele confirma uma única rota validada.
+      const capturas = url.searchParams.getAll('rota');
+      if (rotas.length > 1 || !rotaPermitida.test(rota) || capturas.length > 1 || (capturas.length === 1 && capturas[0] !== rota)) {
         return new Response(JSON.stringify({ erro: { codigo: 'ROTA_INEXISTENTE', mensagem: 'Esta operação não existe.' } }), { status: 404, headers: headersErro });
       }
       url.pathname = `/api/${rota}`;
       url.searchParams.delete('__rota');
+      url.searchParams.delete('rota');
       const pedido = {
         method: request.method,
         headers: Object.fromEntries(request.headers),
