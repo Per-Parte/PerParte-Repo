@@ -4,6 +4,10 @@
 .mcp.json
 .local/
 **/.build-site-*/
+.playwright-mcp/
+.tmp/
+apps/configurador/dist/
+apps/quadro/dist/
 mcp-logs.txt
 wa-logs.txt
 .claude/
