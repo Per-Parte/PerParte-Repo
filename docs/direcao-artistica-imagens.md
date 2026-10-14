@@ -4,7 +4,7 @@ Data: 13/10/2026. **DECIDIDO pelo usuário para esta revisão:** expressões ind
 
 ## Linguagem visual
 
-- **Pessoas com presença:** variar postura, expressão e atitude entre cenas. Evitar repetição de sorriso, pose ou figurino de catálogo genérico.
+- **Pessoas com presença:** poses e atitudes variadas, com expressões sérias e contidas de editorial de moda. Evitar sorriso casual, pose ou figurino de catálogo genérico.
 - **Figurino como composição:** volumes, drapeados e contrastes de cor participam do cenário. O tratamento deve parecer direção de moda/editorial, com intenção em cada silhueta.
 - **Cenários construídos:** usar cor saturada, escala inesperada, formas cênicas e elementos surrealistas. A luz e a matéria permanecem coerentes o suficiente para sustentar a leitura fotográfica.
 - **Produto reconhecível:** as luminárias Per Parte são a referência fixa de cada geração. Cenário e figurino podem mudar; desenho, partes, famílias de cor e junções do produto devem permanecer identificáveis.
@@ -13,7 +13,9 @@ Data: 13/10/2026. **DECIDIDO pelo usuário para esta revisão:** expressões ind
 
 ## Refinamento das personagens e persona
 
-Após revisar as três campanhas geradas, o usuário pediu **alterar somente as personagens para adequá-las à persona do documento mestre**. As três edições foram geradas, inspecionadas e copiadas para os mesmos caminhos públicos. Preservam a composição dos cenários, luminárias, câmera e direção surrealista/colorida. Os novos originais e hashes já substituem os da primeira geração de campanha no manifesto; o histórico dos prompts conserva ambas as etapas. As quatro imagens de inspiração permanecem como geradas.
+Após revisar as três campanhas geradas, o usuário pediu **alterar somente as personagens para adequá-las à persona do documento mestre**. As três edições foram geradas, inspecionadas e copiadas para os mesmos caminhos públicos. Preservam a composição dos cenários, luminárias, câmera e direção surrealista/colorida. Os novos originais e hashes substituíram os da primeira geração de campanha no manifesto; o histórico dos prompts conserva ambas as etapas.
+
+Na edição mais recente, o usuário pediu **expressões mais sérias em todas as imagens com pessoas** e correção da mão junto ao rosto na campanha Farol. Foram editadas as três campanhas e as duas inspirações com personagens que estão em uso no site. As outras duas inspirações não têm pessoas. Na Farol, a mão que apoiava o queixo passou ao bordo do pedestal de azulejos, com antebraço e manga conectados; o outro braço continua levantado em direção à esfera. As cenas, produtos e identidade das personagens foram preservados. Os prompts e hashes atuais estão em [imagens-prompts-expressoes.json](imagens-prompts-expressoes.json) e [site-imagens.md](site-imagens.md).
 
 A referência editorial são as pp. 16–18 da Revista de Marca: pessoas de 20–30 anos em cidades médias/grandes, com poder de compra, interesse por moda e arte, mistura de estilos e valorização de autoria e singularidade. A adequação deve aparecer na atitude e no estilo pessoal; não se apoiar em ostentação, logos ou códigos de status. A revista não determina gênero, etnia, profissão ou um padrão de aparência física para esse público.
 
@@ -33,8 +35,8 @@ Os três assets de catálogo permanecem como referência. Duna/Farol são propos
 
 | Grupo | Arquivos | Função |
 |---|---|---|
-| Três campanhas | `campanha-duna-jardim.png`, `campanha-marco-orbita.png`, `campanha-farol-cenario.png` | Campanhas expressivas para hero e demais destaques; personagens refinadas conforme a última orientação |
-| Quatro inspirações | `insp-duna-nuvens.png`, `insp-marco-escada.png`, `insp-farol-mar.png`, `insp-trio-galeria.png` | Galeria ampliada de quatro para oito cards com novos universos visuais |
+| Três campanhas | `campanha-duna-jardim.png`, `campanha-marco-orbita.png`, `campanha-farol-cenario.png` | Campanhas com expressões editoriais sérias; Farol com mão e braço corrigidos |
+| Quatro inspirações | `insp-duna-nuvens.png`, `insp-marco-escada.png`, `insp-farol-mar.png`, `insp-trio-galeria.png` | Galeria ampliada de quatro para oito cards; as duas fotos com personagens receberam expressões sérias |
 | Três fundos de estúdio | `categoria-marco-violeta.png`, `categoria-duna-verde.png`, `categoria-farol-ambar.png` | Cor editorial nos cards de “Qual é a sua luz?”, mantendo os produtos de referência |
 | Acervo anterior | Os dez PNGs anteriores | Preservar catálogo, histórico de campanha e demais imagens sem perda de origem |
 
@@ -50,7 +52,7 @@ O QA dos cards foi concluído no navegador integrado em desktop 1280 × 720 e m�
 
 ## Proveniência e revisão
 
-As novas gerações e edições usam `image_gen` e imagens dos produtos como referência. Prompts literais, referências e originais estão em [imagens-prompts-campanha.json](imagens-prompts-campanha.json) e [imagens-prompts-inspiracoes.json](imagens-prompts-inspiracoes.json). O registro das campanhas conserva a primeira geração e documenta a edição das personagens. A descrição acima é direção aprovada, não transcrição de prompts executados.
+As novas gerações e edições usam `image_gen` e imagens dos produtos como referência. Prompts literais, referências e originais das rodadas anteriores estão em [imagens-prompts-campanha.json](imagens-prompts-campanha.json) e [imagens-prompts-inspiracoes.json](imagens-prompts-inspiracoes.json); a edição atual está em [imagens-prompts-expressoes.json](imagens-prompts-expressoes.json). O registro das campanhas conserva a primeira geração e documenta a edição das personagens. A descrição acima é direção aprovada, não transcrição de prompts executados.
 
 As sete imagens e as três edições posteriores foram inspecionadas individualmente: Duna mantém cúpula creme/base Brasa, Marco preserva três anéis âmbar/base oliva e Farol mantém difusor vertical/base Lago. Dimensões e hashes finais foram conferidos. O QA renderizado confirmou as três campanhas em desktop e móvel; em 390 × 844, rostos e luminárias aparecem inteiros, com fundos corretos e sem overflow horizontal. A galeria tem oito cards, quatro novos assets carregados, avanço por seta e navegação do trio para a coleção. Evidências 13–20 e resultados de build/check estão em [revisao-landing-2026-10-13.md](revisao-landing-2026-10-13.md). A revisão artística está concluída como estudo visual local.
 

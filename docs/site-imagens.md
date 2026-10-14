@@ -2,7 +2,7 @@
 
 Data: 13/10/2026. Estado: **PROPOSTA / imagens conceituais**. O acervo contém 20 imagens originais geradas com `image_gen` e copiadas para `apps/site/public/images/`: dez anteriores, sete da revisão artística e três novos fundos de estúdio para os cards de composição. Não são fotos de produtos fabricados nem fotografias da Gantri. A direção editorial está em [site-direcao-conteudo.md](site-direcao-conteudo.md); a revisão artística aprovada pelo usuário está em [direcao-artistica-imagens.md](direcao-artistica-imagens.md).
 
-**Refinamento concluído nos arquivos:** depois da primeira rodada, o usuário pediu ajustar somente as personagens das três campanhas à persona da revista, preservando produto e cenário. O manifesto abaixo já registra as edições finais. A primeira geração e os prompts correspondentes permanecem no histórico do JSON; as quatro inspirações foram preservadas.
+**Refinamentos concluídos nos arquivos:** depois da primeira rodada, as personagens das três campanhas foram ajustadas à persona da revista. Na edição mais recente, as cinco fotos com pessoas em uso no site receberam expressões sérias de editorial de moda. Em Farol, a mão que apoiava o rosto foi reposicionada sobre o pedestal, com o antebraço visível e conectado à manga. Produtos, figurinos, cenários e enquadramentos foram preservados. As gerações anteriores permanecem registradas nos JSONs de campanha e inspiração; os prompts literais da edição mais recente estão em [imagens-prompts-expressoes.json](imagens-prompts-expressoes.json).
 
 ## Manifesto de arquivos
 
@@ -20,11 +20,11 @@ Dimensões conferidas nos cabeçalhos PNG. A correspondência com os originais f
 | `manifesto.png` | 1536 × 1024 | Marco à direita sobre cenário vinho escuro; painel de manifesto | `exec-589ad93f-9cad-4467-9a80-8e9f75e47eb9.png` |
 | `hero-marco-homem.png` | 1536 × 1024 | Campanha anterior no acervo: homem sentado, camisa de linho clara, Marco nas mãos e fundo vinho | `exec-5c3f1ea6-09ed-4287-a2c6-27477fc13ed2.png` |
 | `hero-farol-mulher.png` | 1536 × 1024 | Campanha anterior no acervo: mulher em gesto de dança ao lado de Farol, cenário Lago; imagem estática | `exec-b8c5b9e1-a5e4-40e6-b0b7-74fbb81ab273.png` |
-| `campanha-duna-jardim.png` | 1536 × 1024 | Campanha ativa Duna: mulher jovem de cabelo cacheado, roupa fúcsia volumosa, banco curvo Brasa, flores gigantes e fitas suspensas | `exec-0d6570b4-4949-48a0-bb0b-2b4d22e93f47.png` |
-| `campanha-marco-orbita.png` | 1536 × 1024 | Campanha ativa Marco: homem jovem de cachos e óculos, alfaiataria listrada, cachecol âmbar, palco verde e três grandes anéis suspensos | `exec-2d8dd632-3553-4c8f-ad76-e9886c98ad2a.png` |
-| `campanha-farol-cenario.png` | 1536 × 1024 | Campanha ativa Farol: mulher jovem de cabelo ruivo ondulado, blusa amarela escultural, calça azul com círculos creme, pedestal de azulejos e esfera suspensa | `exec-2b3fe015-9293-4e61-b49d-b34177567d93.png` |
-| `insp-duna-nuvens.png` | 1536 × 1024 | Galeria: mulher rindo, roupa coral/creme e poltrona com volumes de nuvem, flores gigantes e Duna sobre pedestal | `exec-e1f78b1d-d49f-4e20-a211-c8b0b66d9529.png` |
-| `insp-marco-escada.png` | 1536 × 1024 | Galeria: homem em alfaiataria gráfica, escadaria âmbar e arco creme sobre fundo vinho; Marco ao lado | `exec-50c73a78-d4e0-4f88-adc5-eecb10b1c6fa.png` |
+| `campanha-duna-jardim.png` | 1536 × 1024 | Campanha ativa Duna: mulher de expressão séria, roupa fúcsia volumosa, banco curvo Brasa, flores gigantes e fitas suspensas | `exec-b84bc28d-110b-4689-a036-a36413f8803d.png` |
+| `campanha-marco-orbita.png` | 1536 × 1024 | Campanha ativa Marco: homem de expressão séria, alfaiataria listrada, cachecol âmbar, palco verde e três grandes anéis suspensos | `exec-a63790bc-4e7e-477c-a74f-b2f2f3545d12.png` |
+| `campanha-farol-cenario.png` | 1536 × 1024 | Campanha ativa Farol: mulher de expressão séria, braço apoiado no pedestal de azulejos, blusa amarela escultural e esfera suspensa | `exec-a0244159-f888-45eb-b07f-a6a445ef4350.png` |
+| `insp-duna-nuvens.png` | 1536 × 1024 | Galeria: mulher em pose editorial séria, roupa coral/creme e poltrona com volumes de nuvem, flores gigantes e Duna sobre pedestal | `exec-44c37b6b-09de-45c7-b0cc-db66bb831952.png` |
+| `insp-marco-escada.png` | 1536 × 1024 | Galeria: homem de expressão séria em alfaiataria gráfica, escadaria âmbar e arco creme sobre fundo vinho; Marco ao lado | `exec-2017e159-2262-4160-b489-8d61c76c9657.png` |
 | `insp-farol-mar.png` | 1536 × 1024 | Galeria: Farol em ilha de azulejos acima do espelho-d’água, cortinas azuis e esfera lunar creme | `exec-0194777e-5ac3-4ffd-853f-340403438421.png` |
 | `insp-trio-galeria.png` | 1536 × 1024 | Galeria: Duna, Marco e Farol sobre três pedestais, esculturas Lago/Brasa/creme e tecido rosa | `exec-14af34b9-7d25-441d-add1-56aa29fe5804.png` |
 | `categoria-marco-violeta.png` | 1122 × 1402 | Card Marco em “Qual é a sua luz?”: fundo de estúdio violeta/lavanda; produto preserva base oliva, três anéis âmbar e domo creme | `exec-44b2cb6a-0543-458e-ba60-08cba3ef7069.png` |
@@ -35,7 +35,7 @@ Pastas dos originais em `C:/Users/Antônio/.codex/generated_images/`: `01a1366c-
 
 Na revisão anterior, os dois PNGs adicionais foram conferidos em 1536 × 1024 e correspondem byte a byte aos originais. SHA-256 de `hero-marco-homem.png`: `884496ade42aa1f080e1fc3fa9549f4e998506d864dda4c0d23ef252c2c3f4af`; de `hero-farol-mulher.png`: `8a504f39279bb844aa68fb38f179225c926a9fc8e0aeb0a24ac34b61c143c42e`.
 
-Na revisão artística posterior, os **17 arquivos** tiveram dimensões lidas dos cabeçalhos PNG e SHA-256 comparado com os originais: todos corresponderam. Após a edição das personagens, os três PNGs substituídos foram novamente conferidos com os novos originais e também corresponderam. Os sete novos têm resolução nativa de 1536 × 1024; as três campanhas foram editadas por `image_gen`, sem pós-processamento por código. Hashes finais desta rodada:
+Na revisão artística anterior, os **17 arquivos** tiveram dimensões lidas dos cabeçalhos PNG e SHA-256 comparado com os originais: todos corresponderam. Após a edição das personagens, os três PNGs substituídos foram novamente conferidos com os novos originais e também corresponderam. Os sete novos têm resolução nativa de 1536 × 1024; as três campanhas foram editadas por `image_gen`, sem pós-processamento por código. Hashes históricos daquela rodada:
 
 | Arquivo | SHA-256 |
 |---|---|
@@ -55,10 +55,21 @@ Na revisão dos fundos coloridos, os três PNGs foram conferidos em **1122 × 14
 | `categoria-duna-verde.png` | `0d555921b3cfdfe59f078e12e1d381cfa5e4c0e6460e19db8ccfdb2dc65a3bae` |
 | `categoria-farol-ambar.png` | `16c4966536f734e7bfc235c3ca8a5d1b20c4036b6e676fbc4c2ed532a611ff66` |
 
+Na edição mais recente, as cinco fotos com pessoas em uso foram geradas novamente em **1536 × 1024**. Cada cópia pública corresponde byte a byte ao respectivo original da sessão. Hashes atuais:
+
+| Arquivo | SHA-256 |
+|---|---|
+| `campanha-duna-jardim.png` | `140245768facf8335067f357613160968a68e4890db67a605b95fd02d93ea192` |
+| `campanha-marco-orbita.png` | `bb281d068c77c980500b1c834a5556699214f39592713852280eba230066db9f` |
+| `campanha-farol-cenario.png` | `6857f980801d2123a490ad6965a52ae05f90c6b1572bc7b68e5626e2eb1c6992` |
+| `insp-duna-nuvens.png` | `f987842c2c69ce295a05ea354600ca5a4808b27ac957d429a127047327f8f4ee` |
+| `insp-marco-escada.png` | `da369bd5a091d8f360178e4ce4969b7f43dc52724dda762624a49cb2ce330ca6` |
+
 ## Prompts literais da revisão artística
 
-- [imagens-prompts-campanha.json](imagens-prompts-campanha.json): três edições finais das personagens, prompts completos, referências, originais e destinos; o histórico preserva as três gerações iniciais e suas referências estéticas fornecidas pelo usuário.
-- [imagens-prompts-inspiracoes.json](imagens-prompts-inspiracoes.json): quatro chamadas independentes de inspiração, prompts completos, referências de produto, dimensões, original e destino.
+- [imagens-prompts-campanha.json](imagens-prompts-campanha.json): três edições anteriores das personagens, prompts completos, referências, originais e destinos; o histórico preserva as três gerações iniciais e suas referências estéticas fornecidas pelo usuário.
+- [imagens-prompts-inspiracoes.json](imagens-prompts-inspiracoes.json): quatro chamadas independentes de inspiração na rodada anterior, com prompts completos, referências de produto, dimensões, original e destino.
+- [imagens-prompts-expressoes.json](imagens-prompts-expressoes.json): cinco edições mais recentes, com expressões sérias e correção anatômica em Farol; prompts literais, referências, originais e hashes atuais.
 - [imagens-prompts-fundos.json](imagens-prompts-fundos.json): três fundos de estúdio coloridos, prompts completos, referências de produto e cenário, originais e destinos. As referências externas orientam a iluminação e a composição; o produto permanece Per Parte.
 
 As três referências Gantri fornecidas pelo usuário orientaram a linguagem visual das campanhas. As instruções dos prompts pedem novas pessoas, composições e figurinos, preservando o produto Per Parte. Os arquivos temporários dessas referências não são assets do site. A seção abaixo conserva a direção base anterior e distingue esse resumo dos prompts literais executados na nova rodada.

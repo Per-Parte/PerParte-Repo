@@ -1,0 +1,90 @@
+{
+  "versao": "3 — expressões editoriais sérias; correção anatômica da mão em Farol",
+  "data": "2026-10-13",
+  "tipo": "edição das cinco fotografias com pessoas em uso no site",
+  "observacao": "As imagens de entrada eram as versões anteriores de cada arquivo público; os manifests de campanha e inspirações preservam as gerações anteriores. A segunda referência de cada edição era somente a luminária do catálogo.",
+  "imagens": [
+    {
+      "arquivo": "campanha-duna-jardim.png",
+      "destino": "apps/site/public/images/campanha-duna-jardim.png",
+      "originalGerado": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-b84bc28d-110b-4689-a036-a36413f8803d.png",
+      "referencias": [
+        "apps/site/public/images/campanha-duna-jardim.png (versão anterior à edição)",
+        "apps/site/public/images/duna.png"
+      ],
+      "prompt": "Use case: precise-object-edit / identity-preserve. FIRST image is the current Per Parte Duna campaign photograph to retouch. SECOND image is exact Duna lamp product reference only. Make ONLY the existing young woman's facial expression more serious and composed, as if she is posing for a premium fashion editorial: lips closed and relaxed with no visible smile, direct confident gaze toward the camera, subtle focused eyes and natural neutral eyebrows. Keep her identical fictional identity: warm brown skin, short dark natural curls, facial structure, earrings. Keep SAME seated pose, hand gently at temple, other hand supporting the Duna lamp, dramatic fuchsia satin jacket, burgundy trousers. Do not change hands, clothing, body silhouette, makeup or age. Keep Duna lamp exactly unchanged in scale, position, warm ivory dome and short deep-red ribbed base. Preserve giant pale flowers, floating petal, burgundy ribbon, impossible curved red bench, saturated red backdrop, camera, lighting, shadows and large empty left45% for white hero copy, landscape1536x1024. This is controlled photographic expression retouch; no broad reinterpretation. No words, logo, watermark, extra objects or lamps.",
+      "dimensoes": {
+        "largura": 1536,
+        "altura": 1024
+      },
+      "sha256": "140245768facf8335067f357613160968a68e4890db67a605b95fd02d93ea192"
+    },
+    {
+      "arquivo": "campanha-marco-orbita.png",
+      "destino": "apps/site/public/images/campanha-marco-orbita.png",
+      "originalGerado": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-a63790bc-4e7e-477c-a74f-b2f2f3545d12.png",
+      "referencias": [
+        "apps/site/public/images/campanha-marco-orbita.png (versão anterior à edição)",
+        "apps/site/public/images/marco.png"
+      ],
+      "prompt": "Use case: precise-object-edit / identity-preserve. Edit FIRST image, current Per Parte Marco campaign. SECOND image supplies exact lamp product reference only. Retouch ONLY the existing young male model's face to a poised serious fashion-photo expression: no smile, mouth closed, relaxed jaw, intent confident eyes looking toward the large floating amber ring, eyebrows calm, no playful amusement. Keep same fictional young adult identity, medium brown skin, short curls, round eyeglasses, clean-shaven face. Keep his raised pointing hand and seated backwards chrome chair pose, oversized graphic black and ivory coat, amber scarf, wide red trousers, green set. Preserve Marco EXACTLY: olive short cylinder, exactly three amber rings and glowing ivory dome, same scale and position on green plinth. Preserve all three giant amber rings in the air, deep forest-green stage/steps, camera, flash, shadows and left44% dark empty space for web text, landscape1536x1024. No modifications to hand, clothes, hair, lamp or scene. No text, logo, watermark, extra objects or lamps.",
+      "dimensoes": {
+        "largura": 1536,
+        "altura": 1024
+      },
+      "sha256": "bb281d068c77c980500b1c834a5556699214f39592713852280eba230066db9f"
+    },
+    {
+      "arquivo": "campanha-farol-cenario.png",
+      "destino": "apps/site/public/images/campanha-farol-cenario.png",
+      "originalGerado": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-a0244159-f888-45eb-b07f-a6a445ef4350.png",
+      "referencias": [
+        "apps/site/public/images/campanha-farol-cenario.png (versão anterior à edição)",
+        "apps/site/public/images/farol.png"
+      ],
+      "prompt": {
+        "file": "campanha-farol-cenario.png",
+        "prompt": "Use case: precise-object-edit / identity-preserve. Edit FIRST image, the current Per Parte Farol campaign, as a very controlled photographic retouch. SECOND image is reference ONLY for exact Farol product geometry and colors. Preserve the same fictional young auburn-wavy-haired woman with freckles, distinctive yellow oversized puff-sleeved blouse, cobalt trousers with big cream circles and coral boots, same setting, position, framing and natural skin. Make her expression serious and poised like a fashion model in a high-end design editorial: mouth relaxed fully closed, no smile, no raised playful eyebrow, calm assertive eyes directed toward the camera, subtly sculpted cheek and jaw without changing identity. Correct the visually unnatural hand pose next to her face: remove the chin-resting hand from that side of her cheek. Repose that hand and its entire forearm so it rests casually on the near edge of the teal tiled plinth in front of her torso, with a clearly visible continuous elbow/forearm connecting to the correct yellow sleeve and shoulder. Her other arm alone stays raised toward the silver floating sphere on viewer-right, connected anatomically to the opposite shoulder. Exactly two arms and two hands, realistic five fingers per hand, no arm/hand crossing behind or through the face, no duplicate limbs. Her head is free of hand contact, held upright in an intentional serious editorial pose. Keep Farol lamp completely unchanged at exact position and scale: ivory illuminated vertically ribbed capsule, teal collar and short broad teal base, unobscured on tiled pedestal. Keep silver orb, hanging checked sphere, folded cream arches, blue/teal backdrop, tiles, floor, shadows, lighting and large empty left area identical. Landscape composition 1536x1024. No new objects, no text, logo or watermark. Change only facial expression and the awkward chin-hand/forearm pose; do not move the product or recomposite the scene.",
+        "refs": [
+          "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/campanha-farol-cenario.png",
+          "C:/Users/Antônio/Desktop/perparte/configV2/apps/site/public/images/farol.png"
+        ]
+      },
+      "dimensoes": {
+        "largura": 1536,
+        "altura": 1024
+      },
+      "sha256": "6857f980801d2123a490ad6965a52ae05f90c6b1572bc7b68e5626e2eb1c6992"
+    },
+    {
+      "arquivo": "insp-duna-nuvens.png",
+      "destino": "apps/site/public/images/insp-duna-nuvens.png",
+      "originalGerado": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-44c37b6b-09de-45c7-b0cc-db66bb831952.png",
+      "referencias": [
+        "apps/site/public/images/insp-duna-nuvens.png (versão anterior à edição)",
+        "apps/site/public/images/duna.png"
+      ],
+      "prompt": "Use case: precise-object-edit / identity-preserve. Edit FIRST image, the Per Parte Duna surreal gallery photograph. SECOND image is exact Duna product identity reference. Change ONLY the existing young woman's expression from open-mouthed laughing to a serious high-fashion editorial model gaze: lips naturally closed, no smile, calm intense eyes looking slightly toward camera, refined poised jaw and relaxed eyebrows. Keep SAME woman's facial structure, dark sculptural updo with curls, complexion, coral-and-cream dramatic sculptural dress, relaxed seated pose and hand at cheek. Preserve coral/cream giant flowers, creamy bulbous cloud-like sofa, deep Brasa red set, floating cantilever pedestal, lighting, shadows, original landscape camera framing. Duna lamp must be identical, broad warm cream illuminated dome and short ribbed deep-red base, at exactly its existing size and position on the pedestal. This is a localized expression retouch; maintain same scene and believable anatomy. No text, logo, watermark, extra objects or lamps.",
+      "dimensoes": {
+        "largura": 1536,
+        "altura": 1024
+      },
+      "sha256": "f987842c2c69ce295a05ea354600ca5a4808b27ac957d429a127047327f8f4ee"
+    },
+    {
+      "arquivo": "insp-marco-escada.png",
+      "destino": "apps/site/public/images/insp-marco-escada.png",
+      "originalGerado": "C:/Users/Antônio/.codex/generated_images/01a1366c-7023-7703-bbd8-1b6328f806e6/exec-2017e159-2262-4160-b489-8d61c76c9657.png",
+      "referencias": [
+        "apps/site/public/images/insp-marco-escada.png (versão anterior à edição)",
+        "apps/site/public/images/marco.png"
+      ],
+      "prompt": "Use case: precise-object-edit / identity-preserve. Edit FIRST image, the Per Parte Marco impossible-staircase gallery scene. SECOND image is the exact product design reference. Make ONLY the seated mustached young male model's face distinctly serious and composed like an architectural fashion editorial photograph: closed relaxed mouth, no smirk, focused unamused eyes looking calmly toward the camera, neutral eyebrows, deliberate stillness. Preserve SAME fictional identity, short dark wavy hair and mustache, same black/ivory graphic jacket, trousers, shoes, hand supporting cheek and full seated body pose with anatomically natural hands. Preserve the impossible amber staircase, giant pale curling architectural ribbon, wine dark background, warm studio lighting, shadows and original landscape camera/framing. Marco lamp exactly unchanged beside him: cream lit hemisphere, exactly three amber rings and short olive cylinder base, same scale and location. Do not alter anything else. No words, brands, watermark, props or extra lamps.",
+      "dimensoes": {
+        "largura": 1536,
+        "altura": 1024
+      },
+      "sha256": "da369bd5a091d8f360178e4ce4969b7f43dc52724dda762624a49cb2ce330ca6"
+    }
+  ]
+}
