@@ -459,6 +459,71 @@ function aplicarCuradoriaProduto() {
   $$('[data-tab-cor]').forEach(botao => botao.setAttribute('aria-pressed', String((botao.dataset.tabCor === 'criador') === corCriador)));
 }
 
+function rgbComputado(cor) {
+  const amostra = document.createElement('span');
+  amostra.style.color = cor;
+  amostra.hidden = true;
+  document.body.append(amostra);
+  const componentes = getComputedStyle(amostra).color.match(/[\d.]+/g)?.map(Number) || [];
+  amostra.remove();
+  if (componentes.length < 3) return null;
+  return { r: componentes[0], g: componentes[1], b: componentes[2], a: componentes[3] ?? 1 };
+}
+
+function luminancia({ r, g, b }) {
+  return [r, g, b].map(valor => {
+    const canal = valor / 255;
+    return canal <= .04045 ? canal / 12.92 : ((canal + .055) / 1.055) ** 2.4;
+  }).reduce((total, canal, indice) => total + canal * [0.2126, 0.7152, 0.0722][indice], 0);
+}
+
+function contraste(fundo, texto) {
+  const [claro, escuro] = [luminancia(fundo), luminancia(texto)].sort((a, b) => b - a);
+  return (claro + .05) / (escuro + .05);
+}
+
+function corSobreFundo(cor, fundo) {
+  return {
+    r: cor.r * cor.a + fundo.r * (1 - cor.a),
+    g: cor.g * cor.a + fundo.g * (1 - cor.a),
+    b: cor.b * cor.a + fundo.b * (1 - cor.a),
+  };
+}
+
+function corDaVarianteAtual() {
+  const nome = varianteAtual?.selectedOptions?.find(opcao => ehCor(opcao.name))?.value;
+  const opcao = coresProduto(produtoAtual).find(valor => normalizar(valor.name) === normalizar(nome));
+  return opcao ? corOpcao(opcao) : '';
+}
+
+function restaurarRodapePadrao() {
+  const rodape = $('.rodape');
+  if (!rodape) return;
+  rodape.style.removeProperty('--rodape-fundo');
+  rodape.style.removeProperty('--rodape-texto');
+  delete rodape.dataset.corVariante;
+}
+
+function atualizarRodapeProduto() {
+  const rodape = $('.rodape');
+  if (!rodape) return;
+  const cor = corDaVarianteAtual();
+  if (!cor) {
+    restaurarRodapePadrao();
+    return;
+  }
+  const fundo = rgbComputado(cor);
+  const tinta = rgbComputado('#1E1E1E');
+  const luzAcesa = rgbComputado('var(--pp-cor-luz-acesa)');
+  const papel = rgbComputado('var(--papel)');
+  if (!fundo || !tinta || !luzAcesa || !papel) return;
+  const fundoVisivel = corSobreFundo(fundo, papel);
+  const texto = contraste(fundoVisivel, tinta) >= contraste(fundoVisivel, luzAcesa) ? '#1E1E1E' : 'var(--pp-cor-luz-acesa)';
+  rodape.style.setProperty('--rodape-fundo', cor);
+  rodape.style.setProperty('--rodape-texto', texto);
+  rodape.dataset.corVariante = varianteAtual?.selectedOptions?.find(opcao => ehCor(opcao.name))?.value || '';
+}
+
 function atualizarPainelProduto(atualizarUrl = false) {
   varianteAtual = resolverVariante(produtoAtual, selecaoAtual);
   $('#opcoes-produto').innerHTML = opcoesHtml();
@@ -493,6 +558,7 @@ function atualizarPainelProduto(atualizarUrl = false) {
   })));
   $$('[data-tab-cor]').forEach(botaoTab => botaoTab.addEventListener('click', () => { corCriador = botaoTab.dataset.tabCor === 'criador'; aplicarCuradoriaProduto(); }));
   atualizarGaleria(varianteAtual);
+  atualizarRodapeProduto();
   if (atualizarUrl) {
     const destino = (varianteAtual ? urlProduto(produtoAtual, varianteAtual) : urlProduto(produtoAtual)) + location.hash;
     history.replaceState({}, '', destino);
@@ -664,11 +730,12 @@ async function iniciar() {
   try {
     configuracao = await apiLoja('/api/loja/config');
     const caminho = location.pathname.replace(/\/$/, '') || '/loja';
+    if (!caminho.startsWith('/produtos/')) restaurarRodapePadrao();
     if (caminho === '/conta') renderizarConta();
     else if (caminho === '/carrinho') await carregarCarrinho();
     else if (caminho.startsWith('/produtos/')) await carregarProduto(decodeURIComponent(caminho.slice('/produtos/'.length)));
     else await carregarLoja();
   } catch (erro) { renderizarErro(erro); }
 }
-window.addEventListener('popstate', () => { if (location.pathname === '/loja') carregarLoja(); });
+window.addEventListener('popstate', () => { if (location.pathname === '/loja') { restaurarRodapePadrao(); carregarLoja(); } });
 iniciar();
