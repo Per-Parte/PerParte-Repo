@@ -50,7 +50,7 @@ O palco focado aceita setas para giro. As cotas são sliders operáveis por tecl
 
 ## Dados locais
 
-O armazenamento usa `localStorage`, chave histórica `perparte.configurador.v1`, esquema versão 2. Criações v1 e cópias de pedidos são convertidas em memória e só regravadas por uma ação normal de salvar. Obras e pedidos ficam neste navegador e nesta origem; mudar entre `localhost`, `127.0.0.1` ou portas muda o armazenamento acessível. Limpar os dados do navegador pode apagar o ateliê.
+O armazenamento usa `localStorage`, chave histórica `perparte.configurador.v1`, esquema versão 2. Criações v1 e cópias de pedidos são convertidas em memória e só regravadas por uma ação normal de salvar. Obras e pedidos ficam neste navegador e nesta origem; mudar entre `localhost`, `127.0.0.1`, portas ou o domínio de preview muda o armazenamento acessível. Limpar os dados do navegador pode apagar o ateliê.
 
 A leitura valida o conteúdo antes de utilizá-lo. Dados ilegíveis não são sobrescritos automaticamente: a interface permite baixar uma cópia e reiniciar explicitamente o armazenamento. Falhas de quota/gravação são informadas sem concluir falsamente o salvamento.
 
@@ -72,7 +72,7 @@ Permanecem as guardas do projeto: LED de até 9 W, pelo menos 25 mm entre lâmpa
 - [Pesquisa Hairline e matriz de interação](../../docs/pesquisa/hairline.md)
 - [Estado da sessão e verificações executadas](../../.claude/state.md)
 
-O configurador permanece local. A integração industrial/comercial será uma etapa posterior. [ADR 0008](../../.claude/adr/0008-configurador-montagem-por-faces.md) registra o contrato de montagem por faces e seus limites exploratórios.
+O preview está publicado e verificado no projeto Vercel separado `perparte-configurador-preview` (ID `prj_1aRyLnro2NHq55EOjI7IowA6yMsH`, equipe `per-parte1`), deploy `dpl_2yGbyg8Povh2HNLMAsJ1Ej6U5qqR`, target staging, fonte `12af364`. O endereço está no [README da raiz](../../README.md#configurador). Esta hospedagem serve a interface; os dados continuam no `localStorage` do navegador e daquela origem. Ao abrir o preview, o painel começa vazio, sem conta, sincronização cloud ou transferência das criações locais. A produção `perparte.com` permanece separada e inalterada. Não há envio de pedidos nem fabricação. [ADR 0008](../../.claude/adr/0008-configurador-montagem-por-faces.md) registra o contrato de montagem por faces e seus limites exploratórios.
 
 ## Verificação no navegador
 

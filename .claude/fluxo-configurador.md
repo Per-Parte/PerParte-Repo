@@ -1,6 +1,6 @@
 # Fluxo: configurador
 
-**Atualização:** 14/10/2026. **Estado:** protótipo local implementado em `apps/configurador`, porta **4175**. A interface segue o pedido do usuário desta data; a arquitetura comercial e a engenharia de fabricação permanecem **EM ABERTO**. Ver ADR 0004 e `docs/pesquisa/hairline.md`.
+**Atualização:** 15/10/2026. **Estado:** protótipo em `apps/configurador`, disponível localmente na porta **4175**; prévia online publicada e verificada no projeto Vercel separado `perparte-configurador-preview` (ID `prj_1aRyLnro2NHq55EOjI7IowA6yMsH`, equipe `per-parte1`), deploy `dpl_2yGbyg8Povh2HNLMAsJ1Ej6U5qqR`, fonte `12af364`. O endereço está no [README da raiz](../README.md#configurador). A interface segue o pedido do usuário; arquitetura comercial e engenharia de fabricação permanecem **EM ABERTO**. Ver ADR 0004 e `docs/pesquisa/hairline.md`.
 
 ## Entrada e painel
 
@@ -46,6 +46,8 @@ Não há envio à Per Parte, orçamento, cobrança, prazo prometido, compra conc
 ## Persistência e falhas
 
 `src/dominio.mjs` define partes, formas, variações, cores, presets, faixas exploratórias e validação. O armazenamento usa `localStorage`, chave `perparte.configurador.v1`, versão 2. Modelos v1 e cópias de pedidos são convertidos em memória, preservando os dados originais até uma ação de salvar. É restrito ao navegador e à origem local usados; não há conta nem sincronização.
+
+A hospedagem da prévia torna a interface acessível online, mas não muda o armazenamento: o `localStorage` pertence ao navegador e à origem atual. Ao abrir o domínio novo, o painel começa vazio; criações da origem local não são copiadas. A prévia não oferece login, sincronização cloud, envio de pedidos ou fabricação e não altera `perparte.com`.
 
 Uma leitura inválida não sobrescreve o conteúdo original. A interface informa a falha, bloqueia gravação sobre dados ilegíveis e oferece baixar cópia antes de reiniciar explicitamente o armazenamento. Falha de quota ou indisponibilidade deve manter a edição aberta, sem informar salvamento concluído. Não há importação de pedidos ou backup automático nesta versão.
 

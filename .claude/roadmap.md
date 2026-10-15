@@ -75,6 +75,7 @@
 - [x] Concluir e registrar a revisão funcional/visual do configurador em desktop e móvel, incluindo giro, cotas, persistência e rascunhos.
 - [x] Implementar montagem local por faces com múltiplos corpos/difusores, IDs por peça, migração v1/v2, bandeja de encaixe e enquadramento responsivo (ADR 0008).
 - [x] Concluir a nova rodada de QA de montagem por faces, com cinco cubos, difusor lateral, arrasto e telas menores; 19 testes aprovados e matriz em `docs/pesquisa/configurador-montagem-qa.md`. Toque em aparelho físico e audição do som ainda não verificados.
+- [x] Publicar e verificar a prévia do configurador no projeto Vercel separado `perparte-configurador-preview` (ID `prj_1aRyLnro2NHq55EOjI7IowA6yMsH`, equipe `per-parte1`); deploy READY `dpl_2yGbyg8Povh2HNLMAsJ1Ej6U5qqR`, fonte `12af364`. Raiz HTTP 200, 17 assets com hashes conferidos e rotas privadas HTTP 404. Preservada a produção `perparte.com`; armazenamento continua local por navegador/origem, sem conta, sincronização, envio ou fabricação. URL no README da raiz.
 - [ ] Validar o configurador com usuários novatos e revisar presets/dimensões exploratórias com engenharia.
 - [ ] Evoluir o configurador para controles fabricáveis, preço vivo e prévia fiel ao contrato de produção.
 - [ ] Integrar criações do configurador à conta Shopify e ao orçamento/checkout após contrato próprio; portal hospedado não sincroniza obras.

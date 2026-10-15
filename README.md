@@ -37,7 +37,7 @@ docs/
 .claude/            Contexto de trabalho, requisitos, estado, fluxos e decisões
 ```
 
-Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nativo no desenvolvimento local; o site foi publicado com função Node na Vercel. Shopify foi escolhido como backend comercial do site; a implementação HTML/CSS/JavaScript ESM e Node é reversível. Sincronização e produção do configurador continuam em aberto; ele permanece separado e local.
+Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nativo no desenvolvimento local; o site foi publicado com função Node na Vercel. Shopify foi escolhido como backend comercial do site; a implementação HTML/CSS/JavaScript ESM e Node é reversível. O preview do configurador é separado da produção do site; suas criações continuam locais ao navegador/origem, e sincronização e fabricação seguem em aberto.
 
 ## Executar localmente
 
@@ -86,6 +86,8 @@ O ateliê abre sem login, inicialmente vazio. A pessoa escolhe Marco, Duna, Faro
 A peça usa desenho SVG paramétrico autoral inspirado no Hairline, com enquadramento responsivo, giro horizontal/vertical, cotas arrastáveis e controles de teclado. Uma base pode receber múltiplos corpos e difusores por faces, pela bandeja arrastável ou pelos botões. A composição fica suspensa e oferece flutuação e som de encaixe controláveis. O armazenamento v2 migra criações antigas sem escrita automática. Os blocos de vidro discreto seguem o pedido do usuário. Presets, conexões, cores e dimensões são estudos; não constituem geometria homologada, mesh fabril ou arquivo STL. Ver [ADR 0008](.claude/adr/0008-configurador-montagem-por-faces.md).
 
 Criações e rascunhos de pedido ficam no `localStorage` deste navegador/origem. Selecionar obras permite preparar, salvar e baixar um pedido local; nada é enviado à Per Parte. O login do configurador e sua ligação à conta Shopify, sincronização, orçamento e fabricação permanecem em aberto. Veja as [instruções do ateliê](apps/configurador/README.md), o [fluxo](.claude/fluxo-configurador.md) e a [decisão técnica](.claude/adr/0004-configurador-local-svg.md).
+
+A [prévia online do configurador](https://perparte-configurador-preview-kvbl2al7e-per-parte1.vercel.app/) está publicada em projeto Vercel separado. Deploy `dpl_2yGbyg8Povh2HNLMAsJ1Ej6U5qqR`, target staging, a partir do commit `12af364`; raiz HTTP 200, 17 assets com hashes conferidos e rotas privadas HTTP 404. Ela não altera a produção em `perparte.com`: o navegador acessa uma origem nova, cujo painel começa vazio. O `localStorage` continua isolado por navegador e origem; não há conta, sincronização cloud, envio de pedidos ou fabricação.
 
 ### Quadro
 

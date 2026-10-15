@@ -115,6 +115,7 @@ Decisões do pedido do usuário em 14/10/2026 e da implementação reversível r
 | K-17 | DECIDIDO | Oferecer bandeja de peças arrastáveis, encaixe com retorno visual e som controlável, visualização suspensa sem chão e giro horizontal/vertical. Preservar alternativas de teclado/toque, silêncio e pausa. | Pedido do usuário; ADR 0008 |
 | K-18 | DECIDIDO | Enquadrar automaticamente a composição inteira no espaço disponível, inclusive em notebook e móvel, sem exigir zoom out do navegador. | Pedido do usuário |
 | K-19 | PROVISÓRIO | Conexões centralizadas por seis faces, eixos comuns, profundidade derivada da largura, uma conexão por face e até 24 peças. Regras de ocupação/interseção são exploratórias, sem homologação física. | Contrato geométrico; ADR 0008 |
+| K-20 | DECIDIDO | Publicar e verificar uma prévia online do configurador em projeto Vercel separado; preservar a produção `perparte.com`. A hospedagem não muda o escopo local do `localStorage`, não cria conta/sincronização e não envia pedidos nem autoriza fabricação. | Autorização de publicação; deploy READY `dpl_2yGbyg8Povh2HNLMAsJ1Ej6U5qqR`, fonte `12af364`; 15/10/2026 |
 
 ## Guardas técnicas anteriores, preservadas durante o reinício
 
