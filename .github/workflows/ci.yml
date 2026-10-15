@@ -1,0 +1,56 @@
+name: CI do site
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-site-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    name: Validar site
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.ref == 'develop' && github.event.pull_request.base.ref == 'main') ||
+      (github.event.pull_request.head.ref == 'main' && github.event.pull_request.base.ref == 'develop')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar site
+        run: npm run site:check
+
+      - name: Executar testes
+        run: npm run site:test
+
+      - name: Gerar build público
+        run: npm run site:build

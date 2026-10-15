@@ -1,0 +1,70 @@
+name: CD Vercel manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      destino:
+        description: Ambiente Vercel a publicar
+        required: true
+        type: choice
+        default: preview
+        options:
+          - preview
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-vercel-${{ inputs.destino }}
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    name: Publicar no Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Confirmar configuração de deploy
+        run: |
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+          test -n "$VERCEL_TOKEN"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar site
+        run: npm run site:check
+
+      - name: Executar testes
+        run: npm run site:test
+
+      - name: Baixar configuração Vercel
+        run: npx --yes vercel@latest pull --yes --environment=${{ inputs.destino }} --token="$VERCEL_TOKEN"
+
+      - name: Gerar build Vercel
+        run: npx --yes vercel@latest build ${{ inputs.destino == 'production' && '--prod' || '' }} --token="$VERCEL_TOKEN"
+
+      - name: Publicar preview
+        if: inputs.destino == 'preview'
+        run: npx --yes vercel@latest deploy --prebuilt --token="$VERCEL_TOKEN"
+
+      - name: Publicar produção
+        if: inputs.destino == 'production'
+        run: npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
