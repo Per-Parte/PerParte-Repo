@@ -1,6 +1,6 @@
 # ADR 0007 — LP de captação reversível e Resend Contacts
 
-**Data:** 14/10/2026. **Estado:** DECIDIDO por pedido do usuário. Implementação validada localmente e configuração remota concluída; publicação e cadastro real ainda precisam de verificação no topo de `../state.md`.
+**Data:** 14/10/2026. **Estado:** DECIDIDO por pedido do usuário. LP publicada, configuração remota e persistência real com contato sintético QA verificadas; resultado no topo de `../state.md`.
 
 ## Contexto
 
@@ -25,4 +25,6 @@ O código não chama a API de envio e não cria automação. O painel Resend de 
 
 Editar `PERPARTE_LP_ATIVA` no ambiente desejado da Vercel, gerar novo deploy e conferir página inicial, URLs comerciais e API no mesmo modo. `FALSE` mais redeploy restaura o site preservado. Consultar `apps/site/HOSPEDAGEM.md`, `apps/site/README.md` e o topo de `.claude/state.md` para configuração e resultado efetivo.
 
-O projeto Vercel ainda está ligado ao repositório antigo `FainowAI/per-parte-website`; esta publicação será feita pela CLI a partir do checkout atual `main`, preservando o vínculo existente. Validação local: 77 testes, `site:check`, build TRUE com 35 arquivos e telas de 1440/390 px sem overflow. Capturas em `docs/pesquisa/perparte-lp-capturas/`; referência Springs em `docs/pesquisa/springs.md`, incluindo o print da extensão Chrome. Deploy e cadastro real continuam pendentes.
+O projeto Vercel permanece ligado ao repositório antigo `FainowAI/per-parte-website`; esta publicação usou CLI a partir do checkout atual `main`, preservando o vínculo. `8de190f` foi enviado a `origin/main`, integrando sem perda o commit concorrente `d3be437` do rodapé Lago. Deploy final `dpl_FVgjPH4K5TuKvVWtUJTqAMGiFnkW` READY com alias `perparte.com`. Validação local: 77 testes, `site:check`, build TRUE com 35 arquivos e telas de 1440/390 px sem overflow. Rotas principais mostram a LP e APIs comerciais/arquivos privados estão bloqueados.
+
+O formulário público do deploy inicial `dpl_FC7Au2z1VmKwKW1dAQqApakVTvQh` gravou um contato sintético QA em `example.com`; a API Resend confirmou propriedades e opt-in. O registro foi removido por ID, com ausência 404 confirmada; nenhum e-mail foi enviado. Isso verifica persistência real no provedor, sem representar lead humano. O deploy final mantém o mesmo código de captação; a diferença está no rodapé do site preservado e nos metadados Git. Capturas em `docs/pesquisa/perparte-lp-capturas/`, incluindo `04-sucesso-producao-mobile.png`; referência em `docs/pesquisa/springs.md`, com print da extensão Chrome.

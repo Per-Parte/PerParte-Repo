@@ -18,7 +18,9 @@ O usuário escolheu **Resend Contacts, sem envio automático** e aprovou explici
 
 `POST /api/captacao` recebe e-mail, nome opcional e consentimento explícito; valida origem em `SITE_ORIGINS`, campos, corpo e honeypot. Confirma sucesso após gravação/releitura do contato. Repetição com consentimento já registrado preserva sua data; opt-out existente não é revertido. A chave e os contatos não entram no frontend ou logs. `RESEND_ENABLED=false` permanece, pois cadastrar interesse não envia mensagem nem cria conta ou reserva.
 
-Foram aprovados 77 testes, `site:check`, build TRUE com 35 arquivos e QA de 1440/390 px sem overflow, incluindo validação nativa e erro 503 sem chave. Prints em [perparte-lp-capturas](../../docs/pesquisa/perparte-lp-capturas/); a pesquisa [Springs](../../docs/pesquisa/springs.md) inclui captura da extensão Chrome. Automações Resend vazias e nenhum envio nesta etapa. **Publicação e captação real continuam pendentes**; conferir o topo de [state.md](../../.claude/state.md). Operação/reversão em [HOSPEDAGEM.md](HOSPEDAGEM.md) e decisão no [ADR 0007](../../.claude/adr/0007-lp-captacao.md).
+Foram aprovados 77 testes, `site:check`, build TRUE com 35 arquivos e QA de 1440/390 px sem overflow, incluindo validação nativa e erro 503 sem chave. **LP publicada em [perparte.com](https://perparte.com)**, com `main` enviada até `8de190f` e deploy final READY. O formulário público gravou um contato sintético QA em `example.com`, confirmado com propriedades e opt-in pela API Resend, depois removido e verificado como ausente. O teste no deploy inicial usa o mesmo código de captação do final; não representa lead humano. Automações vazias e nenhum envio nesta etapa.
+
+Prints em [perparte-lp-capturas](../../docs/pesquisa/perparte-lp-capturas/), incluindo sucesso móvel em produção; a pesquisa [Springs](../../docs/pesquisa/springs.md) inclui captura da extensão Chrome. Resultado completo em [state.md](../../.claude/state.md), operação/reversão em [HOSPEDAGEM.md](HOSPEDAGEM.md) e decisão no [ADR 0007](../../.claude/adr/0007-lp-captacao.md).
 
 ## Rodar
 
@@ -34,7 +36,7 @@ Na raiz: `npm run site`. Abrir `http://127.0.0.1:4174`.
 
 As quatro rotas comerciais da tabela mostram a LP quando `PERPARTE_LP_ATIVA=TRUE`.
 
-`npm run site:build` prepara os assets em `apps/site/dist`; `npm run preview --workspace @perparte/site` serve o build com o mesmo runtime Node. **Hospedar somente `dist` não fornece a API `/api/*`.** A publicação em [perparte.com](https://perparte.com) usa o adaptador `api/index.mjs` na Vercel, com páginas e consultas de catálogo/configuração conferidas em produção.
+`npm run site:build` prepara os assets em `apps/site/dist`; `npm run preview --workspace @perparte/site` serve o build com o mesmo runtime Node. **Hospedar somente `dist` não fornece a API `/api/*`.** A publicação em [perparte.com](https://perparte.com) usa o adaptador `api/index.mjs` na Vercel. Atualmente a LP está ativa; as consultas comerciais conferidas na publicação anterior ficam bloqueadas nesse modo.
 
 ## Configuração Shopify
 
@@ -111,9 +113,9 @@ Os estudos locais têm narrativa própria, crédito editorial Per Parte e campan
 
 Executar `npm run site:check`, `npm run site:build` e `npm run site:test` na raiz. Na revisão editorial atual, **33/33 testes passaram**: treze de backend, quatorze de catálogo e seis do adaptador Vercel; `site:check` também passou. Build e QA de navegador finais estavam em andamento neste registro. O smoke real é explícito: `node apps/site/tests/shopify-real.mjs`, com ambiente configurado, e confirmou novamente nove operações após a ampliação editorial. Consultar o fechamento em [state.md](../../.claude/state.md); schema aceito com catálogo vazio não comprova seleção/compra de produtos reais.
 
-A publicação usa `vercel.json` e `api/index.mjs` na raiz; instruções em [HOSPEDAGEM.md](HOSPEDAGEM.md). `main` foi enviada até `fcd24a1`, e o deploy está READY no projeto `per-parte-website`, da equipe `per-parte1` (PerParte), com aliases `perparte.com`, `www.perparte.com` e `per-parte-website.vercel.app`. A configuração remota usa raiz do repositório, Node 24.x, `npm run site:build` e `apps/site/dist`; 12 variáveis Production foram cadastradas. `SITE_ORIGINS` é obrigatório e `RESEND_ENABLED=false` foi preservado.
+A publicação usa `vercel.json` e `api/index.mjs` na raiz; instruções em [HOSPEDAGEM.md](HOSPEDAGEM.md). No registro histórico do site completo, `main` foi enviada até `fcd24a1`, com deploy READY no projeto `per-parte-website`, equipe `per-parte1` (PerParte), e aliases `perparte.com`, `www.perparte.com` e `per-parte-website.vercel.app`. Essa versão foi substituída pela LP registrada acima. A configuração remota usa raiz do repositório, Node 24.x, `npm run site:build` e `apps/site/dist`. `SITE_ORIGINS` é obrigatório e `RESEND_ENABLED=false` foi preservado.
 
-Após a correção restrita da captura `rota` repassada pela Vercel, **53/53 testes** e `site:check` passaram. As páginas principais e as consultas públicas de configuração/catálogo retornaram 200; o catálogo real está vazio. A Loja apresentou três estudos e o filtro Brasa abriu Duna, com compra desabilitada e sem erro registrado no console. Nenhum POST foi executado em produção: a revisão automática de aprovação bloqueou o smoke de carrinho. Mutations foram verificadas apenas em testes locais. Versão, evidências e limites em [publicacao-vercel.md](../../docs/integracoes/publicacao-vercel.md).
+Naquela publicação anterior, após a correção restrita da captura `rota` repassada pela Vercel, **53/53 testes** e `site:check` passaram. As páginas principais e as consultas públicas de configuração/catálogo retornaram 200; o catálogo real estava vazio. A Loja apresentou três estudos e o filtro Brasa abriu Duna, com compra desabilitada e sem erro registrado no console. Nenhum POST comercial foi executado em produção: a revisão automática de aprovação bloqueou o smoke de carrinho. Mutations comerciais foram verificadas apenas em testes locais. Versão, evidências e limites em [publicacao-vercel.md](../../docs/integracoes/publicacao-vercel.md).
 
 Tokens compartilhados vêm de `packages/design-system`. Unbounded/Figtree são locais; rótulos usam Figtree Light 300. Wordmark e tipografia final seguem provisórios. Estrutura/interações Gantri orientam a referência, com conteúdo e assets próprios Per Parte.
 

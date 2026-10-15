@@ -42,7 +42,7 @@ Estas decisões vêm do pedido do usuário em 13/10/2026, não de uma aprovaçã
 
 ## Escopo autorizado para a LP de captação
 
-Pedido de 14/10/2026. `PERPARTE_LP_ATIVA=TRUE` configurada na Vercel nos três ambientes; chave Contacts sensitive em Production/Preview e propriedades verificadas via API. 77 testes, check, build LP e QA visual aprovados; deploy e cadastro real permanecem pendentes. Ver ADR 0007 e o topo de `.claude/state.md`.
+Pedido de 14/10/2026. `PERPARTE_LP_ATIVA=TRUE` nos três ambientes Vercel; chave Contacts sensitive em Production/Preview e propriedades verificadas via API. 77 testes, check, build LP e QA visual aprovados. `main` em `8de190f`, deploy final READY em `perparte.com`; persistência real verificada com contato sintético QA, depois removido, sem envio e sem representar lead humano. Ver ADR 0007 e o topo de `.claude/state.md`.
 
 | ID | Estado | Regra ou direção | Fonte |
 |---|---|---|---|

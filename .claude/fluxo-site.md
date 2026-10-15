@@ -1,6 +1,6 @@
 # Fluxo: site
 
-**Estado:** LP de captação preparada em `apps/site`, com site editorial/comércio preservados e seleção por ambiente. Resend Contacts foi escolhido sem envio automático; publicação e cadastro real dependem da verificação registrada no topo de `.claude/state.md`. Headless/token e coleção Shopify configurados, catálogo comercial vazio; filtros pendentes. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify), ADR 0006 (e-mails Resend) e ADR 0007 (LP/Contacts).
+**Estado:** LP de captação publicada em `perparte.com`, com site editorial/comércio preservados e seleção por ambiente. Resend Contacts configurado sem envio automático; persistência real comprovada com contato sintético QA depois removido, sem lead humano. `main` em `8de190f`, deploy final READY. Headless/token e coleção Shopify configurados, catálogo comercial vazio; filtros pendentes. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify), ADR 0006 (e-mails Resend) e ADR 0007 (LP/Contacts).
 
 ## LP de captação — seleção e cadastro
 
@@ -10,7 +10,7 @@ O percurso da LP usa a estrutura Springs adaptada à marca: cabeçalho enxuto, t
 
 O formulário coleta e-mail obrigatório, nome opcional e consentimento explícito versão `2026-10-14`. `captacao.js` envia JSON para `/api/captacao`; `captacao.mjs` valida origem, corpo, campos e honeypot, consulta Resend Contacts, grava as propriedades necessárias e relê o contato antes do sucesso. Repetição com registro completo não muda a primeira data de consentimento. Contato com opt-out não é reinscrito; erro de integração não produz confirmação fictícia.
 
-Preparar no Resend as propriedades string `perparte_lp_origem`, `perparte_lp_consentimento_versao` e `perparte_lp_consentimento_em`. A chave dedicada `RESEND_CONTACTS_API_KEY` fica somente no servidor; a chave transacional de envio não é fallback. `SITE_ORIGINS` autoriza as origens HTTPS de produção. Não há chamada de envio, automação, conta ou reserva criada; `RESEND_ENABLED=false` permanece. O aviso de dados informa finalidade e contato para exclusão/cancelamento. Configuração e testes simulados precisam ser distinguidos de persistência real validada.
+As propriedades string `perparte_lp_origem`, `perparte_lp_consentimento_versao` e `perparte_lp_consentimento_em` foram criadas e verificadas via API. `RESEND_CONTACTS_API_KEY` está como sensitive em Production/Preview; Full access aprovado pelo usuário, somente no servidor. A chave transacional de envio não é fallback. `SITE_ORIGINS` autoriza as origens HTTPS. O formulário público confirmou registro sintético QA em `example.com`; API verificou propriedades e opt-in, e o registro foi removido com ausência 404 confirmada. O teste no deploy inicial usa o mesmo código de captação do final. Zero e-mails, automações vazias, nenhuma conta ou reserva; `RESEND_ENABLED=false` permanece. O aviso informa finalidade e contato para exclusão/cancelamento. Evidências e operação em `docs/integracoes/lp-captacao-vercel.md` e no topo de `.claude/state.md`.
 
 ## Site completo — estado publicado anterior à LP
 

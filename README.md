@@ -2,7 +2,7 @@
 
 **Criado por você, feito por partes.** A Per Parte começa por luminárias de mesa impressas em 3D sob demanda. A pessoa compõe ou inventa a obra no configurador; a fabricação começa depois da criação. A marca fala da autoria do cliente com acabamento premium acessível.
 
-Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho conectados à Shopify, quadro de projeto e configurador local de luminárias. Após autorização do usuário em 14/10/2026, `main` foi enviada até `fcd24a1` e o site foi publicado em [perparte.com](https://perparte.com), com API e navegação de Loja/produto conferidas. O catálogo comercial continua vazio; os estudos não podem ser comprados.
+Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho Shopify, quadro de projeto e configurador local. A **LP de captação está ativa em [perparte.com](https://perparte.com)**, com `main` enviada até `8de190f` e deploy READY; o site completo permanece preservado para retorno por variável de ambiente. Resend Contacts guarda a lista sem envio automático. O catálogo comercial continua vazio; os estudos não podem ser comprados.
 
 ## Fonte de verdade
 
@@ -56,9 +56,9 @@ Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nati
 
 ### Site e Shopify
 
-A etapa atual prepara uma **LP de captação**, usando a estrutura Springs com identidade Per Parte, somente em `main`. O site completo descrito abaixo permanece no código. Na Vercel, `PERPARTE_LP_ATIVA=TRUE` seleciona a LP; `FALSE` restaura o site após **novo build/deploy**. A variável foi criada via MCP nos três ambientes de `per-parte-website`, equipe `per-parte1`; isso não comprova que a LP já está publicada. O resultado efetivo fica no topo de [state.md](.claude/state.md).
+A **LP de captação publicada** usa a estrutura Springs com identidade Per Parte e foi desenvolvida somente em `main`. O site completo descrito abaixo permanece no código. Na Vercel, `PERPARTE_LP_ATIVA=TRUE` seleciona a LP; `FALSE` restaura o site após **novo build/deploy**. A variável foi criada via MCP nos três ambientes de `per-parte-website`, equipe `per-parte1`. Publicação, evidências e reversão estão em [LP na Vercel](docs/integracoes/lp-captacao-vercel.md) e no topo de [state.md](.claude/state.md).
 
-O formulário foi preparado para **Resend Contacts, sem envio automático**, com e-mail, nome opcional e consentimento. Requer chave dedicada `RESEND_CONTACTS_API_KEY` e propriedades de consentimento no provedor; `RESEND_ENABLED=false` permanece. Cadastro não equivale a conta ou reserva. Ver [ADR 0007](.claude/adr/0007-lp-captacao.md), [configuração](apps/site/README.md) e [operação na Vercel](apps/site/HOSPEDAGEM.md).
+O formulário usa **Resend Contacts, sem envio automático**, com e-mail, nome opcional e consentimento. Chave dedicada e propriedades estão configuradas; um contato sintético QA comprovou persistência pelo formulário público e API, sendo removido após o teste. Não representa lead humano, conta ou reserva. Nenhum e-mail foi enviado nesta etapa e `RESEND_ENABLED=false` permanece. Ver [ADR 0007](.claude/adr/0007-lp-captacao.md), [configuração](apps/site/README.md) e [operação na Vercel](apps/site/HOSPEDAGEM.md).
 
 A página apresenta Marco, Duna e Farol com fotografias conceituais geradas, narrativa editorial, seleção de ambientes, acordeão, detalhes, busca, favoritos e menu móvel. A composição foi pesquisada na Gantri por capturas da extensão do Chrome e adaptada à marca Per Parte. Marco tem nome e composição-base na revista; Duna e Farol são propostas. Nenhuma imagem comprova um produto fabricado.
 
@@ -66,7 +66,7 @@ As páginas `/loja`, `/produtos/:handle`, `/conta` e `/carrinho` estão preparad
 
 Para configurar, seguir [apps/site/README.md](apps/site/README.md) e copiar `.env.example` para `.env.local`, ignorado pelo Git. A API precisa continuar rodando: hospedar apenas `dist` não disponibiliza o comércio. O portal de conta Shopify foi confirmado; ele não cria sessão local nem sincroniza o configurador. Preço, prazo, frete, pagamento e condições comerciais aguardam definição. Veja o [fluxo do site](.claude/fluxo-site.md), a [decisão original do protótipo](.claude/adr/0003-site-visual-estatico.md) e o [ADR Shopify](.claude/adr/0005-shopify-backend-comercial.md).
 
-O projeto `per-parte-website`, da equipe `per-parte1` (PerParte), está publicado com deploy READY e aliases `perparte.com`/`www`. A correção do parâmetro de rota repassado pela Vercel passou em **53 testes**, com `site:check` aprovado. Páginas e consultas de catálogo/configuração retornaram 200 em produção; a Loja exibiu três estudos, e o filtro Brasa abriu Duna sem erro registrado no console. `SITE_ORIGINS` é obrigatório em produção. Nenhum POST foi executado em produção; carrinho/checkout reais continuam pendentes. Evidências no [relatório de publicação](docs/integracoes/publicacao-vercel.md), [domínio Shopify](docs/integracoes/dominio-shopify.md) e [HOSPEDAGEM.md](apps/site/HOSPEDAGEM.md).
+Na publicação anterior do site completo, a correção de rota Vercel passou em **53 testes**; páginas e catálogo/configuração retornaram 200, com três estudos e filtro Brasa → Duna. Esses caminhos agora mostram a LP e as APIs comerciais ficam bloqueadas enquanto o modo está ativo. `SITE_ORIGINS` continua obrigatório. Nenhum POST comercial ou checkout real foi validado. Evidências históricas no [relatório de publicação](docs/integracoes/publicacao-vercel.md) e [domínio Shopify](docs/integracoes/dominio-shopify.md); operação atual em [HOSPEDAGEM.md](apps/site/HOSPEDAGEM.md).
 
 ### E-mails do sistema
 
