@@ -1,0 +1,241 @@
+{
+  "evidence_id": "ev_cf31eae1d7f596d89d9d7160830e3989bcc219266a50bbbf4ccc738669449026",
+  "provider": {
+    "id": "rea-cdp-browser",
+    "name": "REA Chrome DevTools Protocol observation provider",
+    "version": "2"
+  },
+  "confidence": "observed",
+  "authority": "external-service",
+  "parameters": {
+    "cdp_endpoint": "http://127.0.0.1:9334",
+    "allowed_origins": [
+      "https://springs.com.br"
+    ],
+    "target_id": "D0C08112660566C5622B5DAB4F738341",
+    "observation_ms": 750,
+    "include_accessibility_text": true,
+    "include_console_text": false,
+    "include_json_body_shapes": false,
+    "include_websocket_shapes": false,
+    "include_storage_keys": false,
+    "include_storage_fingerprints": false,
+    "include_script_sources": false
+  },
+  "capture_window": {
+    "started_at": "2026-10-15T01:31:04.420Z",
+    "ended_at": "2026-10-15T01:31:06.281Z",
+    "observation_ms": 750
+  },
+  "completeness": {
+    "status": "policy_filtered",
+    "conditions": [
+      "attach_limited",
+      "policy_filtered"
+    ],
+    "policy_filtered_sections": [
+      "console_text",
+      "json_body_shapes",
+      "metadata",
+      "script_sources",
+      "storage_keys",
+      "websocket_shapes"
+    ],
+    "attach_limited_sections": [
+      "console_events",
+      "metadata",
+      "network_requests",
+      "websocket_connections",
+      "websocket_frames"
+    ],
+    "truncated_sections": [],
+    "unavailable_sections": [],
+    "excluded": [
+      {
+        "section": "console_text",
+        "reason": "not_approved",
+        "count": null
+      },
+      {
+        "section": "json_body_shapes",
+        "reason": "not_approved",
+        "count": null
+      },
+      {
+        "section": "metadata",
+        "reason": "disallowed_origin",
+        "count": 1
+      },
+      {
+        "section": "script_sources",
+        "reason": "not_approved",
+        "count": 7
+      },
+      {
+        "section": "storage_keys",
+        "reason": "not_approved",
+        "count": null
+      },
+      {
+        "section": "websocket_shapes",
+        "reason": "not_approved",
+        "count": null
+      }
+    ],
+    "dropped_events": {
+      "scripts": 0,
+      "network_requests": 0,
+      "console_events": 0,
+      "websocket_connections": 0,
+      "websocket_frames": 0,
+      "webmcp_tools": 0,
+      "timeline_events": 0,
+      "total": 0
+    }
+  },
+  "dom_nodes": 82,
+  "accessibility_nodes": 70,
+  "scripts": [
+    {
+      "url": "https://springs.com.br/assets/index-CnDumkkD.js",
+      "length": 12823,
+      "is_module": true
+    },
+    {
+      "url": "https://springs.com.br/__l5e/events.124894084da8c432.js",
+      "length": 25469,
+      "is_module": false
+    },
+    {
+      "url": "https://springs.com.br/",
+      "length": 739,
+      "is_module": false
+    },
+    {
+      "url": "https://springs.com.br/",
+      "length": 35,
+      "is_module": true
+    },
+    {
+      "url": "https://springs.com.br/~flock.js",
+      "length": 21296,
+      "is_module": false
+    },
+    {
+      "url": "https://springs.com.br/assets/index-Bms9McGh.js",
+      "length": 350459,
+      "is_module": true
+    },
+    {
+      "url": "https://springs.com.br/",
+      "length": 919,
+      "is_module": false
+    }
+  ],
+  "resources": [
+    {
+      "resource_key": "res_1b3eb668b70099f0e0bd7a3edbe2928b589f3551fd36d07a52d58811f4983a62",
+      "url": "https://springs.com.br/~flock.js",
+      "origin": "https://springs.com.br",
+      "type": "Script",
+      "mime_type": "text/javascript",
+      "content_size": 21296
+    },
+    {
+      "resource_key": "res_2ec5960b6728b60d0790ff4d5d91a201687e370cb43ea944559bb386fb1d5865",
+      "url": "https://springs.com.br/__l5e/assets-v1/4c72ce7a-5401-448e-9716-4dd298c80570/springs-flower-trans.png",
+      "origin": "https://springs.com.br",
+      "type": "Image",
+      "mime_type": "image/png",
+      "content_size": 1854693
+    },
+    {
+      "resource_key": "res_2f68f061fb542109f0a8f328eaa03bdfb4a321f76cae883d99bc14d9b1a3b63a",
+      "url": "https://springs.com.br/__l5e/assets-v1/f839c405-9ea4-4872-b4ff-0fad23c8f331/BwSeidoRaw-Black.otf",
+      "origin": "https://springs.com.br",
+      "type": "Font",
+      "mime_type": "font/otf",
+      "content_size": 144300
+    },
+    {
+      "resource_key": "res_3eb2a43aea6e1782ab8339bfac550d1a7087d71b326c466867892a60aa51d04e",
+      "url": "https://springs.com.br/__l5e/assets-v1/98ed3caf-b205-48b2-9118-81198533d05b/NeueHaasGrotText-Roman.otf",
+      "origin": "https://springs.com.br",
+      "type": "Font",
+      "mime_type": "font/otf",
+      "content_size": 73264
+    },
+    {
+      "resource_key": "res_4c3a15ae9dfb0e1d97a1020ff63f86858df81d6e29f6393dfb5e4f05c56c7c84",
+      "url": "https://springs.com.br/__l5e/assets-v1/3108f18f-526e-4da2-baac-0d6daf20be40/PPMori-SemiBold.otf",
+      "origin": "https://springs.com.br",
+      "type": "Font",
+      "mime_type": "font/otf",
+      "content_size": 69192
+    },
+    {
+      "resource_key": "res_56a31c51aa1c6abd2726df0745bbea08e88b4bd89441a2a422123d7e01619a3a",
+      "url": "https://springs.com.br/__l5e/events.124894084da8c432.js",
+      "origin": "https://springs.com.br",
+      "type": "Script",
+      "mime_type": "application/javascript",
+      "content_size": 25469
+    },
+    {
+      "resource_key": "res_6254ceb55b402e84395ae853aad0d2dc522a9b9bee61e96ccd02c278eed0902b",
+      "url": "https://springs.com.br/assets/index-Bms9McGh.js",
+      "origin": "https://springs.com.br",
+      "type": "Script",
+      "mime_type": "text/javascript",
+      "content_size": 350486
+    },
+    {
+      "resource_key": "res_672ed8ce38faeddffc90f5073d8621c3460cb9f61bfdfc51fde199d0df0ed07d",
+      "url": "https://springs.com.br/__l5e/assets-v1/f85a289e-46ee-44ad-8153-c0d63ef2228f/springs-logo.svg",
+      "origin": "https://springs.com.br",
+      "type": "Image",
+      "mime_type": "image/svg+xml",
+      "content_size": 3431
+    },
+    {
+      "resource_key": "res_73fcebbf16b986c2ee45641d4bacbf472f875bfe07b2609560c1d3f0776ccaa1",
+      "url": "https://springs.com.br/__l5e/assets-v1/e5726b08-9214-4d49-9238-16e0764eff50/NeueHaasGrotText-Bold.otf",
+      "origin": "https://springs.com.br",
+      "type": "Font",
+      "mime_type": "font/otf",
+      "content_size": 73980
+    },
+    {
+      "resource_key": "res_b241cd5bda52fe109553a1bd08aa2e4bed06ceb44d66fc6a832bfa97c64f730e",
+      "url": "https://springs.com.br/assets/styles-BcP0ZEhd.css",
+      "origin": "https://springs.com.br",
+      "type": "Stylesheet",
+      "mime_type": "text/css",
+      "content_size": 62292
+    },
+    {
+      "resource_key": "res_b8de1541bbe3f4eb16a51dce4f5fb8c17a1159528d81cc4f0b7f1fd8f9dae6a0",
+      "url": "https://springs.com.br/__l5e/assets-v1/187a593b-28a0-47bc-a9dc-89cb1ceaec7e/springs-car.png",
+      "origin": "https://springs.com.br",
+      "type": "Image",
+      "mime_type": "image/png",
+      "content_size": 376134
+    },
+    {
+      "resource_key": "res_ca7242fc968a4e75bdde83ef2c0d2adb88a3535e5c4505c04d216a7ea4bd67cd",
+      "url": "https://springs.com.br/assets/index-CnDumkkD.js",
+      "origin": "https://springs.com.br",
+      "type": "Script",
+      "mime_type": "text/javascript",
+      "content_size": 12828
+    }
+  ],
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Observation starts when REA attaches; prior network and console activity is unavailable.",
+    "Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.",
+    "Source maps are reported only as declarative URLs and are not fetched.",
+    "URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.",
+    "Browser host platform and architecture were not observed."
+  ]
+}

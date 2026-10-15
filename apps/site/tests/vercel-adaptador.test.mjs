@@ -21,6 +21,48 @@ function cliente(dadosAmbiente = ambiente) {
 }
 const enviar = (corpo, method = 'POST', headers = {}) => ({ method, headers: { 'Content-Type': 'application/json', Origin: origem, ...headers }, body: JSON.stringify(corpo) });
 
+test('modo de captação bloqueia todas as APIs comerciais antes do transporte', async () => {
+  const lp = cliente({ ...ambiente, PERPARTE_LP_ATIVA: 'TRUE' });
+  for (const rota of ['loja/config', 'produtos', 'produtos/marco', 'carrinho', 'carrinho/itens']) {
+    for (const caminho of [`/api/${rota}`, `/api/index?__rota=${rota}&rota=${rota}`]) {
+      const resposta = await lp.consultar(caminho);
+      assert.equal(resposta.status, 404, caminho);
+      assert.equal(resposta.headers.get('cache-control'), 'no-store');
+    }
+  }
+  assert.equal((await lp.consultar('/api/captacao')).status, 405);
+  assert.equal((await lp.consultar('/api/index?__rota=captacao&rota=captacao')).status, 405);
+  assert.equal(lp.chamadas.length, 0);
+  assert.equal((await cliente().consultar('/api/captacao')).status, 404);
+  assert.equal((await cliente({ ...ambiente, PERPARTE_LP_ATIVA: 'FALSE' }).consultar('/api/index?__rota=captacao&rota=captacao')).status, 404);
+});
+
+test('rewrite de captação remove metadados e confirma gravação sem chamar envio', async () => {
+  const chamadas = []; let contato;
+  const atender = criarAdaptadorVercel({
+    ambiente: { ...ambiente, PERPARTE_LP_ATIVA: 'TRUE', RESEND_CONTACTS_API_KEY: 'chave-contatos-somente-teste' },
+    fetchImpl: async (url, opcoes) => {
+      chamadas.push({ url, opcoes });
+      if (opcoes.method === 'GET') return contato ? Response.json(contato) : Response.json({}, { status: 404 });
+      assert.equal(opcoes.method, 'POST');
+      const dados = JSON.parse(opcoes.body);
+      contato = { object: 'contact', id: 'contato-de-teste', email: dados.email, unsubscribed: false,
+        properties: Object.fromEntries(Object.entries(dados.properties).map(([chave, value]) => [chave, { value, type: 'string' }])) };
+      return Response.json({ object: 'contact', id: contato.id });
+    },
+  });
+  const resposta = await atender(new Request(`${origem}/api/index?__rota=captacao&rota=captacao`, enviar({
+    email: 'Pessoa@Example.com', nome: 'Pessoa Teste', consentimento: true, versaoConsentimento: '2026-10-14', website: '',
+  })));
+  assert.equal(resposta.status, 200);
+  assert.equal((await resposta.json()).ok, true);
+  assert.equal(resposta.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(chamadas.map(({ url, opcoes }) => [opcoes.method, new URL(url).pathname]), [
+    ['GET', '/contacts/pessoa%40example.com'], ['POST', '/contacts'], ['GET', '/contacts/pessoa%40example.com'],
+  ]);
+  assert.equal(JSON.parse(chamadas[1].opcoes.body).first_name, 'Pessoa');
+});
+
 test('rewrite mantém filtros e cursores; config não revela token', async () => {
   const loja = cliente();
   const resposta = await loja.consultar('/api/index?__rota=produtos&cor=Lago&ordem=preco-maior&depois=cursor%2Bteste');

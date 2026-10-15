@@ -56,6 +56,10 @@ Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nati
 
 ### Site e Shopify
 
+A etapa atual prepara uma **LP de captação**, usando a estrutura Springs com identidade Per Parte, somente em `main`. O site completo descrito abaixo permanece no código. Na Vercel, `PERPARTE_LP_ATIVA=TRUE` seleciona a LP; `FALSE` restaura o site após **novo build/deploy**. A variável foi criada via MCP nos três ambientes de `per-parte-website`, equipe `per-parte1`; isso não comprova que a LP já está publicada. O resultado efetivo fica no topo de [state.md](.claude/state.md).
+
+O formulário foi preparado para **Resend Contacts, sem envio automático**, com e-mail, nome opcional e consentimento. Requer chave dedicada `RESEND_CONTACTS_API_KEY` e propriedades de consentimento no provedor; `RESEND_ENABLED=false` permanece. Cadastro não equivale a conta ou reserva. Ver [ADR 0007](.claude/adr/0007-lp-captacao.md), [configuração](apps/site/README.md) e [operação na Vercel](apps/site/HOSPEDAGEM.md).
+
 A página apresenta Marco, Duna e Farol com fotografias conceituais geradas, narrativa editorial, seleção de ambientes, acordeão, detalhes, busca, favoritos e menu móvel. A composição foi pesquisada na Gantri por capturas da extensão do Chrome e adaptada à marca Per Parte. Marco tem nome e composição-base na revista; Duna e Farol são propostas. Nenhuma imagem comprova um produto fabricado.
 
 As páginas `/loja`, `/produtos/:handle`, `/conta` e `/carrinho` estão preparadas para catálogo e variantes Shopify. Cores comerciais alteram a variante selecionada, com imagem, preço e disponibilidade correspondentes; carrinho encaminha à URL de checkout devolvida pela Shopify. Sem token Storefront, o site apresenta estudos sem compra. Headless/token e coleção automática `todas` foram configurados; Search & Discovery está instalado, com filtros em configuração. Smoke real sem escrita passou em nove operações HTTP 200/API `2026-10`; a loja continua sem produtos reais, e compra/facetas ainda dependem de validação.

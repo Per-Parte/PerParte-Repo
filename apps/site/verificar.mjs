@@ -15,7 +15,14 @@ const idsComercio = [...comercio.matchAll(/\bid="([^"]+)"/g)].map(item => item[1
 assert.equal(new Set(idsComercio).size, idsComercio.length, 'IDs de comércio devem ser únicos com a navbar montada.');
 for (const [, ancora] of comercio.matchAll(/\bhref="#([^"]+)"/g)) assert(idsComercio.includes(ancora), `Âncora de comércio inexistente: ${ancora}`);
 for (const arquivo of ['navegacao.js', 'navegacao.css']) await access(new URL(arquivo, import.meta.url));
-for (const arquivo of ['app.js', 'paleta.js', 'vitrine.js', 'catalogo.js', 'comercio.js', 'navegacao.js', 'servidor.mjs', 'shopify-servidor.mjs', 'construir.mjs']) {
+const captacao = await readFile(new URL('./captacao.html', import.meta.url), 'utf8');
+const idsCaptacao = [...captacao.matchAll(/\bid="([^"]+)"/g)].map(item => item[1]);
+assert.equal(new Set(idsCaptacao).size, idsCaptacao.length, 'IDs da LP devem ser únicos.');
+for (const [, ancora] of captacao.matchAll(/\bhref="#([^"]+)"/g)) assert(idsCaptacao.includes(ancora), `Âncora da LP inexistente: ${ancora}`);
+for (const [, caminho] of captacao.matchAll(/(?:src|href)="(\/images\/[^"?#]+)"/g)) await access(new URL(`./public${caminho}`, import.meta.url));
+for (const [, destino] of captacao.matchAll(/<label\b[^>]*\bfor="([^"]+)"/g)) assert(idsCaptacao.includes(destino), `Rótulo da LP sem campo: ${destino}`);
+assert((await readFile(new URL('./captacao.css', import.meta.url), 'utf8')).includes('prefers-reduced-motion'), 'Falta modo de movimento reduzido na LP.');
+for (const arquivo of ['app.js', 'paleta.js', 'vitrine.js', 'catalogo.js', 'comercio.js', 'navegacao.js', 'captacao.js', 'captacao.mjs', 'modo-captacao.mjs', 'vercel-adaptador.mjs', 'servidor.mjs', 'shopify-servidor.mjs', 'construir.mjs']) {
   const resultado = spawnSync(process.execPath, ['--check', fileURLToPath(new URL(arquivo, import.meta.url))], { encoding: 'utf8' });
   if (resultado.status !== 0) throw new Error(`${arquivo}: ${resultado.stderr}`);
 }

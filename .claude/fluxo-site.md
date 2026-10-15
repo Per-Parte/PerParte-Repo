@@ -1,6 +1,18 @@
 # Fluxo: site
 
-**Estado:** site editorial e comércio Shopify em `apps/site`; Headless/token e coleção configurados, smoke real sem escrita aprovado e catálogo comercial vazio. Search & Discovery instalado; filtros em configuração. Resend configurado para e-mails próprios, com código preparado e envio local desabilitado. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify) e ADR 0006 (Resend).
+**Estado:** LP de captação preparada em `apps/site`, com site editorial/comércio preservados e seleção por ambiente. Resend Contacts foi escolhido sem envio automático; publicação e cadastro real dependem da verificação registrada no topo de `.claude/state.md`. Headless/token e coleção Shopify configurados, catálogo comercial vazio; filtros pendentes. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify), ADR 0006 (e-mails Resend) e ADR 0007 (LP/Contacts).
+
+## LP de captação — seleção e cadastro
+
+`PERPARTE_LP_ATIVA=TRUE` apresenta a LP; `FALSE` ou ausência mantém o site completo descrito abaixo. O valor é lido no build e no runtime da API: alteração na Vercel requer novo deploy. A variável foi criada via MCP em Production, Preview e Development do projeto `per-parte-website`, equipe `per-parte1`. Os fontes originais `index.html`/`comercio.html` permanecem intactos. No pacote LP, ambos recebem `captacao.html`; módulos e estilos antigos de interface não são publicados, e APIs comerciais retornam indisponibilidade de rota. `POST /api/captacao` só existe no modo LP.
+
+O percurso da LP usa a estrutura Springs adaptada à marca: cabeçalho enxuto, título “A era do criar.”, imagem conceitual de Duna, convite e formulário, imagem editorial da coleção e wordmark amplo no rodapé. A identidade usa os tokens Per Parte. Links “Faça parte” levam ao formulário; teclado, foco visível, status acessível e movimento reduzido devem ser preservados.
+
+O formulário coleta e-mail obrigatório, nome opcional e consentimento explícito versão `2026-10-14`. `captacao.js` envia JSON para `/api/captacao`; `captacao.mjs` valida origem, corpo, campos e honeypot, consulta Resend Contacts, grava as propriedades necessárias e relê o contato antes do sucesso. Repetição com registro completo não muda a primeira data de consentimento. Contato com opt-out não é reinscrito; erro de integração não produz confirmação fictícia.
+
+Preparar no Resend as propriedades string `perparte_lp_origem`, `perparte_lp_consentimento_versao` e `perparte_lp_consentimento_em`. A chave dedicada `RESEND_CONTACTS_API_KEY` fica somente no servidor; a chave transacional de envio não é fallback. `SITE_ORIGINS` autoriza as origens HTTPS de produção. Não há chamada de envio, automação, conta ou reserva criada; `RESEND_ENABLED=false` permanece. O aviso de dados informa finalidade e contato para exclusão/cancelamento. Configuração e testes simulados precisam ser distinguidos de persistência real validada.
+
+## Site completo — estado publicado anterior à LP
 
 **Publicado em 14/10/2026:** `main` enviada até `fcd24a1`, deploy READY em `https://perparte.com`, projeto `per-parte-website`, equipe `per-parte1` (PerParte). A configuração remota usa raiz do repositório, Node 24.x, build `npm run site:build` e saída `apps/site/dist`; 12 variáveis Production foram cadastradas. A captura `rota` repassada pela Vercel foi tratada no adaptador, preservando a validação da API; 53/53 testes e `site:check` passaram. `SITE_ORIGINS` é obrigatório em produção. Configurador continua local e os e-mails ficam sem gatilhos, com `RESEND_ENABLED=false`. Roteiro em `apps/site/HOSPEDAGEM.md`; evidências em `docs/integracoes/publicacao-vercel.md`.
 

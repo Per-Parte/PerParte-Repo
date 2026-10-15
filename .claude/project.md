@@ -32,7 +32,13 @@ Após autorização de 14/10/2026, `main` foi enviada até `fcd24a1` e o site fo
 
 O configurador permanece um protótipo local de criação em HTML/CSS/JavaScript ESM, com desenho paramétrico SVG, persistência no navegador e servidor Node na porta 4175. Sua sincronização, orçamento e integração com produção/conta comercial seguem em aberto. O quadro reúne documentos e notas locais, sem sincronização entre pessoas, e não substitui a revista nem os documentos oficiais.
 
-### Landing em revisão
+### LP de captação e site preservado
+
+Por pedido de 14/10/2026, a etapa atual é uma **LP de captação DECIDIDA**, desenvolvida somente em `main`, usando a estrutura da Springs como referência e a identidade da revista Per Parte. A implementação local preserva integralmente os HTMLs do site anterior. `PERPARTE_LP_ATIVA=TRUE` seleciona a LP e oculta as rotas comerciais; `FALSE` restaura o site completo após novo build/deploy. A variável foi criada via MCP Vercel nos três ambientes do projeto `per-parte-website`, equipe `per-parte1`. Configuração da variável não comprova publicação da LP.
+
+O usuário escolheu **Resend Contacts, sem envio automático**, para guardar e-mail, nome opcional e consentimento versionado. A integração exige `RESEND_CONTACTS_API_KEY` dedicada e três propriedades string de origem, versão e data do consentimento. Credenciais permanecem no servidor; opt-out existente é preservado, e sucesso depende de registro confirmado no provedor. `RESEND_ENABLED=false` continua obrigatório para o transporte transacional. Cadastro na lista não cria conta, reserva ou compra. ADR 0007 detalha a decisão; o topo de `.claude/state.md` registra deploy e validação efetivamente concluídos.
+
+### Landing editorial preservada
 
 A página usa a estrutura editorial e os comportamentos observados na Gantri por capturas da extensão do Chrome, adaptados à identidade Per Parte: fotografia ampla, navegação sobre o destaque, títulos com respiro, botões arredondados, coleção, ambientes, processo e manifesto. Cores e tipografia vêm do design system compartilhado; a tipografia continua **PROVISÓRIA**.
 

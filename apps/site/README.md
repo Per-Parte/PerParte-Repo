@@ -1,6 +1,24 @@
 # Site Per Parte
 
-Landing editorial, Loja, páginas de produto, conta e carrinho. HTML/CSS/JavaScript ESM e Node nativo, sem framework de aplicação. Shopify é o backend comercial escolhido; a implementação vanilla/Node continua provisória. Imagens locais de Marco, Duna e Farol são estudos conceituais, sem compra.
+LP de captação selecionável e site completo preservado: landing editorial, Loja, páginas de produto, conta e carrinho. HTML/CSS/JavaScript ESM e Node nativo, sem framework de aplicação. Shopify é o backend comercial escolhido; a implementação vanilla/Node continua provisória. Imagens locais de Marco, Duna e Farol são estudos conceituais, sem compra.
+
+## LP de captação
+
+`PERPARTE_LP_ATIVA=TRUE` seleciona a LP com estrutura Springs e identidade Per Parte. `FALSE` ou ausência mantém o site completo; outros valores são recusados. Na Vercel, a variável foi criada com TRUE via MCP para Production, Preview e Development no projeto `per-parte-website`, equipe `per-parte1`. **Mudar o valor exige novo build/deploy.** No desenvolvimento, reiniciar `npm run site` após mudar o ambiente; a prévia de `dist` lê o modo gravado no build.
+
+Os fontes originais permanecem intactos. No build LP, `captacao.html` é publicado nas entradas `index.html`/`comercio.html`, inclusive para links diretos de Loja/produto/conta/carrinho. Os módulos/estilos antigos de interface ficam fora do pacote e as APIs comerciais são recusadas. Com modo completo, `/api/captacao` é recusada.
+
+O usuário escolheu **Resend Contacts, sem envio automático** e aprovou explicitamente a chave dedicada Full access, diante das opções sending/full disponíveis no Resend. `RESEND_CONTACTS_API_KEY` está cadastrada como sensitive na Vercel em Production/Preview; a chave de envio `RESEND_API_KEY` não é reaproveitada. Estas propriedades string foram criadas no Resend e verificadas via API:
+
+| Propriedade | Valor registrado |
+|---|---|
+| `perparte_lp_origem` | `lp` |
+| `perparte_lp_consentimento_versao` | `2026-10-14` |
+| `perparte_lp_consentimento_em` | Instante ISO gerado no servidor |
+
+`POST /api/captacao` recebe e-mail, nome opcional e consentimento explícito; valida origem em `SITE_ORIGINS`, campos, corpo e honeypot. Confirma sucesso após gravação/releitura do contato. Repetição com consentimento já registrado preserva sua data; opt-out existente não é revertido. A chave e os contatos não entram no frontend ou logs. `RESEND_ENABLED=false` permanece, pois cadastrar interesse não envia mensagem nem cria conta ou reserva.
+
+Foram aprovados 77 testes, `site:check`, build TRUE com 35 arquivos e QA de 1440/390 px sem overflow, incluindo validação nativa e erro 503 sem chave. Prints em [perparte-lp-capturas](../../docs/pesquisa/perparte-lp-capturas/); a pesquisa [Springs](../../docs/pesquisa/springs.md) inclui captura da extensão Chrome. Automações Resend vazias e nenhum envio nesta etapa. **Publicação e captação real continuam pendentes**; conferir o topo de [state.md](../../.claude/state.md). Operação/reversão em [HOSPEDAGEM.md](HOSPEDAGEM.md) e decisão no [ADR 0007](../../.claude/adr/0007-lp-captacao.md).
 
 ## Rodar
 
@@ -8,11 +26,13 @@ Na raiz: `npm run site`. Abrir `http://127.0.0.1:4174`.
 
 | Rota | Conteúdo |
 |---|---|
-| `/` | Landing editorial e acesso aos produtos |
+| `/` | LP com modo TRUE; landing editorial e produtos com FALSE |
 | `/loja` | Catálogo, busca, facetas, ordenação e paginação |
 | `/produtos/:handle` | Galeria, opções/variantes, informações e sacola |
 | `/conta` | Acesso ao portal hospedado Shopify |
 | `/carrinho` | Quantidades, remoção, subtotal e checkout |
+
+As quatro rotas comerciais da tabela mostram a LP quando `PERPARTE_LP_ATIVA=TRUE`.
 
 `npm run site:build` prepara os assets em `apps/site/dist`; `npm run preview --workspace @perparte/site` serve o build com o mesmo runtime Node. **Hospedar somente `dist` não fornece a API `/api/*`.** A publicação em [perparte.com](https://perparte.com) usa o adaptador `api/index.mjs` na Vercel, com páginas e consultas de catálogo/configuração conferidas em produção.
 
@@ -28,7 +48,7 @@ Copiar `apps/site/.env.example` para `apps/site/.env.local`, preencher e reinici
 | `SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | Alternativa privada; preencher apenas um dos tokens |
 | `SHOPIFY_COLLECTION_HANDLE` | Handle da coleção real publicada no mesmo canal; vazio consulta catálogo geral |
 | `SHOPIFY_CUSTOMER_ACCOUNT_URL` | URL copiada de Configurações → Contas de cliente |
-| `SITE_ORIGINS` | Obrigatório em produção: origens HTTPS exatas autorizadas a alterar carrinho, separadas por vírgula |
+| `SITE_ORIGINS` | Obrigatório em produção: origens HTTPS exatas autorizadas a alterar carrinho ou cadastrar interesse, separadas por vírgula |
 | `PORT` / `HOST` | Padrão `4174` / `127.0.0.1` |
 
 Não usar token Admin como Storefront nem colocar credenciais no JavaScript público. Com token privado, uma publicação atrás de proxy precisa capturar o IP do comprador a partir de um proxy confiável. O servidor atual ignora `X-Forwarded-For` recebido diretamente e envia o IP da conexão.
@@ -72,6 +92,8 @@ Os estudos locais têm narrativa própria, crédito editorial Per Parte e campan
 
 | Arquivo | Responsabilidade |
 |---|---|
+| `captacao.html`, `captacao.css`, `captacao.js` | LP, formulário e estados acessíveis de cadastro |
+| `captacao.mjs`, `modo-captacao.mjs` | Resend Contacts, consentimento e seleção validada do modo |
 | `index.html`, `styles.css`, `app.js` | Landing editorial e navegação |
 | `navegacao.js`, `navegacao.css` | Navbar compartilhada, ícones, menus e estados entre homepage e comércio |
 | `paleta.js`, `paleta.css` | Visualização global de cores nos produtos compatíveis |

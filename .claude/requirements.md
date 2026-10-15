@@ -40,6 +40,19 @@ Estas decisões vêm do pedido do usuário em 13/10/2026, não de uma aprovaçã
 | S-09 | DECIDIDO | Atualizar `main` e publicar o site em produção na Vercel. Concluído até `fcd24a1`, com deploy READY e verificação pública de leitura/navegação; checkout real continua pendente. Configurador permanece local e envios automáticos desativados. | Pedido posterior de 14/10/2026, que substitui “Publicamos depois”; `docs/integracoes/publicacao-vercel.md` |
 | S-10 | DECIDIDO | Permitir teclado, menu móvel, fechamento de diálogos e redução de movimento; slideshow deve permitir pausa. | Critérios de implementação desta etapa |
 
+## Escopo autorizado para a LP de captação
+
+Pedido de 14/10/2026. `PERPARTE_LP_ATIVA=TRUE` configurada na Vercel nos três ambientes; chave Contacts sensitive em Production/Preview e propriedades verificadas via API. 77 testes, check, build LP e QA visual aprovados; deploy e cadastro real permanecem pendentes. Ver ADR 0007 e o topo de `.claude/state.md`.
+
+| ID | Estado | Regra ou direção | Fonte |
+|---|---|---|---|
+| LP-01 | DECIDIDO | Trabalhar somente em `main`; estudar a estrutura Springs com `reverse-engineer-anything` e capturas da extensão do Chrome, adaptando-a aos tokens e conteúdo Per Parte. | Pedido do usuário, 14/10/2026 |
+| LP-02 | DECIDIDO | Ocultar o site atual sem excluir seus fontes. `PERPARTE_LP_ATIVA=TRUE` exibe a LP; `FALSE` ou ausência mantém o site completo. Mudar na Vercel exige novo build/deploy. | Pedido do usuário; ADR 0007 |
+| LP-03 | DECIDIDO | Criar a variável via MCP Vercel no projeto `per-parte-website`, equipe `per-parte1`, para Production, Preview e Development. Cobrir rotas comerciais diretas e bloquear API comercial no modo LP. | Pedido do usuário; implementação reversível |
+| LP-04 | DECIDIDO | Guardar cadastros no Resend Contacts, sem envio automático. Exigir e-mail e consentimento explícito; nome é opcional. Lista não cria conta, reserva, compra ou sessão do configurador. | Escolha explícita do usuário |
+| LP-05 | DECIDIDO | Usar chave dedicada `RESEND_CONTACTS_API_KEY` no servidor, Full access explicitamente aprovado pelo usuário diante das opções sending/full do Resend. Propriedades string `perparte_lp_origem`, `perparte_lp_consentimento_versao`, `perparte_lp_consentimento_em`; versão inicial `2026-10-14`. Preservar opt-out e confirmar persistência antes de responder sucesso. | Aprovação explícita do usuário; contrato da implementação; ADR 0007 |
+| LP-06 | DECIDIDO | Preservar estudos conceituais identificados e `RESEND_ENABLED=false`. Não publicar credenciais/prévias privadas nem tratar configuração ou testes simulados como prova de cadastro real. | Limites de marca e integração |
+
 ## Escopo autorizado para o comércio Shopify
 
 Pedido explícito de 14/10/2026. `DECIDIDO` indica direção aprovada; não significa que conexão, catálogo ou checkout foram validados ao vivo.

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#F6E7C4">
+    <meta name="description" content="A era do criar. Uma nova forma de dar luz às suas ideias. Faça parte da lista da Per Parte e acompanhe o que vem por aí.">
+    <meta property="og:title" content="Per Parte — A era do criar.">
+    <meta property="og:description" content="Criado por você, feito por partes. Acompanhe o que vem por aí.">
+    <meta property="og:image" content="https://perparte.com/images/insp-trio-galeria.png">
+    <title>Per Parte — A era do criar.</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <link rel="stylesheet" href="/tokens.css">
+    <link rel="stylesheet" href="/captacao.css">
+    <link rel="preload" as="image" href="/images/duna.png" fetchpriority="high">
+    <script type="module" src="/captacao.js"></script>
+  </head>
+  <body>
+    <a class="pular" href="#cadastro">Pular para o cadastro</a>
+    <header class="cabecalho">
+      <a class="marca" href="/" aria-label="Per Parte, início">Per Parte</a>
+      <p>Uma nova luz está chegando.</p>
+      <a class="atalho" href="#cadastro">Faça parte <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6"/></svg></a>
+    </header>
+    <main id="conteudo">
+      <section class="abertura" aria-labelledby="titulo">
+        <div class="abertura-texto">
+          <h1 id="titulo">A era<br>do criar.</h1>
+          <p class="introducao">A próxima luz da sua casa<br>começa com você.</p>
+          <p class="assinatura">Criado por você, feito por partes.</p>
+        </div>
+        <figure class="obra">
+          <img src="/images/duna.png" width="1254" height="1254" fetchpriority="high" alt="Estudo de Duna: luminária acesa com cúpula arredondada e base vermelha canelada.">
+          <figcaption>Duna. Uma das nossas ideias ganhando forma.<span>Estudo conceitual</span></figcaption>
+        </figure>
+      </section>
+
+      <section class="cadastro" id="cadastro" aria-labelledby="titulo-cadastro">
+        <div class="convite">
+          <p class="sinal">Vamos criar juntos.</p>
+          <h2 id="titulo-cadastro">Faça parte<br>desde o começo.</h2>
+          <p>Formas, cores e novas possibilidades para a sua casa. Deixe seu e-mail para acompanhar a Per Parte.</p>
+        </div>
+        <div class="cadastro-conteudo">
+          <form id="formulario-captacao" action="/api/captacao" method="post" aria-describedby="aviso-cadastro">
+            <div class="campo">
+              <label for="email">Seu melhor e-mail <span>(obrigatório)</span></label>
+              <input type="email" id="email" name="email" placeholder="voce@exemplo.com" autocomplete="email" inputmode="email" maxlength="254" required>
+            </div>
+            <div class="campo">
+              <label for="nome">Como podemos te chamar? <span>(opcional)</span></label>
+              <input type="text" id="nome" name="nome" placeholder="Seu nome" autocomplete="given-name" maxlength="100">
+            </div>
+            <div class="campo-invisivel" aria-hidden="true">
+              <label for="website">Deixe este campo vazio</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <label class="consentimento" for="consentimento">
+              <input type="checkbox" id="consentimento" name="consentimento" required>
+              <span>Quero receber novidades da Per Parte por e-mail. Posso cancelar a qualquer momento.</span>
+            </label>
+            <button class="botao-cadastro" type="submit" id="enviar-cadastro"><span>Quero fazer parte</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+            <p class="resultado" id="resultado-cadastro" role="status" aria-live="polite" tabindex="-1"></p>
+            <p class="aviso" id="aviso-cadastro">Seu cadastro é para acompanhar a marca. Não é uma reserva de produto.</p>
+            <noscript><p class="aviso">Ative o JavaScript para enviar seu cadastro com segurança.</p></noscript>
+          </form>
+          <details class="privacidade" id="privacidade">
+            <summary>Sobre seus dados</summary>
+            <p>A Per Parte guarda seu e-mail, nome opcional e registro de consentimento no Resend para organizar a lista de interessados e comunicar novidades da marca. O cadastro não cria uma conta na loja.</p>
+            <p>Para pedir a exclusão ou cancelar sua participação, escreva para <a href="mailto:davi@perparte.com">davi@perparte.com</a>.</p>
+          </details>
+        </div>
+      </section>
+
+      <figure class="universo">
+        <img src="/images/insp-trio-galeria.png" width="1536" height="1024" loading="lazy" alt="Estudos conceituais de Duna, Marco e Farol acesas entre pedestais, arcos e formas coloridas.">
+        <figcaption>Uma luz. Muitas formas de ser sua.<span>Imagens conceituais da coleção em estudo.</span></figcaption>
+      </figure>
+    </main>
+    <footer class="rodape">
+      <p class="marca-grande" aria-hidden="true">Per Parte</p>
+      <div class="rodape-base"><p>Criado por você, feito por partes.</p><a href="#cadastro">Faça parte do começo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6"/></svg></a></div>
+    </footer>
+  </body>
+</html>

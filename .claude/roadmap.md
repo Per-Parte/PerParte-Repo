@@ -25,6 +25,17 @@
 
 ## Etapa 2 — Aplicativos
 
+### LP de captação — pedido de 14/10/2026
+
+- [x] **LP-01 — Preparar modo reversível somente em `main`.** LP com estrutura Springs e identidade Per Parte; fontes do site anterior preservados, rotas comerciais cobertas pela LP e APIs comerciais bloqueadas nesse modo.
+- [x] **LP-02 — Criar controle na Vercel via MCP.** `PERPARTE_LP_ATIVA=TRUE` nos ambientes Production, Preview e Development de `per-parte-website`, equipe `per-parte1`. `FALSE` restaura o site após novo build/deploy.
+- [x] **LP-03 — Preparar integração Resend Contacts.** Escolha explícita sem envio automático; consentimento versionado, opt-out preservado e confirmação por releitura. `RESEND_ENABLED=false` permanece.
+- [x] **LP-04 — Concluir configuração remota de Contacts.** Chave dedicada Full access explicitamente aprovada pelo usuário; `RESEND_CONTACTS_API_KEY` sensitive em Production/Preview. Três propriedades string de origem, versão e data de consentimento criadas e verificadas via API; segredo fora de Git/frontend/logs. Automações Resend vazias e zero envios nesta etapa.
+- [ ] **LP-05 — Concluir publicação.** QA local aprovada: 77 testes, `site:check`, build TRUE com 35 arquivos; 1440/390 px sem overflow, validação nativa e erro 503 sem chave conferidos. Prints em `docs/pesquisa/perparte-lp-capturas/`; referência Springs inclui `04-extensao-chrome-desktop.jpg` da extensão Chrome. Falta deploy e verificação pública; usar CLI no checkout atual `main`, preservando o vínculo Git remoto antigo `FainowAI/per-parte-website` do projeto Vercel.
+- [ ] **LP-06 — Comprovar persistência real.** Cadastro de teste autorizado, leitura do registro e consentimento no Resend, sem disparo de mensagem; registrar resultado no topo de `.claude/state.md`.
+
+### Site completo e configurador preservados
+
 - [x] Criar a landing visual local para três luminárias, com direção Per Parte e referência estrutural Gantri.
 - [x] Adotar HTML, CSS e JavaScript com Node nativo para o protótipo reversível do site (ADR 0003).
 - [x] Concluir a verificação do protótipo em desktop/mobile e registrar os resultados em `.claude/state.md`.

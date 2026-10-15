@@ -1,0 +1,33 @@
+{
+  "section": "SOMETHING HYPERSONIC IS COMING\nA new season\nfor home\nappliances\njust arrived.\nEARLY ACCESS\nCadastre-se e tenha exclusividade no lançamento\nGET IN →\n\nEarly members get benefits.\nAs simple as that.",
+  "forms": [
+    {
+      "action": null,
+      "method": "get"
+    }
+  ],
+  "scripts": [
+    "https://springs.com.br/~flock.js",
+    "https://springs.com.br/__l5e/events.124894084da8c432.js"
+  ],
+  "style": [
+    {
+      "type": "email",
+      "display": "flex",
+      "overflow": "visible",
+      "height": "101.6px"
+    },
+    {
+      "type": "text",
+      "display": "flex",
+      "overflow": "hidden",
+      "height": "0px"
+    },
+    {
+      "type": "tel",
+      "display": "flex",
+      "overflow": "hidden",
+      "height": "0px"
+    }
+  ]
+}
