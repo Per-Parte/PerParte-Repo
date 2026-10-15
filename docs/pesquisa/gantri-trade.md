@@ -65,10 +65,13 @@ Rodada local desta revisão, separada da validação histórica da LP Springs:
 | Movimento reduzido | Emulação confirmou scroll automático, zero blocos com animação habilitada e painéis relativos |
 | Cadastro com resposta simulada | Payload e consentimento preservados; sucesso acessível, foco no status, formulário limpo e botão reabilitado. Nenhuma gravação no Resend nesta rodada |
 | Build TRUE | Aprovado, 39 arquivos públicos |
-| Deploy | Em andamento |
+| Deploy | READY: `dpl_HmtWz29t5wxqXoTvce7NREbzc4pf`, fonte `main` no commit `e918b7a`, 39 arquivos públicos |
+| Produção | `/`, `/loja`, `/produtos/marco`, `/conta` e `/carrinho` com 200 e nova LP; GET captação 405, produtos e caminhos privados verificados 404 |
+| Navegação pública | Desktop sem erros de JavaScript; móvel 390 px sem overflow e com ambas as fotos verticais selecionadas |
+| Teclado | Link de salto visível no primeiro Tab; Enter e Tab conduzem ao e-mail |
 
 As fotos móveis `lp-vida-hero-mobile-v2.png` e `lp-criar-mobile-v2.png` têm 1024 × 1536 px. A primeira QA mostrou rostos cortados pelo crop das fotos horizontais; as versões verticais corrigem esse problema, mantendo o preload condicionado à viewport. Capturas locais em `perparte-lp-v2-capturas/`.
 
-**O deploy desta revisão está em andamento.** A publicação anterior não comprova a publicação desta revisão.
+**Publicada em [perparte.com](https://perparte.com).** URL técnica: `per-parte-website-i076vhfn1-per-parte1.vercel.app`. A CLI publicou uma exportação limpa do commit `e918b7a` da `main`, sem incluir alterações locais concorrentes do configurador. MCP Vercel confirmou READY, aliases e metadados do commit. Capturas públicas `08-producao-desktop.png`, `09-producao-mobile.png` e `10-producao-vidro-mobile.png` em `perparte-lp-v2-capturas/`. Nenhum cadastro real ou envio foi feito nesta revisão; a integração permanece com o código anteriormente validado.
 
 Conferir recortes de pessoa/luminária em desktop e móvel, legibilidade dos painéis, teclado/foco, estado do cabeçalho, sticky sem sobreposição, comportamento com movimento reduzido e o fluxo de cadastro preservado. A chave, consentimento, Resend Contacts, ausência de envio automático e alternância `PERPARTE_LP_ATIVA` permanecem no contrato do ADR 0007. Decisão visual em [ADR 0009](../../.claude/adr/0009-lp-neutra-gantri-trade.md).

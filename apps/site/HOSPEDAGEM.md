@@ -1,5 +1,7 @@
 # Hospedagem do site
 
+**Revisão visual publicada em 14/10/2026:** a LP atual usa a direção neutra Gantri Trade, com fotos conceituais de pessoas e painéis de vidro. Código `e918b7a` em `origin/main`, deploy `dpl_HmtWz29t5wxqXoTvce7NREbzc4pf` READY em [perparte.com](https://perparte.com), build de 39 arquivos. Publicação pela CLI a partir de exportação limpa da main; alterações concorrentes não commitadas ficaram fora. QA desktop/móvel, teclado, redução de movimento e 77 testes aprovados. Contratos de ambiente/Contacts abaixo preservados; teste de interface simulado, sem novo contato real ou envio. Relatório: [Gantri Trade e QA da LP](../../docs/pesquisa/gantri-trade.md). Registros de deployments anteriores abaixo são históricos.
+
 ## Alternar LP e site completo
 
 O pedido de 14/10/2026 acrescenta uma LP reversível, desenvolvida somente em `main`. `PERPARTE_LP_ATIVA=TRUE` foi criada via MCP Vercel em **Production, Preview e Development** no projeto `per-parte-website`, equipe `per-parte1`.
