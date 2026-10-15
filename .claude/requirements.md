@@ -42,16 +42,17 @@ Estas decisões vêm do pedido do usuário em 13/10/2026, não de uma aprovaçã
 
 ## Escopo autorizado para a LP de captação
 
-Pedido de 14/10/2026. `PERPARTE_LP_ATIVA=TRUE` nos três ambientes Vercel; chave Contacts sensitive em Production/Preview e propriedades verificadas via API. 77 testes, check, build LP e QA visual aprovados. `main` em `8de190f`, deploy final READY em `perparte.com`; persistência real verificada com contato sintético QA, depois removido, sem envio e sem representar lead humano. Ver ADR 0007 e o topo de `.claude/state.md`.
+Pedido de 14/10/2026, com revisão visual Gantri Trade registrada no ADR 0009. `PERPARTE_LP_ATIVA=TRUE` nos três ambientes Vercel; chave Contacts sensitive em Production/Preview e propriedades verificadas via API. Revisão `e918b7a` publicada em `perparte.com`, deploy `dpl_HmtWz29t5wxqXoTvce7NREbzc4pf` READY, após 77 testes, check, build de 39 arquivos e QA desktop/móvel. A persistência real foi verificada na versão inicial com contato sintético QA depois removido; a revisão visual testou o formulário com resposta simulada, sem novo contato ou envio. Ver ADRs 0007/0009 e o topo de `.claude/state.md` para integrações/publicações posteriores.
 
 | ID | Estado | Regra ou direção | Fonte |
 |---|---|---|---|
-| LP-01 | DECIDIDO | Trabalhar somente em `main`; estudar a estrutura Springs com `reverse-engineer-anything` e capturas da extensão do Chrome, adaptando-a aos tokens e conteúdo Per Parte. | Pedido do usuário, 14/10/2026 |
+| LP-01 | DECIDIDO | Trabalhar somente em `main`; estudar a estrutura Springs com `reverse-engineer-anything` e capturas da extensão Chrome para a primeira LP. Essa referência passa a ser histórica após a revisão visual LP-07. | Pedido do usuário, 14/10/2026; ADRs 0007/0009 |
 | LP-02 | DECIDIDO | Ocultar o site atual sem excluir seus fontes. `PERPARTE_LP_ATIVA=TRUE` exibe a LP; `FALSE` ou ausência mantém o site completo. Mudar na Vercel exige novo build/deploy. | Pedido do usuário; ADR 0007 |
 | LP-03 | DECIDIDO | Criar a variável via MCP Vercel no projeto `per-parte-website`, equipe `per-parte1`, para Production, Preview e Development. Cobrir rotas comerciais diretas e bloquear API comercial no modo LP. | Pedido do usuário; implementação reversível |
 | LP-04 | DECIDIDO | Guardar cadastros no Resend Contacts, sem envio automático. Exigir e-mail e consentimento explícito; nome é opcional. Lista não cria conta, reserva, compra ou sessão do configurador. | Escolha explícita do usuário |
 | LP-05 | DECIDIDO | Usar chave dedicada `RESEND_CONTACTS_API_KEY` no servidor, Full access explicitamente aprovado pelo usuário diante das opções sending/full do Resend. Propriedades string `perparte_lp_origem`, `perparte_lp_consentimento_versao`, `perparte_lp_consentimento_em`; versão inicial `2026-10-14`. Preservar opt-out e confirmar persistência antes de responder sucesso. | Aprovação explícita do usuário; contrato da implementação; ADR 0007 |
 | LP-06 | DECIDIDO | Preservar estudos conceituais identificados e `RESEND_ENABLED=false`. Não publicar credenciais/prévias privadas nem tratar configuração ou testes simulados como prova de cadastro real. | Limites de marca e integração |
+| LP-07 | DECIDIDO | Revisar a LP com referência Gantri Trade: fotografia ampla, Figtree leve e neutros restritos ao CSS local, preservando tokens globais. Usar quatro fotos conceituais originais, incluindo duas versões móveis, e painéis de vidro solicitados pelo usuário, com sticky desktop, fluxo móvel e movimento reduzido. Não copiar ativos/copy nem atribuir à referência parallax, GSAP ou vidro narrativo não comprovados. Preservar formulário, backend e variável de alternância. | Pedido de revisão visual; ADR 0009; `docs/pesquisa/gantri-trade.md` |
 
 ## Escopo autorizado para o comércio Shopify
 
@@ -106,10 +107,14 @@ Decisões do pedido do usuário em 14/10/2026 e da implementação reversível r
 | K-09 | DECIDIDO | Interface clean com poucas cores e vidro discreto nos blocos. Aplicação localizada do pedido ao editor; sem sombra decorativa e sem alterar acabamento físico. | Pedido explícito do usuário, 14/10/2026 |
 | K-10 | PROVISÓRIO | HTML/CSS/JavaScript ESM, Node nativo na porta 4175 e build estático; escolha reversível de UI, não stack comercial. | ADR 0004 |
 | K-11 | PROVISÓRIO | Renderizador SVG autoral com projeção ortográfica e modelo paramétrico compartilhado entre palco/miniaturas; sem dependência Hairline, mesh fabril ou STL. | ADR 0004; `docs/pesquisa/hairline.md` |
-| K-12 | PROVISÓRIO | Persistência `localStorage` versão 1, leitura validada, proteção de conteúdo ilegível e pedidos como cópias independentes dos modelos. | Contrato `src/dominio.mjs`; ADR 0004 |
+| K-12 | PROVISÓRIO | Persistência `localStorage` versão 2 na chave histórica, migração v1 em memória, leitura validada, proteção de conteúdo ilegível e pedidos como cópias independentes dos modelos. | Contrato `src/dominio.mjs`; ADRs 0004/0008 |
 | K-13 | PROVISÓRIO | Faixas de largura/altura são apenas limites de exploração visual. Não comprovam guardas elétricas, encaixe, espessura ou estabilidade. | Contrato de domínio; engenharia pendente |
 | K-14 | EM ABERTO | Sessão e sincronização do configurador, envio real de suas obras, orçamento, preço vivo e fabricação. Shopify foi escolhido para o comércio do site; sua conexão ao ateliê continua pendente. | Escopo do configurador; SH-01/SH-09 |
 | K-15 | DECIDIDO | Fornecer controles de teclado, dimensionamento numérico, tratamento de movimento reduzido e aviso de alterações não salvas. | Critérios da implementação local |
+| K-16 | DECIDIDO | Permitir uma base e múltiplos corpos/difusores, com identidade e parâmetros por peça; adicionar pela face escolhida diretamente no modelo ou nos controles. | Pedido do usuário, 14/10/2026; ADR 0008 |
+| K-17 | DECIDIDO | Oferecer bandeja de peças arrastáveis, encaixe com retorno visual e som controlável, visualização suspensa sem chão e giro horizontal/vertical. Preservar alternativas de teclado/toque, silêncio e pausa. | Pedido do usuário; ADR 0008 |
+| K-18 | DECIDIDO | Enquadrar automaticamente a composição inteira no espaço disponível, inclusive em notebook e móvel, sem exigir zoom out do navegador. | Pedido do usuário |
+| K-19 | PROVISÓRIO | Conexões centralizadas por seis faces, eixos comuns, profundidade derivada da largura, uma conexão por face e até 24 peças. Regras de ocupação/interseção são exploratórias, sem homologação física. | Contrato geométrico; ADR 0008 |
 
 ## Guardas técnicas anteriores, preservadas durante o reinício
 

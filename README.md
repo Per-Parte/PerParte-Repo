@@ -2,7 +2,7 @@
 
 **Criado por você, feito por partes.** A Per Parte começa por luminárias de mesa impressas em 3D sob demanda. A pessoa compõe ou inventa a obra no configurador; a fabricação começa depois da criação. A marca fala da autoria do cliente com acabamento premium acessível.
 
-Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho Shopify, quadro de projeto e configurador local. A **LP de captação está ativa em [perparte.com](https://perparte.com)**, com `main` enviada até `8de190f` e deploy READY; o site completo permanece preservado para retorno por variável de ambiente. Resend Contacts guarda a lista sem envio automático. O catálogo comercial continua vazio; os estudos não podem ser comprados.
+Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo contexto e pelo sistema visual. Reúne site editorial com Loja/produto/conta/carrinho Shopify, quadro de projeto e configurador local. A **LP de captação está ativa em [perparte.com](https://perparte.com)**, com a revisão neutra Gantri Trade publicada a partir de `e918b7a`; o site completo permanece preservado para retorno por variável de ambiente. Resend Contacts guarda a lista sem envio automático. O catálogo comercial continua vazio; os estudos não podem ser comprados. Integrações e publicações posteriores têm seu resultado efetivo no topo de [state.md](.claude/state.md).
 
 ## Fonte de verdade
 
@@ -16,6 +16,7 @@ Este repositório foi reiniciado em 13/10/2026 para começar pela pesquisa, pelo
 - [E-mails transacionais](docs/integracoes/emails-transacionais.md): Resend, domínio verificado, modelos Per Parte e limites dos eventos de conta.
 - [Publicação Vercel](docs/integracoes/publicacao-vercel.md): versão publicada, configuração, correção do roteamento, evidências e limites da validação em produção.
 - [Direção da landing](docs/site-direcao-conteudo.md): conteúdo, três composições e distinção entre fonte da revista e propostas visuais.
+- [Gantri Trade](docs/pesquisa/gantri-trade.md) e [ADR 0009](.claude/adr/0009-lp-neutra-gantri-trade.md): referência, evidências e direção visual atual da LP; Springs permanece como histórico da primeira versão.
 
 ## Monorepo
 
@@ -56,7 +57,9 @@ Os workspaces npm estão declarados na raiz. Os três aplicativos usam Node nati
 
 ### Site e Shopify
 
-A **LP de captação publicada** usa a estrutura Springs com identidade Per Parte e foi desenvolvida somente em `main`. O site completo descrito abaixo permanece no código. Na Vercel, `PERPARTE_LP_ATIVA=TRUE` seleciona a LP; `FALSE` restaura o site após **novo build/deploy**. A variável foi criada via MCP nos três ambientes de `per-parte-website`, equipe `per-parte1`. Publicação, evidências e reversão estão em [LP na Vercel](docs/integracoes/lp-captacao-vercel.md) e no topo de [state.md](.claude/state.md).
+A **LP de captação publicada** usa Gantri Trade como referência de narrativa fotográfica, com direção neutra Per Parte, Figtree leve e painéis de vidro solicitados pelo usuário. A exceção visual é local à LP; os tokens globais permanecem preservados. São quatro novas fotos conceituais, incluindo duas versões verticais escolhidas até 600 px. Springs é a referência histórica da primeira versão. A revisão `e918b7a` foi publicada com deploy `dpl_HmtWz29t5wxqXoTvce7NREbzc4pf` READY.
+
+O trabalho permanece em `main`, e o site completo descrito abaixo continua no código. Na Vercel, `PERPARTE_LP_ATIVA=TRUE` seleciona a LP; `FALSE` restaura o site após **novo build/deploy**. A variável foi criada via MCP nos três ambientes de `per-parte-website`, equipe `per-parte1`. Publicação, evidências e reversão estão em [LP na Vercel](docs/integracoes/lp-captacao-vercel.md); a nova rodada de integração/publicação deve ser conferida pelo resultado efetivo no topo de [state.md](.claude/state.md).
 
 O formulário usa **Resend Contacts, sem envio automático**, com e-mail, nome opcional e consentimento. Chave dedicada e propriedades estão configuradas; um contato sintético QA comprovou persistência pelo formulário público e API, sendo removido após o teste. Não representa lead humano, conta ou reserva. Nenhum e-mail foi enviado nesta etapa e `RESEND_ENABLED=false` permanece. Ver [ADR 0007](.claude/adr/0007-lp-captacao.md), [configuração](apps/site/README.md) e [operação na Vercel](apps/site/HOSPEDAGEM.md).
 
@@ -80,7 +83,7 @@ Os ambientes local e Production mantêm `RESEND_ENABLED=false`. Gatilhos automá
 
 O ateliê abre sem login, inicialmente vazio. A pessoa escolhe Marco, Duna, Farol ou começa livremente, combina base/corpo/difusor, ajusta formas e dimensões, escolhe cores por parte e salva a composição. O painel mostra miniaturas do modelo, permite reabrir criações e destaca a composição mais recentemente criada como Nova. A tag permanece após recarregar e não muda ao editar uma obra antiga.
 
-A peça usa desenho SVG paramétrico autoral inspirado no Hairline, com rotação por arrasto, cotas arrastáveis, zoom e controles de teclado. Os blocos de vidro discreto seguem o pedido do usuário. Presets, cores e dimensões são estudos; não constituem geometria homologada, mesh fabril ou arquivo STL.
+A peça usa desenho SVG paramétrico autoral inspirado no Hairline, com enquadramento responsivo, giro horizontal/vertical, cotas arrastáveis e controles de teclado. Uma base pode receber múltiplos corpos e difusores por faces, pela bandeja arrastável ou pelos botões. A composição fica suspensa e oferece flutuação e som de encaixe controláveis. O armazenamento v2 migra criações antigas sem escrita automática. Os blocos de vidro discreto seguem o pedido do usuário. Presets, conexões, cores e dimensões são estudos; não constituem geometria homologada, mesh fabril ou arquivo STL. Ver [ADR 0008](.claude/adr/0008-configurador-montagem-por-faces.md).
 
 Criações e rascunhos de pedido ficam no `localStorage` deste navegador/origem. Selecionar obras permite preparar, salvar e baixar um pedido local; nada é enviado à Per Parte. O login do configurador e sua ligação à conta Shopify, sincronização, orçamento e fabricação permanecem em aberto. Veja as [instruções do ateliê](apps/configurador/README.md), o [fluxo](.claude/fluxo-configurador.md) e a [decisão técnica](.claude/adr/0004-configurador-local-svg.md).
 

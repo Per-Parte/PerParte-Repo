@@ -10,15 +10,17 @@ O painel mostra miniaturas SVG geradas a partir das configurações salvas, nome
 
 ## Nova luminária
 
-**Nova luminária** abre três presets — Marco, Duna e Farol — e **Começar do zero**. O modo livre também oferece uma montagem inicial editável de três partes; não é um canvas sem geometria. Marco remete à composição da revista; todos os presets são estudos paramétricos, e Duna/Farol continuam **PROPOSTAS** de desenho.
+**Nova luminária** abre três presets — Marco, Duna e Farol — e **Começar do zero**. O modo livre começa com uma base cúbica de 90 mm ilustrativos; corpos e difusores são acrescentados pela pessoa. Marco remete à composição da revista; todos os presets são estudos paramétricos, e Duna/Farol continuam **PROPOSTAS** de desenho.
 
 ## Editor: Formas → Cores → Concluir
 
-No desktop, controles à esquerda e peça à direita. O layout se reorganiza em telas menores.
+No desktop, controles à esquerda com rolagem própria e palco à direita dimensionado pela altura da janela. No móvel, palco e bandeja aparecem antes dos controles. O enquadramento considera o tamanho real do visor e os limites projetados da composição.
 
-1. **Formas:** selecionar Base, Corpo ou Difusor; escolher Círculo, Quadrado ou Triângulo e uma variação Liso, Ondulado, Vazado ou Perfurado. Cada parte tem largura e altura independentes, editáveis por campo numérico, faixa e puxadores de cotas no palco.
+1. **Formas:** selecionar uma peça na lista ou no palco; escolher Círculo, Quadrado ou Triângulo e uma variação Liso, Ondulado, Vazado ou Perfurado. Cada parte tem largura e altura independentes, editáveis por campo numérico, faixa e puxadores de cotas no palco.
 2. **Cores:** escolher cada parte e aplicar sua cor independentemente, a partir da paleta visual da marca. As cores são estudos de interface; não são um catálogo de filamentos homologados.
 3. **Concluir:** revisar a composição, dar um nome e salvar. A aplicação volta ao painel, coloca a obra entre as mais recentes e marca a composição mais recentemente criada como **Nova**. A tag é derivada da maior data `criadoEm`, permanece após recarregar e não muda ao editar uma obra mais antiga.
+
+A montagem admite uma base e vários corpos/difusores, até 24 peças (limite técnico PROVISÓRIO). Conexões são centralizadas em seis faces, com eixos comuns e profundidade igual à largura. Faces ocupadas e sobreposições de envelopes são recusadas; peças com descendentes precisam ser desmontadas a partir das pontas. Esses limites não validam fabricação.
 
 As etapas podem ser revisitadas. O editor mantém histórico de desfazer/refazer para alterações do modelo; oferece aviso ao sair com alterações não salvas. O histórico de desfazer/refazer não persiste entre sessões; a tag Nova identifica a criação mais recente, sem constituir histórico de versões da obra.
 
@@ -26,8 +28,9 @@ As etapas podem ser revisitadas. O editor mantém histórico de desfazer/refazer
 
 O renderizador autoral calcula a projeção ortográfica 3D e desenha superfícies/contornos em SVG, inspirado na pesquisa de fonte do Hairline. Não importa o pacote nem copia suas figuras prontas. A mesma geometria produz miniaturas e palco.
 
-- Arrasto horizontal no palco gira o modelo; a inclinação da câmera é fixa nesta versão.
-- Clicar em uma parte seleciona seus controles. Arrastar um puxador altera largura ou altura da parte ativa, sem girar a câmera.
+- Arrasto horizontal e vertical orbita a composição. A peça fica suspensa, sem plano de chão, com flutuação suave que pode ser pausada e respeita movimento reduzido.
+- Clicar numa face seleciona a peça e o destino de encaixe. A bandeja permite arrastar novos corpos/difusores para uma face; botões e seletor de faces oferecem a alternativa de teclado/toque. Um encaixe válido tem retorno visual e som curto, que pode ser silenciado.
+- Cada peça tem identidade e controles independentes. Arrastar um puxador altera largura ou altura da peça ativa, sem girar a câmera.
 - As cotas também são sliders acessíveis por teclado. O palco admite giro por setas, e a barra oferece giro em passos, zoom e restauração da vista.
 - Alternar **Desenho/Cor** muda a apresentação da mesma composição; cotas podem ser ocultadas e ficam ocultas na conclusão.
 - Alterações dimensionais respeitam as faixas do domínio e atualizam a montagem. Movimento reduzido desativa transições dispensáveis.
@@ -42,7 +45,7 @@ Não há envio à Per Parte, orçamento, cobrança, prazo prometido, compra conc
 
 ## Persistência e falhas
 
-`src/dominio.mjs` define partes, formas, variações, cores, presets, faixas exploratórias e validação. O armazenamento usa `localStorage`, chave `perparte.configurador.v1`, versão 1. É restrito ao navegador e à origem local usados; não há conta nem sincronização.
+`src/dominio.mjs` define partes, formas, variações, cores, presets, faixas exploratórias e validação. O armazenamento usa `localStorage`, chave `perparte.configurador.v1`, versão 2. Modelos v1 e cópias de pedidos são convertidos em memória, preservando os dados originais até uma ação de salvar. É restrito ao navegador e à origem local usados; não há conta nem sincronização.
 
 Uma leitura inválida não sobrescreve o conteúdo original. A interface informa a falha, bloqueia gravação sobre dados ilegíveis e oferece baixar cópia antes de reiniciar explicitamente o armazenamento. Falha de quota ou indisponibilidade deve manter a edição aberta, sem informar salvamento concluído. Não há importação de pedidos ou backup automático nesta versão.
 

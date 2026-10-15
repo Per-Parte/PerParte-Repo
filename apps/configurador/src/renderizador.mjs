@@ -4,7 +4,7 @@
  * nenhuma geometria ou implementação do pacote foi copiada.
  * As dimensões descrevem um estudo visual, não um arquivo de fabricação.
  */
-import { CORES, LIMITES } from './dominio.mjs';
+import { CORES, LIMITES, posicionarPecas } from './dominio.mjs';
 
 const PARTES = ['base', 'corpo', 'difusor'];
 const NOMES = { base: 'Base', corpo: 'Corpo', difusor: 'Difusor' };
@@ -37,8 +37,8 @@ function corSuperficie(id, luz, colorido) {
 
 function secao(forma, angulo) {
   if (forma === 'quadrado') {
-    const x = Math.cos(angulo), z = Math.sin(angulo);
-    return [Math.sign(x) * Math.abs(x) ** 0.30, Math.sign(z) * Math.abs(z) ** 0.30];
+    const x = Math.cos(angulo), z = Math.sin(angulo), fator = 1 / Math.max(Math.abs(x), Math.abs(z));
+    return [x * fator, z * fator];
   }
   if (forma === 'triangulo') {
     const posicao = ((angulo / TAU) % 1 + 1) % 1 * 3;
@@ -82,7 +82,7 @@ function criarProjecao(partes, tamanho, angulo, zoom, miniatura) {
 const caminho = pontos => `M${pontos.map(ponto => `${numero(ponto[0])},${numero(ponto[1])}`).join('L')}Z`;
 const linha = pontos => `M${pontos.map(ponto => `${numero(ponto[0])},${numero(ponto[1])}`).join('L')}`;
 
-function geometria(modelo, opcoes = {}) {
+function geometriaLegada(modelo, opcoes = {}) {
   const tamanho = opcoes.tamanho || 600;
   const miniatura = Boolean(opcoes.miniatura);
   const partes = normalizarPartes(modelo);
@@ -168,8 +168,106 @@ function geometria(modelo, opcoes = {}) {
 
   objetos.sort((a, b) => a.profundidade - b.profundidade);
   const pisoY = projetar([0, 0, 0])[1];
-  const guia = miniatura ? '' : `<path d="M${numero(tamanho * .22)},${numero(pisoY + 30)}H${numero(tamanho * .78)}" fill="none" stroke="#a3a79d" stroke-width=".6" opacity=".22"/><path d="M${numero(tamanho / 2 - 4)},${numero(pisoY + 30)}h8m-4,-4v8" fill="none" stroke="#91998c" stroke-width=".65" opacity=".40"/>`;
+  const guia = '';
   return { svg: guia + objetos.map(objeto => objeto.svg).join('') + silhuetas.join(''), limites, escala, altura, tamanho };
+}
+
+function faceDaSecao(angulo) {
+  const x = Math.cos(angulo), z = Math.sin(angulo);
+  return Math.abs(x) > Math.abs(z) ? (x > 0 ? 'direita' : 'esquerda') : (z > 0 ? 'frente' : 'tras');
+}
+
+/** Escala automática baseada nos extremos do modelo após a projeção da câmera. */
+export function calcularEnquadramento(bbox, largura, altura, padding = 48, angulo = ANGULO_INICIAL, elevacao = .46) {
+  const centro = [(bbox.minX+bbox.maxX)/2,(bbox.minY+bbox.maxY)/2,(bbox.minZ+bbox.maxZ)/2];
+  const ca=Math.cos(angulo),sa=Math.sin(angulo),ce=Math.cos(elevacao),se=Math.sin(elevacao),pontos=[];
+  for(const x of [bbox.minX,bbox.maxX])for(const y of [bbox.minY,bbox.maxY])for(const z of [bbox.minZ,bbox.maxZ]){
+    const dx=x-centro[0],dy=y-centro[1],dz=z-centro[2],h=dx*ca-dz*sa,d=dx*sa+dz*ca;
+    pontos.push([h,-dy*ce+d*se]);
+  }
+  const sx=Math.max(...pontos.map(p=>p[0]))-Math.min(...pontos.map(p=>p[0]));
+  const sy=Math.max(...pontos.map(p=>p[1]))-Math.min(...pontos.map(p=>p[1]));
+  const pads=typeof padding==='number'?{left:padding,right:padding,top:padding,bottom:padding}:padding;
+  return Math.max(.01,Math.min((largura-pads.left-pads.right)/Math.max(1,sx),(altura-pads.top-pads.bottom)/Math.max(1,sy)));
+}
+
+function geometriaMontagem(modelo, opcoes = {}) {
+  const miniatura = Boolean(opcoes.miniatura);
+  const largura = opcoes.largura || opcoes.tamanho || 600;
+  const alturaViewport = opcoes.altura || opcoes.tamanho || 600;
+  const posicionadas = posicionarPecas(modelo);
+  const { bbox, pecas } = posicionadas;
+  const angulo = opcoes.angulo ?? ANGULO_INICIAL;
+  const elevacao = limitar(opcoes.elevacao ?? 0.46, -1.25, 1.25);
+  const centroMundo = [(bbox.minX+bbox.maxX)/2,(bbox.minY+bbox.maxY)/2,(bbox.minZ+bbox.maxZ)/2];
+  const cosA=Math.cos(angulo),sinA=Math.sin(angulo),cosE=Math.cos(elevacao),sinE=Math.sin(elevacao);
+  const transformar = p => {
+    const x=p[0]-centroMundo[0],y=p[1]-centroMundo[1],z=p[2]-centroMundo[2];
+    const horizontal=x*cosA-z*sinA,profundidade=x*sinA+z*cosA;
+    return [horizontal,-y*cosE+profundidade*sinE,profundidade*cosE+y*sinE];
+  };
+  const cantos=[];
+  for(const x of [bbox.minX,bbox.maxX])for(const y of [bbox.minY,bbox.maxY])for(const z of [bbox.minZ,bbox.maxZ])cantos.push(transformar([x,y,z]));
+  const minX=Math.min(...cantos.map(p=>p[0])),maxX=Math.max(...cantos.map(p=>p[0]));
+  const minY=Math.min(...cantos.map(p=>p[1])),maxY=Math.max(...cantos.map(p=>p[1]));
+  const margens=miniatura?{left:32,right:32,top:32,bottom:32}:(opcoes.mostrarCotas
+    ?{left:28,right:68,top:34,bottom:48}
+    :{left:28,right:28,top:28,bottom:28});
+  const escala=calcularEnquadramento(bbox,largura,alturaViewport,margens,angulo,elevacao)*(opcoes.zoom||1);
+  const centroTelaX=(margens.left+largura-margens.right)/2, centroTelaY=(margens.top+alturaViewport-margens.bottom)/2;
+  const projetar=p=>{const q=transformar(p);return [centroTelaX+q[0]*escala,centroTelaY+q[1]*escala,q[2]];};
+  const objetos=[],limites={};
+  for(const peca of pecas){
+    const segmentos=peca.variacao==='ondulado'?(miniatura?48:64):peca.forma==='triangulo'?(miniatura?24:36):(miniatura?32:48);
+    const faixas=peca.variacao==='perfurado'?(miniatura?5:8):peca.variacao==='vazado'?(miniatura?4:6):(miniatura?3:5);
+    const inicio=peca.y-peca.altura/2, pontos=[];
+    const avaliar=(a,t)=>{
+      const [ux,uz]=secao(peca.forma,a), onda=peca.variacao==='ondulado'?.94+.06*Math.cos(a*16):1;
+      const perfil=peca.forma==='quadrado'?1:(peca.tipo==='difusor'?1-.30*t+.035*Math.sin(Math.PI*t):.96+.04*Math.sin(Math.PI*t));
+      const raio=peca.largura/2*perfil*onda;
+      const p=projetar([peca.x+ux*raio,inicio+peca.altura*t,peca.z+uz*raio]);pontos.push(p);return p;
+    };
+    for(let i=0;i<segmentos;i++){
+      const a=i*TAU/segmentos,b=(i+1)*TAU/segmentos,medio=(a+b)/2,face=faceDaSecao(medio);
+      const pa=secao(peca.forma,a),pb=secao(peca.forma,b);
+      const nx=pb[1]-pa[1],nz=pa[0]-pb[0];
+      const produto=nx*Math.sin(angulo)*Math.cos(elevacao)+nz*Math.cos(angulo)*Math.cos(elevacao);
+      if(produto<=1e-6)continue;
+      for(let j=0;j<faixas;j++){
+        if(peca.variacao==='vazado'&&j>0&&j<faixas-1&&Math.floor(i/2)%2===1)continue;
+        const t0=j/faixas,t1=(j+1)/faixas,quad=[avaliar(a,t0),avaliar(b,t0),avaliar(b,t1),avaliar(a,t1)];
+        const depth=quad.reduce((s,p)=>s+p[2],0)/quad.length;
+        const luz=.92+.055*Math.cos(medio-3.9)+t1*.04;
+        const fill=corSuperficie(peca.cor,luz,opcoes.colorido),tag=' data-peca="'+peca.id+'" data-face="'+face+'"';
+        const nervuras=[];
+        for(let r=1;r<=(miniatura?2:4);r++){const t=t0+(t1-t0)*r/(miniatura?2:4);nervuras.push(linha([avaliar(a,t),avaliar(b,t)]));}
+        const furo=peca.variacao==='perfurado'&&i%3===1&&j>0&&j<faixas-1
+          ?'<circle cx="'+numero((quad[0][0]+quad[2][0])/2)+'" cy="'+numero((quad[0][1]+quad[2][1])/2)+'" r="'+numero(Math.max(1,escala*peca.largura*.012))+'" fill="#f4f2ed" stroke="#525c56" stroke-width=".45"/>':'';
+        objetos.push({z:depth,svg:'<g'+tag+' class="face-superficie"><path d="'+caminho(quad)+'" fill="'+fill+'" stroke="'+fill+'" stroke-width=".35"/><path d="'+nervuras.join('')+'" fill="none" stroke="#525c56" stroke-width=".42" opacity=".24"/>'+furo+'</g>'});
+        if(j===0){
+          const baixo=[avaliar(a,0),avaliar(b,0)],alto=[avaliar(a,1),avaliar(b,1)];
+          const opacidade=peca.forma==='quadrado'?.66:.42;
+          objetos.push({z:(baixo[0][2]+baixo[1][2])/2+.001,svg:'<path d="'+linha(baixo)+'" fill="none" stroke="#525c56" stroke-width="'+(miniatura?'.55':'.8')+'" stroke-opacity="'+opacidade+'" pointer-events="none"/>'});
+          objetos.push({z:(alto[0][2]+alto[1][2])/2+.001,svg:'<path d="'+linha(alto)+'" fill="none" stroke="#525c56" stroke-width="'+(miniatura?'.55':'.8')+'" stroke-opacity="'+opacidade+'" pointer-events="none"/>'});
+        }
+      }
+    }
+    for(const item of [{t:0,face:'baixo'},{t:1,face:'cima'}]){
+      if(item.face==='cima'&&Math.sin(elevacao)<=1e-6)continue;
+      if(item.face==='baixo'&&Math.sin(elevacao)>=-1e-6)continue;
+      const aro=Array.from({length:segmentos},(_,i)=>avaliar(i*TAU/segmentos,item.t));
+      const z=aro.reduce((s,p)=>s+p[2],0)/aro.length;
+      const fill=corSuperficie(peca.cor,item.t?1.045:.88,opcoes.colorido);
+      objetos.push({z:z+(item.t ? .04 : -.04),svg:'<g data-peca="'+peca.id+'" data-face="'+item.face+'" class="face-superficie"><path d="'+caminho(aro)+'" fill="'+fill+'" stroke="#525c56" stroke-opacity=".66" stroke-width=".8"/></g>'});
+    }
+    limites[peca.id]={minX:Math.min(...pontos.map(p=>p[0])),maxX:Math.max(...pontos.map(p=>p[0])),minY:Math.min(...pontos.map(p=>p[1])),maxY:Math.max(...pontos.map(p=>p[1])),topo:Math.min(...pontos.map(p=>p[1])),fundo:Math.max(...pontos.map(p=>p[1])),peca};
+  }
+  objetos.sort((a,b)=>a.z-b.z);
+  return {svg:'<g class="modelo-flutuante">'+objetos.map(o=>o.svg).join('')+'</g>',limites,escala,altura:alturaViewport,largura,tamanho:largura,bbox,pecas};
+}
+
+function geometria(modelo, opcoes = {}) {
+  return Array.isArray(modelo?.pecas) ? geometriaMontagem(modelo, opcoes) : geometriaLegada(modelo, opcoes);
 }
 
 function cotasDaParte(desenho, parteAtiva) {
@@ -190,6 +288,30 @@ function cotasDaParte(desenho, parteAtiva) {
   return '<g class="cotas" fill="none" stroke="'+cor+'" stroke-width=".85">'+guias+ticks+handle('largura',caixa.maxX,y,'horizontal',linhaLargura,rotulo('largura','translate('+numero(meioX)+','+numero(y)+')'))+handle('altura',x,caixa.topo,'vertical',linhaAltura,rotulo('altura','translate('+numero(x+17)+','+numero(meioY)+') rotate(-90)'))+'</g>';
 }
 
+function cotasDaPeca(desenho, pecaId) {
+  const caixa=desenho.limites[pecaId];if(!caixa)return '';
+  const peca=caixa.peca,regras=LIMITES[peca.tipo];if(!regras)return '';
+  const pos=posicionarCotas(caixa,desenho.largura,desenho.altura);
+  const y=pos.largura.y,x=pos.altura.x,midX=pos.largura.x,midY=pos.altura.y,cor='#8a473b';
+  const handle=(chave,px,py,orient,d)=>{
+    const label=(chave==='largura'?'Largura':'Altura')+': '+(NOMES[peca.tipo]||'Peça');
+    const labelX=chave==='altura'?pos.altura.rotuloX:px,labelY=chave==='largura'?pos.largura.rotuloY:py;
+    return '<g data-dimensao="'+chave+'" data-peca="'+peca.id+'" role="slider" tabindex="0" aria-label="'+label+'" aria-valuemin="'+regras[chave].min+'" aria-valuemax="'+regras[chave].max+'" aria-valuenow="'+peca[chave]+'" aria-valuetext="'+peca[chave]+' milímetros" aria-orientation="'+orient+'"><path d="'+d+'" stroke="transparent" stroke-width="22" pointer-events="stroke"/><path d="'+d+'"/><circle cx="'+numero(px)+'" cy="'+numero(py)+'" r="5.4" fill="#faf7f0" stroke="'+cor+'" stroke-width="1.2"/><g transform="translate('+numero(labelX)+','+numero(labelY)+')" stroke="none" fill="'+cor+'" font-family="Figtree,sans-serif" font-size="11" text-anchor="middle"><rect x="-34" y="-8" width="68" height="17" rx="5" fill="#f5f3ed" fill-opacity=".94"/><text y="4">'+peca[chave]+' mm</text></g></g>';
+  };
+  const linhaLargura='M'+numero(caixa.minX)+','+numero(y)+'H'+numero(caixa.maxX);
+  const linhaAltura='M'+numero(x)+','+numero(caixa.topo)+'V'+numero(caixa.fundo);
+  return '<g class="cotas" fill="none" stroke="'+cor+'" stroke-width=".85">'+handle('largura',midX,y,'horizontal',linhaLargura)+handle('altura',x,midY,'vertical',linhaAltura)+'</g>';
+}
+
+export function posicionarCotas(caixa, largura, altura) {
+  const y=limitar(caixa.maxY+22,18,altura-24),x=limitar(caixa.maxX+25,18,largura-55);
+  const meioX=(caixa.minX+caixa.maxX)/2,meioY=(caixa.topo+caixa.fundo)/2;
+  return {
+    largura:{x:limitar(meioX,34,largura-34),y,rotuloY:y-15},
+    altura:{x,y:meioY,rotuloX:x+8},
+  };
+}
+
 /** Miniatura inteiramente vetorial; não depende do DOM. */
 export function renderizarMiniatura(modelo, opcoes = {}) {
   const desenho = geometria(modelo, { ...opcoes, tamanho: 400, miniatura: true, colorido: opcoes.colorido ?? true });
@@ -198,13 +320,15 @@ export function renderizarMiniatura(modelo, opcoes = {}) {
 
 /** Mantém o SVG estável para preservar captura do ponteiro durante mudanças. */
 export function criarVisualizador(container, opcoes = {}) {
-  let estado = { modelo: opcoes.modelo, parteAtiva: opcoes.parteAtiva || 'base', colorido: opcoes.colorido ?? false, mostrarCotas: opcoes.mostrarCotas ?? true };
-  let angulo = ANGULO_INICIAL, fatorZoom = 1, arraste = null, desenho, quadro = null, destruido = false;
+  let estado = { modelo: opcoes.modelo, pecaAtiva: opcoes.pecaAtiva || opcoes.parteAtiva || opcoes.modelo?.pecas?.[0]?.id || 'base', faceAtiva: opcoes.faceAtiva || null, parteAtiva: opcoes.parteAtiva || 'base', colorido: opcoes.colorido ?? false, mostrarCotas: opcoes.mostrarCotas ?? true };
+  let angulo = ANGULO_INICIAL, elevacao = .46, fatorZoom = 1, arraste = null, desenho, quadro = null, destruido = false;
+  let largura = Math.max(1, container.clientWidth || 600), altura = Math.max(1, container.clientHeight || 600), hoverFace = null, pulsoPeca = null, timerPulso = null;
   const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 600 600');
+  svg.setAttribute('viewBox', '0 0 ' + largura + ' ' + altura);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   svg.setAttribute('role', 'group');
   svg.setAttribute('tabindex', '0');
-  svg.setAttribute('aria-label', 'Visualização da sua luminária. Arraste para girar; use as setas esquerda e direita pelo teclado. As cotas permitem ajustar a parte selecionada.');
+  svg.setAttribute('aria-label', 'Prévia da composição. Arraste para girar; use as setas para orbitar. Selecione uma face para montar outra peça.');
   svg.setAttribute('class', 'visualizador-svg');
   svg.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;user-select:none;cursor:grab;overflow:visible';
   container.replaceChildren(svg);
@@ -213,8 +337,14 @@ export function criarVisualizador(container, opcoes = {}) {
     if (destruido) return;
     quadro = null;
     const foco = svg.contains(document.activeElement) ? document.activeElement?.getAttribute?.('data-dimensao') : null;
-    desenho = geometria(estado.modelo, { angulo, zoom: fatorZoom, colorido: estado.colorido });
-    svg.innerHTML = `<style>.cota-puxador{transition:r .12s ease} [data-dimensao]:hover .cota-puxador,[data-dimensao]:focus-visible .cota-puxador{r:8;stroke-width:2} @media(prefers-reduced-motion:reduce){.cota-puxador{transition:none}}</style>${desenho.svg}${estado.mostrarCotas ? cotasDaParte(desenho, estado.parteAtiva) : ''}`;
+    desenho = geometria(estado.modelo, { angulo, elevacao, zoom: fatorZoom, colorido: estado.colorido, largura, altura, mostrarCotas: estado.mostrarCotas });
+    svg.setAttribute('viewBox', '0 0 ' + largura + ' ' + altura);
+    const cotas = estado.mostrarCotas ? (Array.isArray(estado.modelo?.pecas) ? cotasDaPeca(desenho, estado.pecaAtiva) : cotasDaParte(desenho, estado.parteAtiva)) : '';
+    svg.classList.toggle('sem-flutuacao', estado.flutuacao === false);
+    svg.innerHTML = `<style>.cota-puxador{transition:r .12s ease}.face-superficie{cursor:pointer}.face-hover path:first-child,.face-selecionada path:first-child{stroke:#a90000!important;stroke-width:1.35!important}.face-hover path:first-child{fill-opacity:.86}.modelo-flutuante{animation:flutuar-modelo 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.visualizador-svg.sem-flutuacao .modelo-flutuante{animation:none}.visualizador-svg.interagindo .modelo-flutuante{animation-play-state:paused}.peca-pulso{animation:realce-encaixe .7s ease-out 2}@keyframes flutuar-modelo{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes realce-encaixe{50%{filter:brightness(1.14)}}@media(prefers-reduced-motion:reduce){.cota-puxador{transition:none}.modelo-flutuante,.peca-pulso{animation:none}}</style>${desenho.svg}${cotas}`;
+    if (hoverFace) svg.querySelectorAll('[data-face]').forEach(el => { if (el.dataset.peca === hoverFace.pecaId && el.dataset.face === hoverFace.faceId) el.classList.add('face-hover'); });
+    if (estado.faceAtiva) svg.querySelectorAll('[data-face]').forEach(el => { if (el.dataset.peca === estado.pecaAtiva && el.dataset.face === estado.faceAtiva) el.classList.add('face-selecionada'); });
+    if (pulsoPeca) svg.querySelectorAll('[data-peca]').forEach(el => { if (el.dataset.peca === pulsoPeca) el.classList.add('peca-pulso'); });
     if (foco && !arraste) svg.querySelector(`[data-dimensao="${foco}"]`)?.focus({ preventScroll: true });
   }
   function agendar() {
@@ -225,24 +355,42 @@ export function criarVisualizador(container, opcoes = {}) {
     const matriz = svg.getScreenCTM();
     return matriz ? ponto.matrixTransform(matriz.inverse()) : ponto;
   }
-  function ajustar(chave, valor, parte = estado.parteAtiva) {
-    const regra = LIMITES[parte][chave];
+  function ajustar(chave, valor, pecaId = estado.pecaAtiva) {
+    const peca = desenho?.limites?.[pecaId]?.peca || desenho?.limites?.[pecaId]?.parte;
+    const tipo = peca?.tipo || peca?.id || pecaId;
+    const regra = LIMITES[tipo]?.[chave];
+    if (!regra || !peca) return;
     const novo = limitar(Math.round(valor), regra.min, regra.max);
-    const atual = estado.modelo?.partes?.[parte] || estado.modelo?.[parte];
-    if (!atual || Number(atual[chave]) === novo) return;
-    estado = { ...estado, modelo: { ...estado.modelo, partes: { ...(estado.modelo?.partes || {}), [parte]: { ...atual, [chave]: novo } } } };
-    opcoes.onDimensao?.(parte, chave, novo);
+    if (Number(peca[chave]) === novo) return;
+    if (Array.isArray(estado.modelo?.pecas)) {
+      const origem = estado.modelo;
+      const aceito = opcoes.onDimensao?.(pecaId, chave, novo);
+      if (aceito === false) return;
+      if (estado.modelo === origem) estado = { ...estado, modelo: { ...origem, pecas: origem.pecas.map(item => item.id === pecaId ? { ...item, [chave]: novo } : item) } };
+    } else {
+      const atual = estado.modelo?.partes?.[tipo] || estado.modelo?.[tipo];
+      if (!atual) return;
+      const origem = estado.modelo;
+      const aceito = opcoes.onDimensao?.(tipo, chave, novo);
+      if (aceito === false) return;
+      if (estado.modelo === origem) estado = { ...estado, modelo: { ...origem, partes: { ...(origem.partes || {}), [tipo]: { ...atual, [chave]: novo } } } };
+    }
     agendar();
   }
   function iniciar(evento) {
     if (evento.button !== 0 || arraste) return;
     const alvoCota = evento.target.closest?.('[data-dimensao]');
+    const alvoFace = evento.target.closest?.('[data-face][data-peca]');
     const alvoParte = evento.target.closest?.('[data-parte]');
     const p = local(evento);
-    const parte = estado.parteAtiva;
     const chave = alvoCota?.getAttribute('data-dimensao');
-    const caixa = desenho.limites[parte];
-    arraste = { id: evento.pointerId, x: p.x, y: p.y, angulo, chave, parte, valor: chave ? caixa.parte[chave] : 0, escala: chave === 'largura' ? (caixa.maxX - caixa.minX) / caixa.parte.largura : desenho.escala * Math.cos(INCLINACAO), movido: false, selecionar: alvoParte?.getAttribute('data-parte') };
+    const pecaId = alvoCota?.getAttribute('data-peca') || estado.pecaAtiva;
+    const caixa = desenho.limites[pecaId];
+    const face = alvoFace ? { pecaId: alvoFace.dataset.peca, faceId: alvoFace.dataset.face } : null;
+    const selecionar = face?.pecaId || alvoParte?.getAttribute('data-parte');
+    if (!caixa && chave) return;
+    arraste = { id: evento.pointerId, x: p.x, y: p.y, angulo, elevacao, chave, pecaId, face, valor: chave ? caixa?.peca?.[chave] : 0, escala: chave === 'largura' ? Math.max(.1, (caixa.maxX - caixa.minX) / caixa.peca.largura) : Math.max(.1, desenho.escala * Math.cos(elevacao)), movido: false, selecionar };
+    svg.classList.add('interagindo');
     svg.setPointerCapture(evento.pointerId);
     svg.style.cursor = chave ? `${chave === 'largura' ? 'ew' : 'ns'}-resize` : 'grabbing';
     if (chave) alvoCota.focus({ preventScroll: true });
@@ -250,45 +398,84 @@ export function criarVisualizador(container, opcoes = {}) {
     evento.preventDefault();
   }
   function mover(evento) {
-    if (!arraste || evento.pointerId !== arraste.id) return;
+    if (!arraste || evento.pointerId !== arraste.id) {
+      const el = evento.target.closest?.('[data-face][data-peca]');
+      const face = el ? { pecaId: el.dataset.peca, faceId: el.dataset.face } : null;
+      const chave = face ? face.pecaId + ':' + face.faceId : '';
+      if ((hoverFace ? hoverFace.pecaId + ':' + hoverFace.faceId : '') !== chave) {
+        hoverFace = face;
+        svg.querySelectorAll('[data-face]').forEach(el => el.classList.toggle('face-hover', Boolean(face && el.dataset.peca === face.pecaId && el.dataset.face === face.faceId)));
+        opcoes.onHoverFace?.(face);
+      }
+      return;
+    }
     const p = local(evento), dx = p.x - arraste.x, dy = p.y - arraste.y;
     if (Math.abs(dx) + Math.abs(dy) > 3) arraste.movido = true;
-    if (arraste.chave) ajustar(arraste.chave, arraste.valor + (arraste.chave === 'largura' ? dx : -dy) / arraste.escala, arraste.parte);
-    else { angulo = arraste.angulo + dx * .011; agendar(); }
+    if (arraste.chave) ajustar(arraste.chave, arraste.valor + (arraste.chave === 'largura' ? dx : -dy) / arraste.escala, arraste.pecaId);
+    else { angulo = arraste.angulo + dx * .011; elevacao = limitar(arraste.elevacao + dy * .009, -1.25, 1.25); agendar(); }
   }
   function encerrar(evento) {
     if (!arraste || evento.pointerId !== arraste.id) return;
     const anterior = arraste;
     arraste = null;
+    svg.classList.remove('interagindo');
     if (svg.hasPointerCapture(evento.pointerId)) svg.releasePointerCapture(evento.pointerId);
     svg.style.cursor = 'grab';
     if (anterior.chave) svg.querySelector(`[data-dimensao="${anterior.chave}"]`)?.focus({ preventScroll: true });
-    else if (!anterior.movido && anterior.selecionar && evento.type !== 'pointercancel') opcoes.onSelecionarParte?.(anterior.selecionar);
+    else if (!anterior.movido && anterior.selecionar && evento.type !== 'pointercancel') {
+      if (anterior.face) {
+        estado = { ...estado, pecaAtiva: anterior.face.pecaId, faceAtiva: anterior.face.faceId };
+        opcoes.onSelecionarFace?.(anterior.face);
+        if (!opcoes.onSelecionarFace) opcoes.onSelecionarPeca?.(anterior.face.pecaId);
+        const peca = desenho.pecas?.find(item => item.id === anterior.face.pecaId);
+        if (peca) opcoes.onSelecionarParte?.(peca.tipo);
+        svg.querySelectorAll('[data-face]').forEach(el => el.classList.toggle('face-selecionada', el.dataset.peca === anterior.face.pecaId && el.dataset.face === anterior.face.faceId));
+      } else opcoes.onSelecionarParte?.(anterior.selecionar);
+    }
   }
   function teclado(evento) {
     const chave = evento.target.closest?.('[data-dimensao]')?.getAttribute('data-dimensao');
     if (chave && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(evento.key)) {
       evento.preventDefault(); evento.stopPropagation();
-      const parte = estado.parteAtiva, atual = desenho.limites[parte].parte[chave];
+      const pecaId = evento.target.closest?.('[data-peca]')?.getAttribute('data-peca') || estado.pecaAtiva;
+      const parte = desenho.limites[pecaId]?.peca?.tipo || estado.parteAtiva, atual = desenho.limites[pecaId]?.peca?.[chave] ?? desenho.limites[pecaId]?.parte?.[chave];
       const passo = evento.shiftKey ? 10 : 1;
-      ajustar(chave, evento.key === 'Home' ? LIMITES[parte][chave].min : evento.key === 'End' ? LIMITES[parte][chave].max : atual + (['ArrowRight', 'ArrowUp'].includes(evento.key) ? passo : -passo));
-    } else if (['ArrowLeft', 'ArrowRight'].includes(evento.key)) {
-      evento.preventDefault(); angulo += evento.key === 'ArrowRight' ? .12 : -.12; agendar();
+      if (atual === undefined) return;
+      ajustar(chave, evento.key === 'Home' ? LIMITES[parte][chave].min : evento.key === 'End' ? LIMITES[parte][chave].max : atual + (['ArrowRight', 'ArrowUp'].includes(evento.key) ? passo : -passo), pecaId);
+    } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(evento.key)) {
+      evento.preventDefault();
+      angulo += evento.key === 'ArrowRight' ? .12 : evento.key === 'ArrowLeft' ? -.12 : 0;
+      elevacao = limitar(elevacao + (evento.key === 'ArrowDown' ? .12 : evento.key === 'ArrowUp' ? -.12 : 0), -1.25, 1.25); agendar();
     } else if (evento.key === 'Home') {
-      evento.preventDefault(); angulo = ANGULO_INICIAL; fatorZoom = 1; agendar();
+      evento.preventDefault(); angulo = ANGULO_INICIAL; elevacao = .46; fatorZoom = 1; agendar();
     }
   }
-  const eventos = { pointerdown: iniciar, pointermove: mover, pointerup: encerrar, pointercancel: encerrar, lostpointercapture: encerrar, keydown: teclado };
+  function limparHover() { if (hoverFace) { hoverFace = null; svg.querySelectorAll('[data-face]').forEach(el=>el.classList.remove('face-hover')); opcoes.onHoverFace?.(null); } }
+  function apontarFace(clientX, clientY) {
+    const alvo = document.elementFromPoint(clientX, clientY)?.closest?.('[data-face][data-peca]');
+    return alvo && svg.contains(alvo) ? { pecaId: alvo.dataset.peca, faceId: alvo.dataset.face } : null;
+  }
+  const eventos = { pointerdown: iniciar, pointermove: mover, pointerup: encerrar, pointercancel: encerrar, lostpointercapture: encerrar, pointerleave: limparHover, keydown: teclado };
   for (const [nome, funcao] of Object.entries(eventos)) svg.addEventListener(nome, funcao);
+  const observador = typeof ResizeObserver === 'function' ? new ResizeObserver(entradas => {
+    const caixa = entradas[0]?.contentRect;
+    if (caixa?.width && caixa?.height) { largura = caixa.width; altura = caixa.height; agendar(); }
+  }) : null;
+  observador?.observe(container);
   desenhar();
 
   return {
     atualizar(proximo = {}) { estado = { ...estado, ...proximo }; agendar(); },
-    girar(delta = 15) { angulo += Number(delta) * Math.PI / 180; agendar(); },
-    zoom(delta = .1) { fatorZoom = limitar(fatorZoom + Number(delta), .7, 1.3); agendar(); },
-    resetar() { angulo = ANGULO_INICIAL; fatorZoom = 1; agendar(); },
+    apontarFace,
+    girar(delta = 15, deltaElevacao = 0) { angulo += Number(delta) * Math.PI / 180; elevacao = limitar(elevacao + Number(deltaElevacao) * Math.PI / 180, -1.25, 1.25); agendar(); },
+    zoom(delta = .1) { fatorZoom = limitar(fatorZoom + Number(delta), .55, 2.4); agendar(); },
+    fit() { fatorZoom = 1; agendar(); },
+    encaixar(pecaId) { if (!desenho?.pecas?.some(item => item.id === pecaId)) return; fatorZoom = 1; pulsoPeca = pecaId; if (timerPulso) clearTimeout(timerPulso); timerPulso = setTimeout(() => { pulsoPeca = null; svg.querySelectorAll('.peca-pulso').forEach(el=>el.classList.remove('peca-pulso')); }, 1500); agendar(); },
+    resetar() { angulo = ANGULO_INICIAL; elevacao = .46; fatorZoom = 1; agendar(); },
     destruir() {
       destruido = true;
+      if (timerPulso) clearTimeout(timerPulso);
+      observador?.disconnect();
       if (quadro !== null) cancelAnimationFrame(quadro);
       for (const [nome, funcao] of Object.entries(eventos)) svg.removeEventListener(nome, funcao);
       svg.remove();
