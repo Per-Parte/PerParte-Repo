@@ -1,12 +1,26 @@
 # Fluxo: site
 
-**Estado:** LP de captação publicada em `perparte.com`, com site editorial/comércio preservados e seleção por ambiente. Resend Contacts configurado sem envio automático; persistência real comprovada com contato sintético QA depois removido, sem lead humano. `main` em `8de190f`, deploy final READY. Headless/token e coleção Shopify configurados, catálogo comercial vazio; filtros pendentes. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify), ADR 0006 (e-mails Resend) e ADR 0007 (LP/Contacts).
+**Estado:** LP inicial publicada em `perparte.com` (`8de190f`, deploy READY), com site editorial/comércio preservados e seleção por ambiente. A revisão visual neutra com referência Gantri Trade está implementada localmente, com QA final e deploy ainda em andamento neste registro. Resend Contacts configurado sem envio automático; persistência da versão anterior comprovada com contato sintético QA depois removido, sem lead humano. Headless/token e coleção Shopify configurados, catálogo comercial vazio; filtros pendentes. **Atualização:** 14/10/2026. **Decisões:** ADR 0003 (origem estática), ADR 0005 (Shopify), ADR 0006 (e-mails Resend), ADR 0007 (LP/Contacts) e ADR 0009 (revisão visual da LP).
 
 ## LP de captação — seleção e cadastro
 
 `PERPARTE_LP_ATIVA=TRUE` apresenta a LP; `FALSE` ou ausência mantém o site completo descrito abaixo. O valor é lido no build e no runtime da API: alteração na Vercel requer novo deploy. A variável foi criada via MCP em Production, Preview e Development do projeto `per-parte-website`, equipe `per-parte1`. Os fontes originais `index.html`/`comercio.html` permanecem intactos. No pacote LP, ambos recebem `captacao.html`; módulos e estilos antigos de interface não são publicados, e APIs comerciais retornam indisponibilidade de rota. `POST /api/captacao` só existe no modo LP.
 
-O percurso da LP usa a estrutura Springs adaptada à marca: cabeçalho enxuto, título “A era do criar.”, imagem conceitual de Duna, convite e formulário, imagem editorial da coleção e wordmark amplo no rodapé. A identidade usa os tokens Per Parte. Links “Faça parte” levam ao formulário; teclado, foco visível, status acessível e movimento reduzido devem ser preservados.
+A versão inicial usou a estrutura Springs, preservada como histórico em `docs/pesquisa/springs.md`. A revisão local atual usa a narrativa fotográfica observada em Gantri Trade: hero com “A sua casa. O seu jeito de criar.”, introdução branca, cena de criação com Marco, ambiente Duna, convite e cadastro sobre ambiente Farol, seguido de rodapé enxuto. Cabeçalho fixo oferece âncoras para a ideia, possibilidades e formulário; passa do transparente ao claro após 40 px de rolagem.
+
+### Revisão visual neutra da LP — 14/10/2026
+
+O pedido autoriza uma direção neutra localizada: papel `#F5F5F3`, branco, cinzas e texto escuro no CSS da LP. Tokens globais e demais aplicativos permanecem preservados. Textos e títulos usam Figtree, com títulos em peso 400; o wordmark mantém o token display. A referência não transfere cores, fontes, logo ou copy Gantri para a marca.
+
+As cenas narrativas têm painéis translúcidos com `backdrop-filter: blur(26px)`, contorno claro e nenhuma sombra decorativa. No desktop, o painel acompanha a cena com `position: sticky` e `top: calc(50vh - 175px)`; até 600 px ele volta ao fluxo normal. O cadastro usa painel próprio sobre fotografia. O vidro é uma adaptação pedida pelo usuário: nos painéis Gantri inspecionados não havia `backdrop-filter`, e o blur de 32 px apareceu somente em um input do rodapé. Fotografias não recebem parallax; a observação não comprovou parallax ou GSAP na referência.
+
+`captacao.js` acrescenta atualização do cabeçalho por `requestAnimationFrame` e revelações via IntersectionObserver; a entrada desloca 22 px e altera opacidade. Sem suporte ao observador, o conteúdo permanece visível. `prefers-reduced-motion` elimina transições, deslocamento, scroll suave e sticky dos painéis. Essas melhorias visuais não mudam o contrato do formulário; foco visível, link de salto e status acessível permanecem.
+
+Fotos originais `lp-vida-hero-v2.png` e `lp-criar-v2.png`, com versões verticais `*-mobile-v2.png` selecionadas por picture até 600 px, usam pessoas fictícias adultas de 20–30 anos, conforme persona. Duna/Marco são referências geométricas locais; cores neutras e peças avulsas são propostas visuais, sem comprovação de fabricação ou variante comercial. Ambientes existentes Duna/Farol mantêm a identificação de estudo. Proveniência e prompts em `docs/imagens-lp-v2-prompts.md`.
+
+Pesquisa e capturas em `docs/pesquisa/gantri-trade.md` e `gantri-trade-capturas/`: screenshots via Playwright, hero pela extensão Chrome após recuperar a conexão e evidência REA por CDP. QA parcial desta revisão: 77 testes e `site:check` aprovados; desktop 1440 × 900 com quatro imagens carregadas e sem overflow, painel sticky estável em 275 px após 150 px de scroll e blur de 26 px confirmado. Móvel, movimento reduzido, build e deploy ainda estão em andamento; não tratar o aceite da LP anterior como aceite desta versão. Decisão em ADR 0009.
+
+### Cadastro — contrato preservado
 
 O formulário coleta e-mail obrigatório, nome opcional e consentimento explícito versão `2026-10-14`. `captacao.js` envia JSON para `/api/captacao`; `captacao.mjs` valida origem, corpo, campos e honeypot, consulta Resend Contacts, grava as propriedades necessárias e relê o contato antes do sucesso. Repetição com registro completo não muda a primeira data de consentimento. Contato com opt-out não é reinscrito; erro de integração não produz confirmação fictícia.
 

@@ -1,0 +1,39 @@
+{
+  "evidence_id": "ev_c6a3216e8fb4265c4152b693ee87d3ceb746b81f34d463294644feec7c6d38ef",
+  "provider": {
+    "id": "rea-cdp-browser",
+    "name": "REA Chrome DevTools Protocol observation provider",
+    "version": "2"
+  },
+  "confidence": "observed",
+  "parameters": {
+    "cdp_endpoint": "http://127.0.0.1:9335",
+    "allowed_origins": [
+      "https://www.gantri.com"
+    ],
+    "target_id": "9B1C63C2D4E0FCF509A1EDDC843FF2B8",
+    "observation_ms": 750,
+    "include_accessibility_text": true,
+    "include_console_text": false,
+    "include_json_body_shapes": false,
+    "include_websocket_shapes": false,
+    "include_storage_keys": false,
+    "include_storage_fingerprints": false,
+    "include_script_sources": false
+  },
+  "capture_window": {
+    "started_at": "2026-10-15T02:05:06.919Z",
+    "ended_at": "2026-10-15T02:05:10.349Z",
+    "observation_ms": 750
+  },
+  "dom_nodes": 743,
+  "script_count": 21,
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Observation starts when REA attaches; prior network and console activity is unavailable.",
+    "Raw network headers, bodies, cookies, storage values, console objects, and WebSocket payloads are never retained; explicitly requested primitive console text is retained verbatim, while payload captures retain value-free shapes.",
+    "Source maps are reported only as declarative URLs and are not fetched.",
+    "URL-less scripts and console events without an allowed source URL are excluded because their origin cannot be proven.",
+    "Browser host platform and architecture were not observed."
+  ]
+}

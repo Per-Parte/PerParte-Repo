@@ -3,6 +3,38 @@ const botao = document.querySelector('#enviar-cadastro');
 const resultado = document.querySelector('#resultado-cadastro');
 let enviando = false;
 
+// O formulário funciona independentemente das melhorias visuais.
+const cabecalho = document.querySelector('#cabecalho');
+let quadroPendente = false;
+function atualizarCabecalho() {
+  cabecalho?.classList.toggle('rolado', window.scrollY > 40);
+  quadroPendente = false;
+}
+atualizarCabecalho();
+window.addEventListener('scroll', () => {
+  if (!quadroPendente) { quadroPendente = true; requestAnimationFrame(atualizarCabecalho); }
+}, { passive: true });
+
+const movimentoReduzido = window.matchMedia('(prefers-reduced-motion: reduce)');
+let observador;
+function configurarRevelacao() {
+  observador?.disconnect();
+  const blocos = document.querySelectorAll('.revelar');
+  if (movimentoReduzido.matches || !('IntersectionObserver' in window)) {
+    blocos.forEach(bloco => bloco.removeAttribute('data-animar'));
+    return;
+  }
+  observador = new IntersectionObserver(entradas => {
+    for (const entrada of entradas) if (entrada.isIntersecting) {
+      entrada.target.classList.add('visivel');
+      observador.unobserve(entrada.target);
+    }
+  }, { threshold: .12 });
+  blocos.forEach(bloco => { bloco.dataset.animar = 'true'; observador.observe(bloco); });
+}
+configurarRevelacao();
+movimentoReduzido.addEventListener('change', configurarRevelacao);
+
 function informar(mensagem, estado) {
   resultado.textContent = mensagem;
   resultado.dataset.estado = estado;
