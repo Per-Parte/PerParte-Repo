@@ -518,7 +518,8 @@ function atualizarRodapeProduto() {
   const papel = rgbComputado('var(--papel)');
   if (!fundo || !tinta || !luzAcesa || !papel) return;
   const fundoVisivel = corSobreFundo(fundo, papel);
-  const texto = contraste(fundoVisivel, tinta) >= contraste(fundoVisivel, luzAcesa) ? '#1E1E1E' : 'var(--pp-cor-luz-acesa)';
+  const exigeTextoBranco = fundo.r === 0 && fundo.g === 135 && fundo.b === 149 && fundo.a === 1;
+  const texto = exigeTextoBranco ? '#fff' : contraste(fundoVisivel, tinta) >= contraste(fundoVisivel, luzAcesa) ? '#1E1E1E' : 'var(--pp-cor-luz-acesa)';
   rodape.style.setProperty('--rodape-fundo', cor);
   rodape.style.setProperty('--rodape-texto', texto);
   rodape.dataset.corVariante = varianteAtual?.selectedOptions?.find(opcao => ehCor(opcao.name))?.value || '';
